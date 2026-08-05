@@ -10,51 +10,53 @@
 
 <section class="mx-auto max-w-md space-y-6">
 	<div class="text-center">
-		<div class="mx-auto inline-flex rounded-2xl bg-blue-50 p-4 dark:bg-blue-950">
-			<LogIn class="size-8 text-blue-600 dark:text-blue-400" />
+		<div class="mx-auto inline-flex rounded bg-amber-400 p-4">
+			<LogIn class="size-8 text-stone-900" strokeWidth={3} />
 		</div>
-		<h1 class="mt-4 text-3xl font-bold text-slate-900 dark:text-white">Admin login</h1>
-		<p class="mt-2 text-sm text-slate-600 dark:text-zinc-400">
+		<h1 class="mt-4 text-3xl font-black text-stone-900 uppercase dark:text-amber-50">
+			Admin login
+		</h1>
+		<p class="mt-2 text-sm font-medium text-stone-700 dark:text-stone-300">
 			Only the site admin can add, edit, or remove items. Everyone else can browse the catalog.
 		</p>
 	</div>
 
 	<form
 		method="POST"
-		class="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+		class="space-y-4 rounded border-2 border-stone-300 bg-white p-6 dark:border-stone-700 dark:bg-stone-800"
 	>
 		{#if form?.message}
 			<div
-				class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+				class="rounded border-2 border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
 			>
 				{form.message}
 			</div>
 		{/if}
 
 		<label class="block space-y-2 text-sm">
-			<span class="font-medium text-slate-700 dark:text-zinc-300">Username</span>
+			<span class="font-bold text-stone-700 dark:text-stone-300">Username</span>
 			<input
 				name="username"
 				autocomplete="username"
-				class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-slate-900 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-blue-500"
+				class="w-full rounded border-2 border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
 				required
 			/>
 		</label>
 
 		<label class="block space-y-2 text-sm">
-			<span class="font-medium text-slate-700 dark:text-zinc-300">Password</span>
+			<span class="font-bold text-stone-700 dark:text-stone-300">Password</span>
 			<input
 				type="password"
 				name="password"
 				autocomplete="current-password"
-				class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-slate-900 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-blue-500"
+				class="w-full rounded border-2 border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
 				required
 			/>
 		</label>
 
 		<button
 			type="submit"
-			class="w-full rounded-lg bg-blue-500 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/40"
+			class="w-full rounded border-2 border-amber-500 bg-amber-400 px-4 py-3 font-black text-stone-900 uppercase transition-all hover:bg-amber-500"
 		>
 			Log in
 		</button>

@@ -2,8 +2,9 @@
 
 @layer base {
 	:root {
-		--font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-		
+		--font-sans:
+			-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+
 		/* Light theme - 90s Blockbuster inspired with warm colors */
 		--color-bg: 253 250 241;
 		--color-surface: 255 254 247;
@@ -50,7 +51,9 @@
 		background: rgb(var(--color-bg));
 		color: rgb(var(--color-text));
 		font-family: var(--font-sans);
-		transition: background-color 0.3s ease, color 0.3s ease;
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
 	}
 
 	a {

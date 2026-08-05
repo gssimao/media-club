@@ -13,11 +13,11 @@
 	<div class="flex flex-wrap items-end justify-between gap-4">
 		<div>
 			<div
-				class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400"
+				class="inline-flex items-center gap-2 text-xs font-black tracking-wider text-amber-600 uppercase dark:text-amber-400"
 			>
 				Collection
 			</div>
-			<h1 class="mt-1 text-3xl font-black uppercase text-stone-900 dark:text-amber-50">Movies</h1>
+			<h1 class="mt-1 text-3xl font-black text-stone-900 uppercase dark:text-amber-50">Movies</h1>
 		</div>
 		<a
 			href="/wishlist/movies"
