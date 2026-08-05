@@ -13,17 +13,17 @@
 	<div class="flex flex-wrap items-end justify-between gap-4">
 		<div>
 			<div
-				class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400"
+				class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400"
 			>
 				Collection
 			</div>
-			<h1 class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">Movies</h1>
+			<h1 class="mt-1 text-3xl font-black uppercase text-stone-900 dark:text-amber-50">Movies</h1>
 		</div>
 		<a
 			href="/wishlist/movies"
-			class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+			class="inline-flex items-center gap-1.5 text-sm font-bold text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
 		>
-			<Heart class="size-4" />
+			<Heart class="size-4" strokeWidth={2.5} />
 			View wishlist
 		</a>
 	</div>

@@ -1,5 +1,8 @@
-# Cursor (local AI rules — not shared via repo)
+# Cursor — local AI rules (including .cursor/rules/); never commit
 .cursor/
+
+# Editor / agent backups
+*.bak
 
 # Local database
 /data
