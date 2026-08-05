@@ -5,7 +5,6 @@ Thanks for helping improve Media Club!
 ## Development setup
 
 ```bash
-git clone https://github.com/your-username/media-club.git
 cd media-club
 npm install
 cp .env.example .env
@@ -24,7 +23,7 @@ npm run dev
 
 ## Pull requests
 
-1. Fork the repo and create a feature branch
+1. Create a feature branch from the main branch
 2. Keep changes focused — one feature or fix per PR
 3. Update docs if you change setup, env vars, or architecture
 4. Describe how you tested the change

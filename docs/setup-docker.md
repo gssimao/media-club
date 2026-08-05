@@ -7,10 +7,9 @@ Run Media Club on your own server, NAS, or home lab with a single container and 
 - Docker and Docker Compose
 - Optional: reverse proxy (Caddy, nginx) for HTTPS
 
-## 1. Clone and configure
+## 1. Copy and configure
 
 ```bash
-git clone https://github.com/your-username/media-club.git
 cd media-club
 cp .env.example .env
 ```

@@ -37,16 +37,16 @@
 <div class="space-y-6">
 	<SearchBar bind:value={query} onInput={(value) => (query = value)} />
 
-	<p class="text-sm text-slate-400">
+	<p class="text-sm font-medium text-slate-600 dark:text-zinc-400">
 		{filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
 	</p>
 
 	{#if filteredItems.length === 0}
 		<div
-			class="rounded-2xl border border-dashed border-[var(--color-border)] px-6 py-16 text-center"
+			class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/50"
 		>
-			<h2 class="text-lg font-semibold">{emptyTitle}</h2>
-			<p class="mt-2 text-sm text-slate-400">{emptyDescription}</p>
+			<h2 class="text-lg font-semibold text-slate-900 dark:text-white">{emptyTitle}</h2>
+			<p class="mt-2 text-sm text-slate-600 dark:text-zinc-400">{emptyDescription}</p>
 		</div>
 	{:else}
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

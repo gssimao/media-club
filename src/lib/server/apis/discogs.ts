@@ -28,7 +28,7 @@ export async function searchMusic(token: string, query: string): Promise<SearchR
 	const response = await fetch(`${DISCOGS_API_BASE}/database/search?${params.toString()}`, {
 		headers: {
 			Authorization: `Discogs token=${token}`,
-			'User-Agent': 'MediaClub/1.0 +https://github.com/media-club'
+			'User-Agent': 'MediaClub/1.0 (self-hosted media inventory)'
 		}
 	});
 

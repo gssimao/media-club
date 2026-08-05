@@ -1,3 +1,6 @@
+# Cursor (local AI rules — not shared via repo)
+.cursor/
+
 # Local database
 /data
 *.db

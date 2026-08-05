@@ -1,22 +1,17 @@
 # Media Club
 
-A simple, self-hosted catalog of **movies**, **vinyl records**, and **books** you own at home — plus wishlists for what you want to buy next.
+Free, self-hosted catalog for **movies**, **vinyl records**, and **books** — with separate owned lists and wishlists.
 
-- Public visitors can browse your collections and wishlists
+- Public visitors can browse the catalog
 - Only the admin can add, edit, remove, or move items
-- Metadata comes from free APIs (TMDB, Discogs, Open Library)
-- SQLite storage with two deployment paths: **Cloudflare Workers + D1** (primary) or **Docker + local SQLite**
+- Metadata from free APIs (TMDB, Discogs, Open Library)
+- SQLite storage with two deployment paths: **Cloudflare Workers + D1** or **Docker + local SQLite**
 
-> This app tracks titles and cover art only. It does not store or stream actual media files.
-
-## Why this repo exists
-
-Projects like [Wishflix](https://github.com/Navihdz/wishflix) and [Taster](https://github.com/qiaeru/taster) inspired parts of the idea, but none matched the full scope (movies + vinyl + books, owned/wishlist split, public-read/admin-write, SvelteKit stack). Media Club is a focused greenfield build for that use case.
+> This app tracks titles and cover art only. It does not store or stream media files.
 
 ## Quick start (local)
 
 ```bash
-git clone https://github.com/your-username/media-club.git
 cd media-club
 cp .env.example .env
 npm install
