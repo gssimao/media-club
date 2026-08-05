@@ -70,6 +70,10 @@ See [.env.example](.env.example) for the full list. Required for production:
 - `DISCOGS_TOKEN` — vinyl search (free)
 - Open Library needs no key
 
+Optional:
+
+- `DEFAULT_ROUTE` — redirect `/` to this path (e.g. `/login`, `/movies`). Empty or `/` shows the welcome page.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).

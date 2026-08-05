@@ -38,6 +38,15 @@ npx wrangler secret put TMDB_API_KEY
 npx wrangler secret put DISCOGS_TOKEN
 ```
 
+Optional — redirect `/` away from the welcome page (not a secret):
+
+```bash
+npx wrangler secret put DEFAULT_ROUTE
+# e.g. /login or /movies
+```
+
+Or add to `wrangler.jsonc` under `"vars": { "DEFAULT_ROUTE": "/movies" }`.
+
 Optional:
 
 ```bash

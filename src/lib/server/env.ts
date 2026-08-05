@@ -14,3 +14,24 @@ export function requireSecret(event: RequestEvent, key: 'TMDB_API_KEY' | 'DISCOG
 	}
 	return value;
 }
+
+/** Returns a same-origin path to redirect `/` to, or null to show the welcome page. */
+export function resolveDefaultRoute(raw: string | undefined | null): string | null {
+	const trimmed = raw?.trim();
+	if (!trimmed || trimmed === '/') return null;
+
+	let path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+	if (path.includes('://') || path.startsWith('//')) return null;
+
+	const pathname = path.split(/[?#]/)[0];
+	if (pathname.length > 1 && pathname.endsWith('/')) {
+		return pathname.slice(0, -1);
+	}
+
+	return pathname;
+}
+
+export function getDefaultRoute(platform?: App.Platform): string | null {
+	const env = platform?.env as { DEFAULT_ROUTE?: string } | undefined;
+	return resolveDefaultRoute(env?.DEFAULT_ROUTE ?? process.env.DEFAULT_ROUTE);
+}

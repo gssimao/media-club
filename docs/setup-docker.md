@@ -18,6 +18,7 @@ Edit `.env` or set variables in `docker-compose.yml`:
 
 - `ADMIN_PASSWORD` — **change this**
 - `SESSION_SECRET` — long random string
+- `DEFAULT_ROUTE` — optional; e.g. `/login` or `/movies` instead of the welcome page at `/`
 - `TMDB_API_KEY` — for movie search
 - `DISCOGS_TOKEN` — for vinyl search
 
