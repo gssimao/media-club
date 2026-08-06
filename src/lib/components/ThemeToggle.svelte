@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Sun, Moon } from '@lucide/svelte';
+	import { Sun, Moon } from 'phosphor-svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 </script>
 
@@ -10,8 +10,8 @@
 	aria-label="Toggle theme"
 >
 	{#if theme.current === 'dark'}
-		<Sun class="size-5" />
+		<Sun size={20} weight="bold" />
 	{:else}
-		<Moon class="size-5" />
+		<Moon size={20} weight="bold" />
 	{/if}
 </button>

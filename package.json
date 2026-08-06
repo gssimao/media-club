@@ -53,13 +53,13 @@
 		"wrangler": "^4.97.0"
 	},
 	"dependencies": {
-		"@lucide/svelte": "^1.28.0",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"better-sqlite3": "^13.0.2",
 		"clsx": "^2.1.1",
 		"drizzle-orm": "^0.45.2",
 		"fuse.js": "^7.5.0",
+		"phosphor-svelte": "^3.1.0",
 		"tailwind-merge": "^3.6.0",
 		"tsx": "^4.23.6"
 	}

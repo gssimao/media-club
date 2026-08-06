@@ -75,3 +75,26 @@
 		transition-duration: 200ms;
 	}
 }
+
+@layer components {
+	/* Rounded design system — see design-theme.mdc */
+	.btn-primary {
+		@apply inline-flex items-center gap-2 rounded-full border-2 border-amber-500 bg-amber-400 px-8 py-4 text-base font-black tracking-wide text-stone-900 uppercase transition-all hover:bg-amber-500;
+	}
+
+	.btn-secondary {
+		@apply inline-flex items-center gap-2 rounded-full border-2 border-stone-300 bg-white px-8 py-4 text-base font-black tracking-wide text-stone-700 uppercase transition-all hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700;
+	}
+
+	.surface-round {
+		@apply rounded-[2rem] border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-800;
+	}
+
+	.input-round {
+		@apply rounded-full border border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500;
+	}
+
+	.pill-nav {
+		@apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold tracking-wide uppercase transition-all;
+	}
+}

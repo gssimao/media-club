@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { LogIn } from '@lucide/svelte';
+	import CircularTextInput from '$lib/components/CircularTextInput.svelte';
+	import { SignIn } from 'phosphor-svelte';
 
 	let { form } = $props();
 </script>
@@ -10,8 +11,8 @@
 
 <section class="mx-auto max-w-md space-y-6">
 	<div class="text-center">
-		<div class="mx-auto inline-flex rounded bg-amber-400 p-4">
-			<LogIn class="size-8 text-stone-900" strokeWidth={3} />
+		<div class="mx-auto inline-flex size-16 items-center justify-center rounded-full bg-amber-400">
+			<SignIn size={32} weight="bold" class="text-stone-900" />
 		</div>
 		<h1 class="mt-4 text-3xl font-black text-stone-900 uppercase dark:text-amber-50">
 			Admin login
@@ -21,44 +22,33 @@
 		</p>
 	</div>
 
-	<form
-		method="POST"
-		class="space-y-4 rounded border-2 border-stone-300 bg-white p-6 dark:border-stone-700 dark:bg-stone-800"
-	>
+	<form method="POST" class="surface-round space-y-6 p-8">
 		{#if form?.message}
 			<div
-				class="rounded border-2 border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
+				class="rounded-[2rem] border border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
 			>
 				{form.message}
 			</div>
 		{/if}
 
-		<label class="block space-y-2 text-sm">
-			<span class="font-bold text-stone-700 dark:text-stone-300">Username</span>
-			<input
+		<div class="flex flex-col items-center gap-8 sm:flex-row sm:justify-center">
+			<CircularTextInput
 				name="username"
+				label="Username"
 				autocomplete="username"
-				class="w-full rounded border-2 border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
+				placeholder="Username"
 				required
 			/>
-		</label>
-
-		<label class="block space-y-2 text-sm">
-			<span class="font-bold text-stone-700 dark:text-stone-300">Password</span>
-			<input
-				type="password"
+			<CircularTextInput
 				name="password"
+				label="Password"
+				type="password"
 				autocomplete="current-password"
-				class="w-full rounded border-2 border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
+				placeholder="Password"
 				required
 			/>
-		</label>
+		</div>
 
-		<button
-			type="submit"
-			class="w-full rounded border-2 border-amber-500 bg-amber-400 px-4 py-3 font-black text-stone-900 uppercase transition-all hover:bg-amber-500"
-		>
-			Log in
-		</button>
+		<button type="submit" class="btn-primary w-full justify-center py-3">Log in</button>
 	</form>
 </section>

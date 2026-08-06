@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { CATEGORY_LABELS, type ListType, type MediaCategory } from '$lib/types/media';
 	import type { SearchResult } from '$lib/types/media';
-	import { LoaderCircle, Plus, CheckCircle2 } from '@lucide/svelte';
+	import { CircleNotch, Plus, CheckCircle } from 'phosphor-svelte';
 
 	let category = $state<MediaCategory>('movie');
 	let listType = $state<ListType>('owned');
@@ -69,15 +69,13 @@
 		</p>
 	</div>
 
-	<div
-		class="grid gap-4 rounded border-2 border-stone-300 bg-white p-6 md:grid-cols-3 dark:border-stone-700 dark:bg-stone-800"
-	>
+	<div class="surface-round grid gap-4 p-6 md:grid-cols-3">
 		<label class="space-y-2 text-sm">
 			<span class="font-bold text-stone-700 dark:text-stone-300">Category</span>
 			<select
 				bind:value={category}
 				onchange={() => runSearch(query)}
-				class="w-full rounded border-2 border-stone-300 bg-white px-3 py-2 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500"
+				class="input-round w-full"
 			>
 				<option value="movie">Movies (TMDB)</option>
 				<option value="music">Music (Discogs)</option>
@@ -92,7 +90,7 @@
 				value={query}
 				oninput={(event) => handleInput(event.currentTarget.value)}
 				placeholder="Start typing a title…"
-				class="w-full rounded border-2 border-stone-300 bg-white px-3 py-2 font-medium text-stone-900 transition-colors placeholder:text-stone-400 focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:placeholder:text-stone-500 dark:focus:border-amber-500"
+				class="input-round w-full"
 			/>
 		</label>
 
@@ -100,7 +98,7 @@
 			<legend class="mb-2 text-sm font-bold text-stone-700 dark:text-stone-300">Add to</legend>
 			<div class="flex gap-4 text-sm">
 				<label
-					class="inline-flex items-center gap-2 rounded px-3 py-2 transition-colors {listType ===
+					class="inline-flex items-center gap-2 rounded-full px-4 py-2 transition-colors {listType ===
 					'owned'
 						? 'bg-amber-400 font-bold text-stone-900'
 						: 'font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-700'}"
@@ -109,7 +107,7 @@
 					Collection
 				</label>
 				<label
-					class="inline-flex items-center gap-2 rounded px-3 py-2 transition-colors {listType ===
+					class="inline-flex items-center gap-2 rounded-full px-4 py-2 transition-colors {listType ===
 					'wishlist'
 						? 'bg-amber-400 font-bold text-stone-900'
 						: 'font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-700'}"
@@ -123,16 +121,16 @@
 
 	{#if addedMessage}
 		<div
-			class="inline-flex items-center gap-2 rounded border-2 border-emerald-400 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+			class="inline-flex items-center gap-2 rounded-full border border-emerald-400 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
 		>
-			<CheckCircle2 class="size-4" strokeWidth={2.5} />
+			<CheckCircle size={16} weight="bold" />
 			{addedMessage}
 		</div>
 	{/if}
 
 	{#if errorMessage}
 		<div
-			class="rounded border-2 border-red-400 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
+			class="rounded-[2rem] border border-red-400 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
 		>
 			{errorMessage}
 		</div>
@@ -142,7 +140,7 @@
 		<p
 			class="inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400"
 		>
-			<LoaderCircle class="size-4 animate-spin" strokeWidth={2.5} />
+			<CircleNotch size={16} weight="bold" class="animate-spin" />
 			Searching…
 		</p>
 	{/if}
@@ -151,9 +149,9 @@
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each results as result (result.externalId)}
 				<article
-					class="flex gap-4 rounded border-2 border-stone-300 bg-white p-4 dark:border-stone-700 dark:bg-stone-800"
+					class="surface-round flex gap-4 p-4"
 				>
-					<div class="h-28 w-20 shrink-0 overflow-hidden rounded bg-stone-100 dark:bg-stone-900">
+					<div class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-stone-100 dark:bg-stone-900">
 						{#if result.coverUrl}
 							<img src={result.coverUrl} alt="" class="h-full w-full object-cover" loading="lazy" />
 						{/if}
@@ -196,9 +194,9 @@
 							/>
 							<button
 								type="submit"
-								class="inline-flex items-center gap-1.5 rounded border-2 border-amber-500 bg-amber-400 px-3 py-1.5 text-xs font-black text-stone-900 uppercase transition-colors hover:bg-amber-500"
+								class="btn-primary px-3 py-1.5 text-xs"
 							>
-								<Plus class="size-3" strokeWidth={3} />
+								<Plus size={12} weight="bold" />
 								Add to {listType}
 							</button>
 						</form>

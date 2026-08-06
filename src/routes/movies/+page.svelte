@@ -1,6 +1,6 @@
 <script lang="ts">
 	import MediaGrid from '$lib/components/MediaGrid.svelte';
-	import { Heart } from '@lucide/svelte';
+	import { Heart } from 'phosphor-svelte';
 
 	let { data } = $props();
 </script>
@@ -21,9 +21,9 @@
 		</div>
 		<a
 			href="/wishlist/movies"
-			class="inline-flex items-center gap-1.5 text-sm font-bold text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+			class="pill-nav bg-amber-400/10 text-amber-600 hover:bg-amber-400/20 dark:text-amber-400"
 		>
-			<Heart class="size-4" strokeWidth={2.5} />
+			<Heart size={16} weight="bold" />
 			View wishlist
 		</a>
 	</div>

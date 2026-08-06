@@ -1,248 +1,382 @@
 <script lang="ts">
-	import {
-		Film,
-		BookOpen,
-		Disc3,
-		Heart,
-		ArrowRight,
-		Shield,
-		Search,
-		Server,
-		Sparkles
-	} from '@lucide/svelte';
+	import { BookOpen, FilmStrip, SignIn, VinylRecord } from 'phosphor-svelte';
 
 	let { data } = $props();
 
 	const icons = {
-		movie: Film,
-		music: Disc3,
+		movie: FilmStrip,
+		music: VinylRecord,
 		book: BookOpen
 	} as const;
 
-	const features = [
-		{
-			icon: Film,
-			title: 'Multi-format catalog',
-			description: 'Track movies, vinyl records, and books in one unified collection.'
-		},
-		{
-			icon: Search,
-			title: 'Rich metadata',
-			description: 'Auto-fetch cover art and details from TMDB, Discogs, and Open Library.'
-		},
-		{
-			icon: Shield,
-			title: 'Privacy first',
-			description: 'Public browsing, admin-only edits. Your collection, your control.'
-		},
-		{
-			icon: Server,
-			title: 'Self-hosted',
-			description: 'Run on Cloudflare or Docker. No subscriptions, no vendor lock-in.'
-		}
+	const CD_CENTER = 260;
+	const CD_NAV_RADIUS = 175;
+	const CD_BTN_SIZE = 56;
+	const CD_BTN_HALF = CD_BTN_SIZE / 2;
+
+	const SPIN_PERIOD_MS = 24_000;
+	const HOVER_PLAYBACK_RATE = 0.05;
+	const NORMAL_PLAYBACK_RATE = 1;
+	const RATE_TWEEN_MS = 1500;
+
+	const cdNavButtons = [
+		{ href: '/movies', label: 'Browse', icon: FilmStrip, variant: 'primary' as const, angle: 0 },
+		{ href: '/login', label: 'Admin', icon: SignIn, variant: 'secondary' as const, angle: 180 }
 	] as const;
+
+	let cdSpinEl = $state<SVGGElement | undefined>(undefined);
+
+	let spinAnim: Animation | undefined;
+	let rateTweenFrame: number | undefined;
+	let currentPlaybackRate = NORMAL_PLAYBACK_RATE;
+	let slowPinned = $state(false);
+	let isHovering = false;
+
+	function cdNavPosition(angleDeg: number) {
+		const rad = (angleDeg * Math.PI) / 180;
+		return {
+			x: CD_CENTER + CD_NAV_RADIUS * Math.sin(rad),
+			y: CD_CENTER - CD_NAV_RADIUS * Math.cos(rad)
+		};
+	}
+
+	function easeOutCubic(t: number) {
+		return 1 - (1 - t) ** 3;
+	}
+
+	function easeInCubic(t: number) {
+		return t ** 3;
+	}
+
+	function cancelRateTween() {
+		if (rateTweenFrame !== undefined) {
+			cancelAnimationFrame(rateTweenFrame);
+			rateTweenFrame = undefined;
+		}
+	}
+
+	function tweenPlaybackRate(
+		targetRate: number,
+		durationMs: number,
+		easing: (t: number) => number
+	) {
+		if (!spinAnim) return;
+
+		cancelRateTween();
+
+		const startRate = currentPlaybackRate;
+		const startTime = performance.now();
+
+		function tick(now: number) {
+			const t = Math.min((now - startTime) / durationMs, 1);
+			currentPlaybackRate = startRate + (targetRate - startRate) * easing(t);
+			spinAnim!.playbackRate = currentPlaybackRate;
+
+			if (t < 1) {
+				rateTweenFrame = requestAnimationFrame(tick);
+			} else {
+				rateTweenFrame = undefined;
+			}
+		}
+
+		rateTweenFrame = requestAnimationFrame(tick);
+	}
+
+	function slowDown() {
+		tweenPlaybackRate(HOVER_PLAYBACK_RATE, RATE_TWEEN_MS, easeOutCubic);
+	}
+
+	function speedUp() {
+		tweenPlaybackRate(NORMAL_PLAYBACK_RATE, RATE_TWEEN_MS, easeInCubic);
+	}
+
+	function isNavClickTarget(target: EventTarget | null) {
+		if (!(target instanceof Element)) return false;
+		return target.closest('.cd-nav-btn, a') !== null;
+	}
+
+	function onCdMouseEnter() {
+		isHovering = true;
+		slowDown();
+	}
+
+	function onCdMouseLeave() {
+		isHovering = false;
+		if (!slowPinned) {
+			speedUp();
+		}
+	}
+
+	function onCdClick(e: MouseEvent) {
+		if (isNavClickTarget(e.target)) return;
+
+		slowPinned = !slowPinned;
+		if (slowPinned) {
+			slowDown();
+		} else if (!isHovering) {
+			speedUp();
+		}
+	}
+
+	$effect(() => {
+		const el = cdSpinEl;
+		if (!el) return;
+
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (reducedMotion) return;
+
+		const anim = el.animate(
+			[{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+			{ duration: SPIN_PERIOD_MS, iterations: Infinity, easing: 'linear' }
+		);
+
+		spinAnim = anim;
+		currentPlaybackRate = NORMAL_PLAYBACK_RATE;
+
+		return () => {
+			cancelRateTween();
+			anim.cancel();
+			spinAnim = undefined;
+		};
+	});
 </script>
 
 <svelte:head>
-	<title>Media Club — Self-hosted media inventory</title>
-	<meta
-		name="description"
-		content="Free, self-hosted catalog for movies, vinyl, and books. Track owned titles and wishlists."
-	/>
+	<title>Media Club</title>
+	<meta name="description" content="Self-hosted media catalog for movies, vinyl, and books." />
 </svelte:head>
 
-<section class="space-y-16 pb-8 sm:space-y-20 lg:space-y-24">
-	<!-- Hero Section -->
-	<div class="max-w-4xl space-y-6 pt-8 sm:pt-12 lg:pt-16">
-		<div
-			class="inline-flex items-center gap-2 rounded-full border-2 border-amber-400 bg-amber-50 px-3 py-1 text-xs font-black tracking-wide text-amber-700 uppercase dark:border-amber-600 dark:bg-amber-950 dark:text-amber-400"
-		>
-			<Sparkles class="size-3.5" strokeWidth={3} />
-			Self-hosted media inventory
-		</div>
-
+<section class="flex min-h-[80vh] flex-col items-center px-4 pt-10 pb-16">
+	<div class="w-full max-w-2xl space-y-3 text-center">
 		<h1
-			class="text-4xl font-black tracking-tight text-stone-900 uppercase sm:text-5xl lg:text-6xl dark:text-amber-50"
+			class="text-5xl font-black tracking-tight text-stone-900 uppercase sm:text-6xl lg:text-7xl dark:text-amber-50"
 		>
-			Your personal catalog for movies, vinyl, and books
+			Media Club
 		</h1>
-
-		<p class="max-w-2xl text-lg leading-relaxed font-medium text-stone-700 dark:text-stone-300">
-			Media Club is a beautifully simple app for tracking your physical media collection. Browse
-			publicly, manage from an admin panel, and move wishlist items to your collection with one
-			click.
+		<p class="text-lg font-medium text-stone-700 sm:text-xl dark:text-stone-300">
+			Catalog your movies, vinyl, and books
 		</p>
-
-		<div class="flex flex-wrap gap-3 pt-4">
-			<a
-				href="/movies"
-				class="inline-flex items-center gap-2 rounded border-2 border-amber-500 bg-amber-400 px-6 py-3 text-sm font-black tracking-wide text-stone-900 uppercase transition-all hover:bg-amber-500"
-			>
-				Browse catalog
-				<ArrowRight class="size-4" strokeWidth={3} />
-			</a>
-			<a
-				href="/login"
-				class="inline-flex items-center gap-2 rounded border-2 border-stone-300 bg-white px-6 py-3 text-sm font-black tracking-wide text-stone-700 uppercase transition-all hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
-			>
-				Admin login
-			</a>
-		</div>
 	</div>
 
-	<!-- Features Grid -->
-	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-		{#each features as feature (feature.title)}
-			{@const Icon = feature.icon}
-			<article
-				class="group rounded border-2 border-stone-300 bg-white p-6 transition-all hover:-translate-y-1 dark:border-stone-700 dark:bg-stone-800"
-			>
-				<div
-					class="inline-flex rounded bg-amber-400 p-3 text-stone-900 transition-transform group-hover:scale-110"
-				>
-					<Icon class="size-5" strokeWidth={2.5} />
-				</div>
-				<h2 class="mt-4 font-black text-stone-900 uppercase dark:text-white">{feature.title}</h2>
-				<p class="mt-2 text-sm leading-relaxed font-medium text-stone-600 dark:text-stone-400">
-					{feature.description}
-				</p>
-			</article>
-		{/each}
-	</div>
-
-	<!-- Live Catalog Section -->
-	<div class="space-y-6">
-		<div>
+	<div class="relative mx-auto my-10 flex w-full max-w-6xl justify-center px-2">
+		<div class="relative flex shrink-0 flex-col items-center">
+			<!-- Desktop: decorative overlay left of disc — does not affect CD centering -->
 			<div
-				class="inline-flex items-center gap-2 text-xs font-black tracking-wider text-amber-600 uppercase dark:text-amber-400"
+				class="pointer-events-none absolute top-1/2 right-full hidden -translate-y-1/2 pr-5 lg:flex lg:flex-col lg:gap-3.5 xl:pr-7"
 			>
-				Live catalog
-			</div>
-			<h2 class="mt-2 text-3xl font-black text-stone-900 uppercase dark:text-white">
-				Browse this instance
-			</h2>
-			<p
-				class="mt-3 max-w-2xl text-sm leading-relaxed font-medium text-stone-700 dark:text-stone-400"
-			>
-				Each deployment maintains its own collection. These counts reflect what's stored on this
-				server right now.
-			</p>
-		</div>
-
-		<div class="grid gap-4 md:grid-cols-3">
-			{#each data.summary as row (row.category)}
-				{@const Icon = icons[row.category]}
-				<article
-					class="group rounded border-2 border-stone-300 bg-white p-6 transition-all hover:-translate-y-1 dark:border-stone-700 dark:bg-stone-800"
-				>
-					<div class="flex items-start gap-4">
-						<div class="rounded bg-amber-400 p-3 text-stone-900">
-							<Icon class="size-6" strokeWidth={2.5} />
-						</div>
-						<div class="min-w-0 flex-1">
-							<h3 class="text-lg font-black text-stone-900 uppercase dark:text-white">
-								{row.label}
-							</h3>
-							<p class="mt-1 text-sm font-bold text-stone-600 dark:text-stone-400">
-								{row.owned} owned · {row.wishlist} wishlist
-							</p>
-						</div>
-					</div>
-
-					<div class="mt-6 flex flex-wrap gap-2">
-						<a
-							href="/{row.category === 'movie'
-								? 'movies'
-								: row.category === 'music'
-									? 'music'
-									: 'books'}"
-							class="inline-flex items-center gap-1.5 rounded border-2 border-amber-500 bg-amber-400 px-3 py-2 text-sm font-black text-stone-900 uppercase transition-colors hover:bg-amber-500"
+				{#each data.summary as row (row.category)}
+					{@const Icon = icons[row.category]}
+					<a
+						href="/{row.category === 'movie' ? 'movies' : row.category === 'music' ? 'music' : 'books'}"
+						class="group pointer-events-auto flex flex-col items-center gap-1.5 transition-transform hover:-translate-y-0.5"
+					>
+						<span
+							class="flex size-14 flex-col items-center justify-center gap-0.5 rounded-full bg-amber-400/15 ring-2 ring-amber-400/60 transition-all group-hover:bg-amber-400/25 group-hover:ring-amber-500 xl:size-16"
 						>
-							Collection
-							<ArrowRight class="size-3.5" strokeWidth={3} />
-						</a>
-						<a
-							href="/wishlist/{row.category === 'movie' ? 'movies' : row.category}"
-							class="inline-flex items-center gap-1.5 rounded border-2 border-stone-300 bg-white px-3 py-2 text-sm font-bold text-stone-700 uppercase transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
+							<Icon size={18} weight="bold" class="text-amber-600 dark:text-amber-400" />
+							<span
+								class="text-sm font-black text-amber-500 group-hover:text-amber-600 xl:text-base"
+							>
+								{row.owned + row.wishlist}
+							</span>
+						</span>
+						<span
+							class="text-[0.65rem] font-bold tracking-wider text-stone-600 uppercase dark:text-stone-400 xl:text-xs"
 						>
-							<Heart class="size-3.5" strokeWidth={2.5} />
-							Wishlist
-						</a>
-					</div>
-				</article>
-			{/each}
-		</div>
-	</div>
+							{row.label}
+						</span>
+					</a>
+				{/each}
+			</div>
 
-	<!-- Getting Started Section -->
-	<div
-		class="rounded border-2 border-amber-400 bg-gradient-to-br from-amber-50 to-white p-8 md:p-10 dark:border-amber-600 dark:from-stone-900 dark:to-stone-800"
-	>
-		<div
-			class="inline-flex items-center gap-2 text-xs font-black tracking-wider text-amber-600 uppercase dark:text-amber-400"
-		>
-			Get started
-		</div>
-		<h2 class="mt-2 text-2xl font-black text-stone-900 uppercase dark:text-white">
-			Deploy your own Media Club
-		</h2>
-		<p
-			class="mt-3 max-w-2xl text-sm leading-relaxed font-medium text-stone-700 dark:text-stone-400"
-		>
-			Clone the repository, configure environment variables, run migrations, and seed your admin
-			account. Check
-			<code
-				class="rounded border-2 border-stone-300 bg-white px-2 py-0.5 font-bold text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
-				>README.md</code
+			<svg
+				class="cd-disc"
+				width="720"
+				height="720"
+				viewBox="0 0 520 520"
+				role="img"
+				aria-label="Media Club disc navigation"
+				onmouseenter={onCdMouseEnter}
+				onmouseleave={onCdMouseLeave}
+				onclick={onCdClick}
 			>
-			and
-			<code
-				class="rounded border-2 border-stone-300 bg-white px-2 py-0.5 font-bold text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
-				>docs/</code
-			>
-			for detailed setup guides.
-		</p>
-		<div class="mt-6 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-			<div
-				class="flex items-center gap-3 rounded border-2 border-stone-300 bg-white px-4 py-3 dark:border-stone-700 dark:bg-stone-800"
-			>
-				<div
-					class="flex size-6 items-center justify-center rounded-full bg-amber-400 text-xs font-black text-stone-900"
-				>
-					1
-				</div>
-				<span class="font-bold text-stone-900 uppercase dark:text-white">Install deps</span>
-			</div>
-			<div
-				class="flex items-center gap-3 rounded border-2 border-stone-300 bg-white px-4 py-3 dark:border-stone-700 dark:bg-stone-800"
-			>
-				<div
-					class="flex size-6 items-center justify-center rounded-full bg-amber-400 text-xs font-black text-stone-900"
-				>
-					2
-				</div>
-				<span class="font-bold text-stone-900 uppercase dark:text-white">Configure .env</span>
-			</div>
-			<div
-				class="flex items-center gap-3 rounded border-2 border-stone-300 bg-white px-4 py-3 dark:border-stone-700 dark:bg-stone-800"
-			>
-				<div
-					class="flex size-6 items-center justify-center rounded-full bg-amber-400 text-xs font-black text-stone-900"
-				>
-					3
-				</div>
-				<span class="font-bold text-stone-900 uppercase dark:text-white">Run migrate</span>
-			</div>
-			<div
-				class="flex items-center gap-3 rounded border-2 border-stone-300 bg-white px-4 py-3 dark:border-stone-700 dark:bg-stone-800"
-			>
-				<div
-					class="flex size-6 items-center justify-center rounded-full bg-amber-400 text-xs font-black text-stone-900"
-				>
-					4
-				</div>
-				<span class="font-bold text-stone-900 uppercase dark:text-white">Seed & start</span>
+			<defs>
+				<radialGradient id="cdSurface" cx="50%" cy="50%" r="50%">
+					<stop offset="0%" stop-color="rgb(252, 185, 0)" stop-opacity="0.12" />
+					<stop offset="55%" stop-color="rgb(252, 185, 0)" stop-opacity="0.22" />
+					<stop offset="100%" stop-color="rgb(252, 185, 0)" stop-opacity="0.32" />
+				</radialGradient>
+			</defs>
+
+			<g class="cd-spin" bind:this={cdSpinEl}>
+				<circle cx="260" cy="260" r="250" fill="url(#cdSurface)" pointer-events="none" />
+				{#each [230, 210, 190, 170, 150, 130, 110, 90] as radius, i (radius)}
+					<circle
+						cx="260"
+						cy="260"
+						r={radius}
+						fill="none"
+						stroke="currentColor"
+						stroke-width="0.75"
+						class="text-amber-500"
+						opacity={0.32 - i * 0.02}
+						pointer-events="none"
+					/>
+				{/each}
+				{#each Array.from({ length: 12 }, (_, i) => i * 30) as angle (angle)}
+					<line
+						x1="260"
+						y1="48"
+						x2="260"
+						y2="72"
+						stroke="currentColor"
+						stroke-width="1.5"
+						class="text-amber-500"
+						opacity="0.4"
+						transform="rotate({angle} 260 260)"
+						pointer-events="none"
+					/>
+				{/each}
+				<circle cx="260" cy="260" r="44" fill="rgb(var(--color-bg))" pointer-events="none" />
+				<circle
+					cx="260"
+					cy="260"
+					r="44"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					class="text-amber-500"
+					opacity="0.6"
+					pointer-events="none"
+				/>
+				<circle
+					cx="260"
+					cy="260"
+					r="24"
+					fill="currentColor"
+					class="text-amber-400"
+					opacity="0.9"
+					pointer-events="none"
+				/>
+
+				{#each cdNavButtons as btn (btn.href)}
+					{@const Icon = btn.icon}
+					{@const pos = cdNavPosition(btn.angle)}
+					<foreignObject
+						x={pos.x - CD_BTN_HALF}
+						y={pos.y - CD_BTN_HALF}
+						width={CD_BTN_SIZE}
+						height={CD_BTN_SIZE}
+						class="cd-nav-slot"
+					>
+						<a
+							href={btn.href}
+							class="cd-nav-btn cd-nav-btn--{btn.variant}"
+							aria-label={btn.label}
+							xmlns="http://www.w3.org/1999/xhtml"
+						>
+							<Icon size={24} weight="bold" />
+						</a>
+					</foreignObject>
+				{/each}
+			</g>
+			</svg>
+
+			<!-- Mobile: compact row below disc -->
+			<div class="mt-6 flex flex-wrap items-center justify-center gap-5 sm:gap-6 lg:hidden">
+				{#each data.summary as row (row.category)}
+					{@const Icon = icons[row.category]}
+					<a
+						href="/{row.category === 'movie' ? 'movies' : row.category === 'music' ? 'music' : 'books'}"
+						class="group flex flex-col items-center gap-1 transition-transform hover:-translate-y-0.5"
+					>
+						<span
+							class="flex size-12 flex-col items-center justify-center gap-0.5 rounded-full bg-amber-400/15 ring-2 ring-amber-400/60 transition-all group-hover:bg-amber-400/25 group-hover:ring-amber-500 sm:size-14"
+						>
+							<Icon size={16} weight="bold" class="text-amber-600 dark:text-amber-400" />
+							<span class="text-xs font-black text-amber-500 group-hover:text-amber-600 sm:text-sm">
+								{row.owned + row.wishlist}
+							</span>
+						</span>
+						<span
+							class="text-[0.6rem] font-bold tracking-wider text-stone-600 uppercase sm:text-[0.65rem] dark:text-stone-400"
+						>
+							{row.label}
+						</span>
+					</a>
+				{/each}
 			</div>
 		</div>
 	</div>
 </section>
+
+<style>
+	.cd-disc {
+		width: min(720px, 88vw);
+		height: min(720px, 88vw);
+		flex-shrink: 0;
+		opacity: 0.48;
+	}
+
+	:global([data-theme='dark']) .cd-disc {
+		opacity: 0.4;
+	}
+
+	.cd-spin {
+		transform-box: fill-box;
+		transform-origin: center;
+	}
+
+	.cd-nav-slot {
+		overflow: visible;
+	}
+
+	.cd-nav-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3.5rem;
+		height: 3.5rem;
+		border-radius: 9999px;
+		border-width: 2px;
+		border-style: solid;
+		transition:
+			transform 0.2s ease,
+			background-color 0.2s ease,
+			border-color 0.2s ease;
+	}
+
+	.cd-nav-btn:hover {
+		transform: scale(1.08);
+	}
+
+	.cd-nav-btn--primary {
+		border-color: rgb(245 158 11);
+		background-color: rgb(251 191 36);
+		color: rgb(28 25 23);
+	}
+
+	.cd-nav-btn--primary:hover {
+		background-color: rgb(245 158 11);
+	}
+
+	.cd-nav-btn--secondary {
+		border-color: rgb(214 211 209);
+		background-color: rgb(255 255 255);
+		color: rgb(68 64 60);
+	}
+
+	.cd-nav-btn--secondary:hover {
+		background-color: rgb(250 250 249);
+	}
+
+	:global([data-theme='dark']) .cd-nav-btn--secondary {
+		border-color: rgb(87 83 78);
+		background-color: rgb(41 37 36);
+		color: rgb(214 211 209);
+	}
+
+	:global([data-theme='dark']) .cd-nav-btn--secondary:hover {
+		background-color: rgb(68 64 60);
+	}
+</style>

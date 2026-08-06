@@ -43,7 +43,7 @@
 
 	{#if filteredItems.length === 0}
 		<div
-			class="rounded border-2 border-dashed border-stone-300 bg-stone-50 px-6 py-16 text-center dark:border-stone-700 dark:bg-stone-900"
+			class="surface-round border-dashed px-6 py-16 text-center"
 		>
 			<h2 class="text-lg font-black text-stone-900 uppercase dark:text-white">{emptyTitle}</h2>
 			<p class="mt-2 text-sm font-medium text-stone-600 dark:text-stone-400">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Plus, Search, Clock } from '@lucide/svelte';
+	import { Plus, MagnifyingGlass, Clock } from 'phosphor-svelte';
 
 	let { data } = $props();
 </script>
@@ -12,32 +12,29 @@
 	<div class="flex flex-wrap items-end justify-between gap-4">
 		<div>
 			<div
-				class="inline-flex items-center gap-2 text-xs font-black tracking-wider text-amber-600 uppercase dark:text-amber-400"
+				class="inline-flex items-center gap-2 rounded-full bg-amber-400/15 px-3 py-1 text-xs font-black tracking-wider text-amber-700 uppercase dark:text-amber-400"
 			>
 				Admin Panel
 			</div>
-			<h1 class="mt-1 text-3xl font-black text-stone-900 uppercase dark:text-amber-50">
+			<h1 class="mt-3 text-3xl font-black text-stone-900 uppercase dark:text-amber-50">
 				Welcome, {data.user?.username}
 			</h1>
 			<p class="mt-2 text-sm font-medium text-stone-700 dark:text-stone-300">
-				Add items from metadata APIs, manage notes, or move wishlist items into your collection.
+				Add items from metadata APIs, manage notes, or move wishlist items into the collection.
 			</p>
 		</div>
 
-		<a
-			href="/admin/search"
-			class="inline-flex items-center gap-2 rounded border-2 border-amber-500 bg-amber-400 px-5 py-2.5 text-sm font-black tracking-wide text-stone-900 uppercase transition-all hover:bg-amber-500"
-		>
-			<Plus class="size-4" strokeWidth={3} />
+		<a href="/admin/search" class="btn-primary px-5 py-2.5 text-sm">
+			<Plus size={16} weight="bold" />
 			Add from search
 		</a>
 	</div>
 
-	<div
-		class="rounded border-2 border-stone-300 bg-white p-6 dark:border-stone-700 dark:bg-stone-800"
-	>
+	<div class="surface-round p-6">
 		<div class="flex items-center gap-2">
-			<Clock class="size-5 text-stone-600 dark:text-stone-400" strokeWidth={2.5} />
+			<span class="flex size-10 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-900">
+				<Clock size={20} weight="bold" class="text-stone-600 dark:text-stone-400" />
+			</span>
 			<h2 class="text-lg font-black text-stone-900 uppercase dark:text-amber-50">Recent changes</h2>
 		</div>
 		{#if data.recent.length === 0}
@@ -45,10 +42,10 @@
 				No items yet. Use search to add your first entry.
 			</p>
 		{:else}
-			<ul class="mt-4 space-y-3">
+			<ul class="mt-4 space-y-2">
 				{#each data.recent as item (item.id)}
 					<li
-						class="flex items-center justify-between gap-4 border-b-2 border-stone-100 pb-3 last:border-0 last:pb-0 dark:border-stone-700"
+						class="flex items-center justify-between gap-4 rounded-[2rem] bg-stone-50 px-4 py-3 dark:bg-stone-900/50"
 					>
 						<div class="min-w-0 flex-1">
 							<p class="truncate font-bold text-stone-900 dark:text-amber-50">{item.title}</p>
@@ -69,9 +66,9 @@
 
 	<a
 		href="/admin/search"
-		class="inline-flex items-center gap-2 text-sm font-bold text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+		class="pill-nav text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-stone-800"
 	>
-		<Search class="size-4" strokeWidth={2.5} />
+		<MagnifyingGlass size={16} weight="bold" />
 		Open search panel
 	</a>
 </section>
