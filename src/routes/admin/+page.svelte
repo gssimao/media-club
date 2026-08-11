@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PageShell from '$lib/components/PageShell.svelte';
 	import { Plus, MagnifyingGlass, Clock } from 'phosphor-svelte';
 
 	let { data } = $props();
@@ -8,27 +9,24 @@
 	<title>Admin · Media Club</title>
 </svelte:head>
 
-<section class="space-y-8">
-	<div class="flex flex-wrap items-end justify-between gap-4">
-		<div>
-			<div
-				class="inline-flex items-center gap-2 rounded-full bg-amber-400/15 px-3 py-1 text-xs font-black tracking-wider text-amber-700 uppercase dark:text-amber-400"
-			>
-				Admin Panel
-			</div>
-			<h1 class="mt-3 text-3xl font-black text-stone-900 uppercase dark:text-amber-50">
-				Welcome, {data.user?.username}
-			</h1>
-			<p class="mt-2 text-sm font-medium text-stone-700 dark:text-stone-300">
-				Add items from metadata APIs, manage notes, or move wishlist items into the collection.
-			</p>
-		</div>
-
+<PageShell
+	title="Admin"
+	description="Welcome, {data.user?.username}. Add items from metadata APIs, manage notes, or move wishlist items into the collection."
+>
+	{#snippet controls()}
 		<a href="/admin/search" class="btn-primary px-5 py-2.5 text-sm">
 			<Plus size={16} weight="bold" />
 			Add from search
 		</a>
-	</div>
+
+		<a
+			href="/admin/search"
+			class="pill-nav text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-stone-800"
+		>
+			<MagnifyingGlass size={16} weight="bold" />
+			Open search panel
+		</a>
+	{/snippet}
 
 	<div class="surface-round p-6">
 		<div class="flex items-center gap-2">
@@ -63,12 +61,4 @@
 			</ul>
 		{/if}
 	</div>
-
-	<a
-		href="/admin/search"
-		class="pill-nav text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-stone-800"
-	>
-		<MagnifyingGlass size={16} weight="bold" />
-		Open search panel
-	</a>
-</section>
+</PageShell>

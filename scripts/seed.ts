@@ -43,8 +43,8 @@ if (existingItems.count === 0) {
 			subtitle: null,
 			year: 1999,
 			coverUrl: 'https://image.tmdb.org/t/p/w342/pB8BM7pd15eBHgkQ5P/mk3m65IVh.jpg',
-			metadata: JSON.stringify({ tmdbId: 550 }),
-			notes: 'DVD'
+			metadata: JSON.stringify({ tmdbId: 550, tags: ['DVD'] }),
+			notes: null
 		},
 		{
 			category: 'movie',
@@ -65,8 +65,8 @@ if (existingItems.count === 0) {
 			subtitle: 'J.R.R. Tolkien',
 			year: 1937,
 			coverUrl: 'https://covers.openlibrary.org/b/id/14627567-M.jpg',
-			metadata: JSON.stringify({ workKey: '/works/OL45804W' }),
-			notes: 'Hardcover'
+			metadata: JSON.stringify({ workKey: '/works/OL45804W', tags: ['Hardcover'] }),
+			notes: null
 		},
 		{
 			category: 'music',
@@ -76,8 +76,8 @@ if (existingItems.count === 0) {
 			subtitle: null,
 			year: 2001,
 			coverUrl: null,
-			metadata: JSON.stringify({ discogsId: 249504 }),
-			notes: 'Vinyl'
+			metadata: JSON.stringify({ discogsId: 249504, tags: ['Vinyl'] }),
+			notes: null
 		}
 	]);
 }

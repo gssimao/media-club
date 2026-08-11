@@ -1,6 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { items } from '$lib/server/db/schema';
+import { isFormatLikeNote } from '$lib/utils/format-tags';
 import type { ListType, MediaCategory, SearchResult } from '$lib/types/media';
 
 function parseMetadata(value: string | null): Record<string, unknown> | null {
@@ -81,6 +82,30 @@ export async function addItem(
 
 export async function updateItemNotes(db: AppDatabase, id: string, notes: string | null) {
 	await db.update(items).set({ notes, updatedAt: new Date() }).where(eq(items.id, id));
+}
+
+export async function updateItemTags(db: AppDatabase, id: string, tags: string[]) {
+	const rows = await db.select().from(items).where(eq(items.id, id)).limit(1);
+	const item = rows[0];
+	if (!item) return;
+
+	let metadata: Record<string, unknown> = {};
+	if (item.metadata) {
+		try {
+			metadata = JSON.parse(item.metadata) as Record<string, unknown>;
+		} catch {
+			metadata = {};
+		}
+	}
+
+	metadata.tags = tags;
+
+	const notes = isFormatLikeNote(item.notes) ? null : item.notes;
+
+	await db
+		.update(items)
+		.set({ metadata: JSON.stringify(metadata), notes, updatedAt: new Date() })
+		.where(eq(items.id, id));
 }
 
 export async function deleteItem(db: AppDatabase, id: string) {

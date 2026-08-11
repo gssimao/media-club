@@ -69,14 +69,12 @@
 	const activeItem = $derived(navItems[activeIndex] ?? navItems[0]);
 	const ActiveIcon = $derived(activeItem.icon);
 
-	/** Bottom-center slot in rotate-then-translate coords (0° = 6 o'clock). */
+	/** Bottom-center selector slot (0° = 6 o'clock). */
 	const SELECTOR = 0;
-	/** Inner arc where nav icon centers sit (fraction of --dial-r). Matches outer groove. */
-	const NODE_R_RATIO = 0.82;
-	const ARC_START = -68;
-	const ARC_END = 68;
+	/** Nav icons sit on the outer groove ring. */
+	const NODE_R_RATIO = 0.88;
 
-	const grooveRadii = [0.82, 0.62, 0.44] as const;
+	const grooveRadii = [0.88, 0.68, 0.48] as const;
 	const tickAngles = [0, 45, 90, 135, 180, 225, 270, 315] as const;
 
 	let dialRoot = $state<HTMLElement | null>(null);
@@ -88,11 +86,12 @@
 	/** Fraction of dial radius — pointer inside gets slight sensitivity boost. */
 	const CENTER_BOOST_THRESHOLD = 0.45;
 	const CENTER_BOOST_MAX = 1.2;
+	const DIAL_SNAP_MS = 450;
 
 	const itemAngles = $derived(
 		navItems.map((_, i) => {
 			if (navItems.length === 1) return SELECTOR;
-			return ARC_START + (i / (navItems.length - 1)) * (ARC_END - ARC_START);
+			return (360 / navItems.length) * i;
 		})
 	);
 
@@ -169,7 +168,7 @@
 			animating = false;
 			const item = navItems[index];
 			if (item && item.href !== pathname) void goto(item.href);
-		}, 360);
+		}, DIAL_SNAP_MS);
 	}
 
 	function onPointerDown(event: PointerEvent) {
@@ -226,16 +225,16 @@
 				aria-label="Toggle theme"
 			>
 				{#if theme.current === 'dark'}
-					<Sun size={14} weight="bold" />
+					<Sun size={16} weight="bold" />
 				{:else}
-					<Moon size={14} weight="bold" />
+					<Moon size={16} weight="bold" />
 				{/if}
 			</button>
 
 			{#if user}
 				<form method="POST" action="/logout">
 					<button type="submit" class="header-action-btn" aria-label="Log out">
-						<SignOut size={14} weight="bold" />
+						<SignOut size={16} weight="bold" />
 					</button>
 				</form>
 			{/if}
@@ -307,18 +306,23 @@
 							class="dial-node"
 							class:is-active={active}
 							class:is-preview={preview && (dragging || animating)}
-							style="transform: rotate({angle}deg) translateY(calc(var(--dial-r) * {NODE_R_RATIO})) rotate({-angle - rotation}deg)"
+							style="transform: rotate({angle}deg) translateY(calc(var(--dial-r) * {NODE_R_RATIO}))"
 							aria-current={active ? 'page' : undefined}
 							aria-label={item.label}
 							disabled={animating}
 							onclick={(event) => onNodeClick(event, i)}
 						>
-							<span class="dial-node-button">
-								<Icon size={16} weight="bold" />
+							<span
+								class="dial-node-inner"
+								style="transform: rotate({-angle - rotation}deg)"
+							>
+								<span class="dial-node-button">
+									<Icon size={22} weight="bold" />
+								</span>
+								{#if active || (preview && (dragging || animating))}
+									<span class="dial-node-label">{item.label}</span>
+								{/if}
 							</span>
-							{#if active || (preview && (dragging || animating))}
-								<span class="dial-node-label">{item.label}</span>
-							{/if}
 						</button>
 					{/each}
 				</div>
@@ -327,9 +331,9 @@
 					<a href={previewItem.href} class="dial-center-slot" aria-current="page">
 						<span class="dial-center-disc" class:is-preview={dragging || animating}>
 							{#if dragging || animating}
-								<PreviewIcon size={22} weight="bold" />
+								<PreviewIcon size={28} weight="bold" />
 							{:else}
-								<ActiveIcon size={22} weight="bold" />
+								<ActiveIcon size={28} weight="bold" />
 							{/if}
 						</span>
 						<span class="dial-center-label">
@@ -344,10 +348,10 @@
 
 <style>
 	.site-header {
-		--dial-r: clamp(4.5rem, 16vw, 6.5rem);
+		--dial-r: var(--nav-dial-r);
 		position: fixed;
-		top: 0.65rem;
-		left: 0.65rem;
+		top: var(--nav-dial-inset);
+		left: var(--nav-dial-inset);
 		z-index: 50;
 		pointer-events: none;
 	}
@@ -357,20 +361,21 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 0.2rem;
+		gap: var(--nav-dial-stack-gap);
 	}
 
 	.header-actions {
 		display: flex;
 		align-self: flex-end;
-		gap: 0.25rem;
+		gap: 0.35rem;
 		margin-right: 0.15rem;
+		min-height: var(--nav-dial-actions-h);
 	}
 
 	.header-action-btn {
 		display: inline-flex;
-		width: 1.65rem;
-		height: 1.65rem;
+		width: var(--nav-dial-actions-h);
+		height: var(--nav-dial-actions-h);
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
@@ -388,12 +393,16 @@
 
 	.nav-dial-panel {
 		overflow: visible;
+		width: var(--nav-dial-size);
+		height: var(--nav-dial-size);
 	}
 
 	.nav-dial {
+		--dial-snap-duration: 450ms;
+		--dial-snap-easing: cubic-bezier(0.45, 0, 0.55, 1);
 		position: relative;
-		width: calc(var(--dial-r) * 2);
-		height: calc(var(--dial-r) * 2);
+		width: var(--nav-dial-size);
+		height: var(--nav-dial-size);
 		touch-action: none;
 		user-select: none;
 		cursor: grab;
@@ -450,15 +459,15 @@
 
 	.selector-line {
 		display: block;
-		width: 2px;
-		height: 1.25rem;
+		width: 3px;
+		height: 1.75rem;
 		border-radius: 9999px;
 		background: linear-gradient(
 			0deg,
 			rgb(var(--color-accent)) 0%,
 			rgb(var(--color-accent) / 0.12) 100%
 		);
-		box-shadow: 0 0 6px rgb(var(--color-accent) / 0.4);
+		box-shadow: 0 0 8px rgb(var(--color-accent) / 0.45);
 	}
 
 	.dial-rotator {
@@ -466,7 +475,7 @@
 		inset: 0;
 		z-index: 2;
 		transform-origin: var(--dial-r) var(--dial-r);
-		transition: transform 0.36s cubic-bezier(0.34, 1.25, 0.64, 1);
+		transition: transform var(--dial-snap-duration) var(--dial-snap-easing);
 	}
 
 	.nav-dial.is-dragging .dial-rotator,
@@ -474,7 +483,8 @@
 		cursor: grabbing;
 	}
 
-	.nav-dial.is-dragging .dial-rotator {
+	.nav-dial.is-dragging .dial-rotator,
+	.nav-dial.is-dragging .dial-node-inner {
 		transition: none;
 	}
 
@@ -498,11 +508,20 @@
 		color: inherit;
 	}
 
+	.dial-node-inner {
+		position: relative;
+		display: block;
+		width: 0;
+		height: 0;
+		transform-origin: 0 0;
+		transition: transform var(--dial-snap-duration) var(--dial-snap-easing);
+	}
+
 	.dial-node.is-active .dial-node-button {
-		opacity: 0.42;
+		opacity: 0.38;
 		border-color: rgb(var(--color-accent) / 0.45);
 		background: rgb(var(--color-surface-raised) / 0.65);
-		transform: scale(0.9);
+		transform: scale(0.92);
 		box-shadow: none;
 	}
 
@@ -510,26 +529,26 @@
 		border-color: rgb(var(--color-accent));
 		background: rgb(var(--color-accent) / 0.25);
 		color: rgb(var(--color-accent-hover));
-		transform: scale(1.08);
-		box-shadow: 0 0 12px rgb(var(--color-accent) / 0.45);
+		transform: scale(1.1);
+		box-shadow: 0 0 14px rgb(var(--color-accent) / 0.5);
 	}
 
 	.dial-node-button {
 		position: absolute;
-		left: -1rem;
-		top: -1rem;
+		left: -1.5rem;
+		top: -1.5rem;
 		display: inline-flex;
-		width: 2rem;
-		height: 2rem;
+		width: 3rem;
+		height: 3rem;
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
 		border: 2px solid rgb(var(--color-border));
 		background: rgb(var(--color-surface-raised) / 0.94);
 		color: rgb(var(--color-text-secondary));
-		box-shadow: 0 3px 10px rgb(0 0 0 / 0.14);
+		box-shadow: 0 4px 12px rgb(0 0 0 / 0.16);
 		transition:
-			transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1),
+			transform var(--dial-snap-duration) var(--dial-snap-easing),
 			background-color 0.2s ease,
 			border-color 0.2s ease,
 			color 0.2s ease,
@@ -539,12 +558,12 @@
 
 	.dial-node-label {
 		position: absolute;
-		top: 1.1rem;
+		top: 1.55rem;
 		left: 50%;
 		width: max-content;
-		max-width: 4.5rem;
+		max-width: 5rem;
 		transform: translateX(-50%);
-		font-size: 0.5rem;
+		font-size: 0.55rem;
 		font-weight: 800;
 		line-height: 1.1;
 		text-transform: uppercase;
@@ -565,7 +584,7 @@
 		border-color: rgb(var(--color-accent));
 		background: rgb(var(--color-accent));
 		color: rgb(40 35 28);
-		transform: scale(1.06);
+		transform: scale(1.08);
 		opacity: 1;
 	}
 
@@ -577,7 +596,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.1rem;
+		gap: 0.12rem;
 		transform: translate(-50%, -50%);
 		cursor: default;
 	}
@@ -586,13 +605,13 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.12rem;
+		gap: 0.15rem;
 	}
 
 	.dial-center-disc {
 		display: inline-flex;
-		width: 3rem;
-		height: 3rem;
+		width: 4rem;
+		height: 4rem;
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
@@ -600,22 +619,22 @@
 		background: rgb(var(--color-accent));
 		color: rgb(40 35 28);
 		box-shadow:
-			0 0 0 3px rgb(var(--color-accent) / 0.16),
-			0 6px 18px rgb(var(--color-accent) / 0.38);
+			0 0 0 4px rgb(var(--color-accent) / 0.16),
+			0 8px 22px rgb(var(--color-accent) / 0.38);
 		transition:
-			transform 0.36s cubic-bezier(0.34, 1.25, 0.64, 1),
-			box-shadow 0.25s ease;
+			transform var(--dial-snap-duration) var(--dial-snap-easing),
+			box-shadow var(--dial-snap-duration) var(--dial-snap-easing);
 	}
 
 	.dial-center-disc.is-preview {
 		transform: scale(1.06);
 		box-shadow:
-			0 0 0 4px rgb(var(--color-accent) / 0.24),
-			0 8px 22px rgb(var(--color-accent) / 0.48);
+			0 0 0 5px rgb(var(--color-accent) / 0.24),
+			0 10px 26px rgb(var(--color-accent) / 0.48);
 	}
 
 	.dial-center-label {
-		font-size: 0.55rem;
+		font-size: 0.6rem;
 		font-weight: 900;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -623,22 +642,16 @@
 	}
 
 	@media (min-width: 768px) {
-		.site-header {
-			--dial-r: clamp(5rem, 12vw, 7rem);
-			top: 0.75rem;
-			left: 0.75rem;
-		}
-
 		.dial-node-button {
-			width: 2.15rem;
-			height: 2.15rem;
-			left: -1.075rem;
-			top: -1.075rem;
+			width: 3.25rem;
+			height: 3.25rem;
+			left: -1.625rem;
+			top: -1.625rem;
 		}
 
 		.dial-center-disc {
-			width: 3.15rem;
-			height: 3.15rem;
+			width: 4.25rem;
+			height: 4.25rem;
 		}
 	}
 </style>

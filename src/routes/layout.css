@@ -18,6 +18,18 @@
 		--color-accent-light: 255 248 220;
 		--color-secondary: 0 83 155;
 		--color-secondary-hover: 0 60 120;
+
+		/* Fixed nav dial footprint — keep in sync with SiteHeader.svelte */
+		--nav-dial-r: clamp(5.5rem, 20vw, 8.5rem);
+		--nav-dial-inset: 0.65rem;
+		--nav-dial-actions-h: 1.65rem;
+		--nav-dial-stack-gap: 0.2rem;
+		--nav-dial-size: calc(var(--nav-dial-r) * 2);
+		--nav-dial-reserve-w: calc(var(--nav-dial-size) + var(--nav-dial-inset) * 2 + 0.75rem);
+		--nav-dial-reserve-h: calc(
+			var(--nav-dial-inset) + var(--nav-dial-actions-h) + var(--nav-dial-stack-gap) +
+				var(--nav-dial-size) + 0.5rem
+		);
 	}
 
 	[data-theme='dark'] {
@@ -96,5 +108,18 @@
 
 	.pill-nav {
 		@apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold tracking-wide uppercase transition-all;
+	}
+
+	.app-main--shell {
+		padding-left: 0;
+		padding-top: 0;
+	}
+}
+
+@media (min-width: 768px) {
+	:root {
+		--nav-dial-r: clamp(6.5rem, 14vw, 9rem);
+		--nav-dial-inset: 0.75rem;
+		--nav-dial-actions-h: 1.75rem;
 	}
 }

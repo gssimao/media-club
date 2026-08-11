@@ -5,9 +5,15 @@
 	let { data, children } = $props();
 </script>
 
-<SiteHeader user={data.user} pathname={data.pathname} />
+{#if data.pathname !== '/'}
+	<SiteHeader user={data.user} pathname={data.pathname} />
+{/if}
 
-<main class="mx-auto max-w-7xl px-4 pb-8 pt-2 sm:px-6 lg:px-8">
+<main
+	class="pb-8 {data.pathname === '/'
+		? 'mx-auto max-w-7xl px-4 pt-2 sm:px-6 lg:px-8'
+		: 'app-main--shell w-full max-w-none pr-4 sm:pr-6 lg:pr-8'}"
+>
 	{@render children()}
 </main>
 

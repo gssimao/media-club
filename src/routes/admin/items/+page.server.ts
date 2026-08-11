@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { addItem, deleteItem, moveToOwned, updateItemNotes } from '$lib/server/items';
+import { addItem, deleteItem, moveToOwned, updateItemNotes, updateItemTags } from '$lib/server/items';
 import { isListType, isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
 
@@ -84,6 +84,27 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await updateItemNotes(locals.db, id, notes || null);
+		return { success: true };
+	},
+
+	updateTags: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		const tagsRaw = String(form.get('tags') ?? '[]');
+		if (!id) return fail(400, { message: 'Missing item id.' });
+
+		let tags: string[] = [];
+		try {
+			const parsed = JSON.parse(tagsRaw) as unknown;
+			if (Array.isArray(parsed)) {
+				tags = parsed.filter((t): t is string => typeof t === 'string');
+			}
+		} catch {
+			return fail(400, { message: 'Invalid tags payload.' });
+		}
+
+		await updateItemTags(locals.db, id, tags);
 		return { success: true };
 	}
 };

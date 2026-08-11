@@ -1,5 +1,18 @@
 <script lang="ts">
-	import { BookOpen, FilmStrip, SignIn, VinylRecord } from 'phosphor-svelte';
+	import {
+		BookOpen,
+		FilmStrip,
+		Gear,
+		Heart,
+		House,
+		Moon,
+		SignIn,
+		SignOut,
+		Sun,
+		VinylRecord
+	} from 'phosphor-svelte';
+	import { theme } from '$lib/stores/theme.svelte';
+	import type { Component } from 'svelte';
 
 	let { data } = $props();
 
@@ -19,10 +32,34 @@
 	const NORMAL_PLAYBACK_RATE = 1;
 	const RATE_TWEEN_MS = 1500;
 
-	const cdNavButtons = [
-		{ href: '/movies', label: 'Browse', icon: FilmStrip, variant: 'primary' as const, angle: 0 },
-		{ href: '/login', label: 'Admin', icon: SignIn, variant: 'secondary' as const, angle: 180 }
+	type CdNavButton = {
+		href: string;
+		label: string;
+		icon: Component<{ size?: number; weight?: 'bold' | 'regular' | 'fill' }>;
+		variant: 'primary' | 'secondary';
+		angle: number;
+	};
+
+	const catalogNav = [
+		{ href: '/', label: 'Home', icon: House },
+		{ href: '/movies', label: 'Movies', icon: FilmStrip },
+		{ href: '/music', label: 'Music', icon: VinylRecord },
+		{ href: '/books', label: 'Books', icon: BookOpen },
+		{ href: '/wishlist/movies', label: 'Wishlist', icon: Heart }
 	] as const;
+
+	const cdNavButtons = $derived.by((): CdNavButton[] => {
+		const items = data.user
+			? [...catalogNav, { href: '/admin', label: 'Admin', icon: Gear }]
+			: [...catalogNav, { href: '/login', label: 'Log in', icon: SignIn }];
+		const count = items.length;
+
+		return items.map((item, i) => ({
+			...item,
+			variant: item.href === '/' ? ('primary' as const) : ('secondary' as const),
+			angle: (360 / count) * i
+		}));
+	});
 
 	let cdSpinEl = $state<SVGGElement | undefined>(undefined);
 
@@ -146,6 +183,29 @@
 	<meta name="description" content="Self-hosted media catalog for movies, vinyl, and books." />
 </svelte:head>
 
+<div class="home-actions">
+	<button
+		type="button"
+		class="home-action-btn"
+		onclick={() => theme.toggle()}
+		aria-label="Toggle theme"
+	>
+		{#if theme.current === 'dark'}
+			<Sun size={16} weight="bold" />
+		{:else}
+			<Moon size={16} weight="bold" />
+		{/if}
+	</button>
+
+	{#if data.user}
+		<form method="POST" action="/logout">
+			<button type="submit" class="home-action-btn" aria-label="Log out">
+				<SignOut size={16} weight="bold" />
+			</button>
+		</form>
+	{/if}
+</div>
+
 <section class="flex min-h-[80vh] flex-col items-center px-4 pt-10 pb-16">
 	<div class="w-full max-w-2xl space-y-3 text-center">
 		<h1
@@ -158,7 +218,11 @@
 		</p>
 	</div>
 
-	<div class="relative mx-auto my-10 flex w-full max-w-6xl justify-center px-2">
+	<div class="relative mx-auto my-10 flex w-full max-w-6xl flex-col items-center px-2">
+		<p class="mb-5 text-sm font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
+			Hover or click to slow disc
+		</p>
+
 		<div class="relative flex shrink-0 flex-col items-center">
 			<!-- Desktop: decorative overlay left of disc — does not affect CD centering -->
 			<div
@@ -200,86 +264,87 @@
 				onmouseleave={onCdMouseLeave}
 				onclick={onCdClick}
 			>
-			<defs>
-				<radialGradient id="cdSurface" cx="50%" cy="50%" r="50%">
-					<stop offset="0%" stop-color="rgb(252, 185, 0)" stop-opacity="0.12" />
-					<stop offset="55%" stop-color="rgb(252, 185, 0)" stop-opacity="0.22" />
-					<stop offset="100%" stop-color="rgb(252, 185, 0)" stop-opacity="0.32" />
-				</radialGradient>
-			</defs>
+				<defs>
+					<radialGradient id="cdSurface" cx="50%" cy="50%" r="50%">
+						<stop offset="0%" stop-color="rgb(252, 185, 0)" stop-opacity="0.12" />
+						<stop offset="55%" stop-color="rgb(252, 185, 0)" stop-opacity="0.22" />
+						<stop offset="100%" stop-color="rgb(252, 185, 0)" stop-opacity="0.32" />
+					</radialGradient>
+				</defs>
 
-			<g class="cd-spin" bind:this={cdSpinEl}>
-				<circle cx="260" cy="260" r="250" fill="url(#cdSurface)" pointer-events="none" />
-				{#each [230, 210, 190, 170, 150, 130, 110, 90] as radius, i (radius)}
+				<g class="cd-spin" bind:this={cdSpinEl}>
+					<circle cx="260" cy="260" r="250" fill="url(#cdSurface)" pointer-events="none" />
+					{#each [230, 210, 190, 170, 150, 130, 110, 90] as radius, i (radius)}
+						<circle
+							cx="260"
+							cy="260"
+							r={radius}
+							fill="none"
+							stroke="currentColor"
+							stroke-width="0.75"
+							class="text-amber-500"
+							opacity={0.32 - i * 0.02}
+							pointer-events="none"
+						/>
+					{/each}
+					{#each Array.from({ length: 12 }, (_, i) => i * 30) as angle (angle)}
+						<line
+							x1="260"
+							y1="48"
+							x2="260"
+							y2="72"
+							stroke="currentColor"
+							stroke-width="1.5"
+							class="text-amber-500"
+							opacity="0.4"
+							transform="rotate({angle} 260 260)"
+							pointer-events="none"
+						/>
+					{/each}
+					<circle cx="260" cy="260" r="44" fill="rgb(var(--color-bg))" pointer-events="none" />
 					<circle
 						cx="260"
 						cy="260"
-						r={radius}
+						r="44"
 						fill="none"
 						stroke="currentColor"
-						stroke-width="0.75"
+						stroke-width="2"
 						class="text-amber-500"
-						opacity={0.32 - i * 0.02}
+						opacity="0.6"
 						pointer-events="none"
 					/>
-				{/each}
-				{#each Array.from({ length: 12 }, (_, i) => i * 30) as angle (angle)}
-					<line
-						x1="260"
-						y1="48"
-						x2="260"
-						y2="72"
-						stroke="currentColor"
-						stroke-width="1.5"
-						class="text-amber-500"
-						opacity="0.4"
-						transform="rotate({angle} 260 260)"
+					<circle
+						cx="260"
+						cy="260"
+						r="24"
+						fill="currentColor"
+						class="text-amber-400"
+						opacity="0.9"
 						pointer-events="none"
 					/>
-				{/each}
-				<circle cx="260" cy="260" r="44" fill="rgb(var(--color-bg))" pointer-events="none" />
-				<circle
-					cx="260"
-					cy="260"
-					r="44"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					class="text-amber-500"
-					opacity="0.6"
-					pointer-events="none"
-				/>
-				<circle
-					cx="260"
-					cy="260"
-					r="24"
-					fill="currentColor"
-					class="text-amber-400"
-					opacity="0.9"
-					pointer-events="none"
-				/>
 
-				{#each cdNavButtons as btn (btn.href)}
-					{@const Icon = btn.icon}
-					{@const pos = cdNavPosition(btn.angle)}
-					<foreignObject
-						x={pos.x - CD_BTN_HALF}
-						y={pos.y - CD_BTN_HALF}
-						width={CD_BTN_SIZE}
-						height={CD_BTN_SIZE}
-						class="cd-nav-slot"
-					>
-						<a
-							href={btn.href}
-							class="cd-nav-btn cd-nav-btn--{btn.variant}"
-							aria-label={btn.label}
-							xmlns="http://www.w3.org/1999/xhtml"
+					{#each cdNavButtons as btn (btn.href)}
+						{@const Icon = btn.icon}
+						{@const pos = cdNavPosition(btn.angle)}
+						<foreignObject
+							x={pos.x - CD_BTN_HALF}
+							y={pos.y - CD_BTN_HALF}
+							width={CD_BTN_SIZE}
+							height={CD_BTN_SIZE}
+							class="cd-nav-slot"
 						>
-							<Icon size={24} weight="bold" />
-						</a>
-					</foreignObject>
-				{/each}
-			</g>
+							<a
+								href={btn.href}
+								class="cd-nav-btn cd-nav-btn--{btn.variant}"
+								aria-label={btn.label}
+								title={btn.label}
+								xmlns="http://www.w3.org/1999/xhtml"
+							>
+								<Icon size={22} weight="bold" />
+							</a>
+						</foreignObject>
+					{/each}
+				</g>
 			</svg>
 
 			<!-- Mobile: compact row below disc -->
@@ -311,11 +376,40 @@
 </section>
 
 <style>
+	.home-actions {
+		position: fixed;
+		top: 0.75rem;
+		right: 0.75rem;
+		z-index: 50;
+		display: flex;
+		gap: 0.35rem;
+	}
+
+	.home-action-btn {
+		display: inline-flex;
+		width: 2.25rem;
+		height: 2.25rem;
+		align-items: center;
+		justify-content: center;
+		border-radius: 9999px;
+		border: 1px solid rgb(var(--color-border));
+		background: rgb(var(--color-surface-raised) / 0.92);
+		color: rgb(var(--color-text-secondary));
+		cursor: pointer;
+		backdrop-filter: blur(6px);
+	}
+
+	.home-action-btn:hover {
+		border-color: rgb(var(--color-accent));
+		color: rgb(var(--color-text));
+	}
+
 	.cd-disc {
 		width: min(720px, 88vw);
 		height: min(720px, 88vw);
 		flex-shrink: 0;
 		opacity: 0.48;
+		cursor: pointer;
 	}
 
 	:global([data-theme='dark']) .cd-disc {
