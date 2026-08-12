@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { MediaItem } from '$lib/types/media';
+	import AssignAlbumControl from './AssignAlbumControl.svelte';
+	import type { Album, MediaItem } from '$lib/types/media';
 	import {
 		FORMAT_TAG_PRESETS,
 		getDisplayNotes,
@@ -11,9 +12,10 @@
 	interface Props {
 		item: MediaItem;
 		isAdmin: boolean;
+		albums?: Album[];
 	}
 
-	let { item, isAdmin }: Props = $props();
+	let { item, isAdmin, albums = [] }: Props = $props();
 
 	const label = $derived(item.year ? `${item.title} (${item.year})` : item.title);
 	const displayTags = $derived(getDisplayTags(item));
@@ -132,6 +134,10 @@
 				{/each}
 			{/if}
 		</div>
+	{/if}
+
+	{#if isAdmin && item.listType === 'owned' && albums.length > 0}
+		<AssignAlbumControl itemId={item.id} albumId={item.albumId} {albums} />
 	{/if}
 
 	{#if displayNotes}

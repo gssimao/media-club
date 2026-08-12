@@ -1,4 +1,25 @@
-import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+
+export const albums = sqliteTable(
+	'albums',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		category: text('category', { enum: ['movie', 'music', 'book'] }).notNull(),
+		title: text('title').notNull(),
+		description: text('description'),
+		coverUrl: text('cover_url'),
+		sortOrder: integer('sort_order').notNull().default(0),
+		createdAt: integer('created_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date()),
+		updatedAt: integer('updated_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date())
+	},
+	(table) => [index('albums_category_idx').on(table.category)]
+);
 
 export const items = sqliteTable(
 	'items',
@@ -8,6 +29,7 @@ export const items = sqliteTable(
 			.$defaultFn(() => crypto.randomUUID()),
 		category: text('category', { enum: ['movie', 'music', 'book'] }).notNull(),
 		listType: text('list_type', { enum: ['owned', 'wishlist'] }).notNull(),
+		albumId: text('album_id').references(() => albums.id, { onDelete: 'set null' }),
 		externalId: text('external_id').notNull(),
 		title: text('title').notNull(),
 		subtitle: text('subtitle'),
@@ -27,7 +49,8 @@ export const items = sqliteTable(
 			table.category,
 			table.externalId,
 			table.listType
-		)
+		),
+		index('items_album_id_idx').on(table.albumId)
 	]
 );
 
@@ -47,6 +70,8 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
+export type Album = typeof albums.$inferSelect;
+export type NewAlbum = typeof albums.$inferInsert;
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type AdminUser = typeof adminUser.$inferSelect;

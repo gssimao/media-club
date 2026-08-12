@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { assignItemToAlbum, createAlbum, deleteAlbum } from '$lib/server/albums';
 import { addItem, deleteItem, moveToOwned, updateItemNotes, updateItemTags } from '$lib/server/items';
 import { isListType, isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
@@ -50,7 +51,7 @@ export const actions: Actions = {
 				coverUrl,
 				metadata
 			},
-			notes
+			{ notes }
 		);
 
 		return { success: true };
@@ -105,6 +106,46 @@ export const actions: Actions = {
 		}
 
 		await updateItemTags(locals.db, id, tags);
+		return { success: true };
+	},
+
+	createAlbum: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const category = String(form.get('category') ?? '');
+		const title = String(form.get('title') ?? '').trim();
+		const description = form.get('description') ? String(form.get('description')) : null;
+
+		if (!isMediaCategory(category) || !title) {
+			return fail(400, { message: 'Invalid album payload.' });
+		}
+
+		await createAlbum(locals.db, { category, title, description });
+		return { success: true };
+	},
+
+	assignAlbum: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const itemId = String(form.get('itemId') ?? '');
+		const albumIdRaw = form.get('albumId');
+		const albumId = albumIdRaw ? String(albumIdRaw) : null;
+
+		if (!itemId) return fail(400, { message: 'Missing item id.' });
+
+		const ok = await assignItemToAlbum(locals.db, itemId, albumId);
+		if (!ok) return fail(400, { message: 'Could not assign item to album.' });
+
+		return { success: true };
+	},
+
+	deleteAlbum: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		if (!id) return fail(400, { message: 'Missing album id.' });
+
+		await deleteAlbum(locals.db, id);
 		return { success: true };
 	}
 };

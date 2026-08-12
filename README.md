@@ -32,6 +32,7 @@ Default admin credentials (change in `.env` before seeding):
 | Feature            | Description                                          |
 | ------------------ | ---------------------------------------------------- |
 | Collections        | Owned movies, music (vinyl), and books               |
+| Albums             | Per-category folders for owned media (one album per item) |
 | Wishlists          | Separate lists per category                          |
 | API search         | Admin adds items from TMDB / Discogs / Open Library  |
 | Move to collection | One-click wishlist → owned                           |

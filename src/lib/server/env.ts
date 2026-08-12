@@ -1,10 +1,20 @@
 import type { RequestEvent } from '@sveltejs/kit';
 
+export type SecretKey = 'TMDB_API_KEY' | 'DISCOGS_TOKEN' | 'MCP_API_KEY';
+
+export function getPlatformSecret(
+	platform: App.Platform | undefined,
+	key: SecretKey
+): string | undefined {
+	const env = platform?.env as Record<string, string | undefined> | undefined;
+	return env?.[key] ?? process.env[key];
+}
+
 export function getSecret(
 	event: RequestEvent,
 	key: 'TMDB_API_KEY' | 'DISCOGS_TOKEN'
 ): string | undefined {
-	return event.platform?.env?.[key] ?? process.env[key];
+	return getPlatformSecret(event.platform, key);
 }
 
 export function requireSecret(event: RequestEvent, key: 'TMDB_API_KEY' | 'DISCOGS_TOKEN'): string {

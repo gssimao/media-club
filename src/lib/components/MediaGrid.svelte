@@ -1,17 +1,18 @@
 <script lang="ts">
 	import Fuse from 'fuse.js';
-	import type { MediaItem } from '$lib/types/media';
+	import type { Album, MediaItem } from '$lib/types/media';
 	import MediaCard from './MediaCard.svelte';
 	import SearchBar from './SearchBar.svelte';
 
 	interface Props {
 		items: MediaItem[];
 		isAdmin: boolean;
+		albums?: Album[];
 		emptyTitle: string;
 		emptyDescription: string;
 	}
 
-	let { items, isAdmin, emptyTitle, emptyDescription }: Props = $props();
+	let { items, isAdmin, albums = [], emptyTitle, emptyDescription }: Props = $props();
 
 	let query = $state('');
 
@@ -54,7 +55,7 @@
 		{:else}
 			<div class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 				{#each filteredItems as item (item.id)}
-					<MediaCard {item} {isAdmin} />
+					<MediaCard {item} {isAdmin} {albums} />
 				{/each}
 			</div>
 		{/if}

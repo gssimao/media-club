@@ -5,6 +5,7 @@ export interface MediaItem {
 	id: string;
 	category: MediaCategory;
 	listType: ListType;
+	albumId: string | null;
 	externalId: string;
 	title: string;
 	subtitle: string | null;
@@ -12,6 +13,18 @@ export interface MediaItem {
 	coverUrl: string | null;
 	metadata: Record<string, unknown> | null;
 	notes: string | null;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface Album {
+	id: string;
+	category: MediaCategory;
+	title: string;
+	description: string | null;
+	coverUrl: string | null;
+	sortOrder: number;
+	itemCount: number;
 	createdAt: Date;
 	updatedAt: Date;
 }
