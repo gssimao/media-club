@@ -1,5 +1,5 @@
 import type { AppDatabase } from '$lib/server/db';
-import type { AdminUser } from '$lib/server/db/schema';
+import type { SessionUser } from '$lib/types/auth';
 
 declare global {
 	namespace App {
@@ -12,7 +12,7 @@ declare global {
 
 		interface Locals {
 			db: AppDatabase;
-			user: AdminUser | null;
+			user: SessionUser | null;
 		}
 	}
 }

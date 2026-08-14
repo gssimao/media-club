@@ -1,0 +1,42 @@
+/*
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Change colors in src/lib/theme/palette.ts, then run: npm run theme
+ *
+ * Values are space-separated RGB triples so components can apply opacity,
+ * e.g. rgb(var(--color-accent) / 0.5).
+ */
+
+:root {
+	color-scheme: light;
+
+	--color-bg: 244 238 226; /* #F4EEE2 */
+	--color-surface: 250 246 237; /* #FAF6ED */
+	--color-surface-raised: 255 253 246; /* #FFFDF6 */
+	--color-border: 214 200 174; /* #D6C8AE */
+	--color-text: 43 35 24; /* #2B2318 */
+	--color-text-secondary: 93 78 58; /* #5D4E3A */
+	--color-text-tertiary: 121 104 79; /* #79684F */
+	--color-accent: 252 185 0; /* #FCB900 */
+	--color-accent-hover: 222 158 0; /* #DE9E00 */
+	--color-accent-light: 248 235 203; /* #F8EBCB */
+	--color-secondary: 0 83 155; /* #00539B */
+	--color-secondary-hover: 0 60 120; /* #003C78 */
+}
+
+[data-theme='dark'] {
+	color-scheme: dark;
+
+	--color-bg: 28 25 23; /* #1C1917 */
+	--color-surface: 38 35 32; /* #262320 */
+	--color-surface-raised: 48 45 42; /* #302D2A */
+	--color-border: 68 60 50; /* #443C32 */
+	--color-text: 255 250 240; /* #FFFAF0 */
+	--color-text-secondary: 220 200 170; /* #DCC8AA */
+	--color-text-tertiary: 180 160 130; /* #B4A082 */
+	--color-accent: 252 185 0; /* #FCB900 */
+	--color-accent-hover: 255 200 50; /* #FFC832 */
+	--color-accent-light: 80 70 40; /* #504628 */
+	--color-secondary: 80 150 210; /* #5096D2 */
+	--color-secondary-hover: 100 170 230; /* #64AAE6 */
+}

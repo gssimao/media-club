@@ -32,10 +32,10 @@ npx wrangler secret put MCP_API_KEY
 
 ## Endpoint
 
-| Environment | URL |
-|-------------|-----|
-| Local dev | `http://localhost:5173/mcp` |
-| Production | `https://your-domain.workers.dev/mcp` |
+| Environment | URL                                   |
+| ----------- | ------------------------------------- |
+| Local dev   | `http://localhost:5173/mcp`           |
+| Production  | `https://your-domain.workers.dev/mcp` |
 
 All requests require:
 
@@ -49,14 +49,14 @@ Add to `.cursor/mcp.json` (project) or Cursor Settings → MCP:
 
 ```json
 {
-  "mcpServers": {
-    "media-club": {
-      "url": "http://localhost:5173/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_MCP_API_KEY"
-      }
-    }
-  }
+	"mcpServers": {
+		"media-club": {
+			"url": "http://localhost:5173/mcp",
+			"headers": {
+				"Authorization": "Bearer YOUR_MCP_API_KEY"
+			}
+		}
+	}
 }
 ```
 
@@ -68,17 +68,17 @@ Use [mcp-remote](https://www.npmjs.com/package/mcp-remote) to bridge HTTP MCP:
 
 ```json
 {
-  "mcpServers": {
-    "media-club": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://your-domain.workers.dev/mcp",
-        "--header",
-        "Authorization: Bearer YOUR_MCP_API_KEY"
-      ]
-    }
-  }
+	"mcpServers": {
+		"media-club": {
+			"command": "npx",
+			"args": [
+				"mcp-remote",
+				"https://your-domain.workers.dev/mcp",
+				"--header",
+				"Authorization: Bearer YOUR_MCP_API_KEY"
+			]
+		}
+	}
 }
 ```
 
@@ -94,29 +94,29 @@ Open the inspector UI and connect to `http://localhost:5173/mcp` with the Bearer
 
 ## Available tools
 
-| Tool | Description |
-|------|-------------|
-| `search_media` | Search TMDB, Discogs, or Open Library |
-| `list_media` | List items (defaults to ungrouped, matching category pages) |
-| `get_media_item` | Get one item by id |
-| `get_catalog_stats` | Counts per category/list type |
-| `add_media_item` | Add to owned collection or wishlist |
-| `add_to_wishlist` | Shortcut for wishlist adds (no album assignment) |
-| `move_to_owned` | Promote wishlist item to owned |
-| `update_media_notes` | Set or clear notes |
-| `remove_media_item` | Delete an item |
-| `list_albums` | List album shelves in a category |
-| `create_album` | Create a new album shelf |
-| `delete_album` | Delete an album shelf |
-| `assign_to_album` | Put an owned item on an album shelf |
-| `remove_from_album` | Unassign from album shelf |
+| Tool                 | Description                                                 |
+| -------------------- | ----------------------------------------------------------- |
+| `search_media`       | Search TMDB, Discogs, or Open Library                       |
+| `list_media`         | List items (defaults to ungrouped, matching category pages) |
+| `get_media_item`     | Get one item by id                                          |
+| `get_catalog_stats`  | Counts per category/list type                               |
+| `add_media_item`     | Add to owned collection or wishlist                         |
+| `add_to_wishlist`    | Shortcut for wishlist adds (no album assignment)            |
+| `move_to_owned`      | Promote wishlist item to owned                              |
+| `update_media_notes` | Set or clear notes                                          |
+| `remove_media_item`  | Delete an item                                              |
+| `list_albums`        | List album shelves in a category                            |
+| `create_album`       | Create a new album shelf                                    |
+| `delete_album`       | Delete an album shelf                                       |
+| `assign_to_album`    | Put an owned item on an album shelf                         |
+| `remove_from_album`  | Unassign from album shelf                                   |
 
 ### `list_media` filters
 
-| Parameter | Default | Meaning |
-|-----------|---------|---------|
-| `ungrouped` | `true` | Only items not on an album shelf |
-| `albumId` | — | Items in a specific album |
+| Parameter    | Default | Meaning                          |
+| ------------ | ------- | -------------------------------- |
+| `ungrouped`  | `true`  | Only items not on an album shelf |
+| `albumId`    | —       | Items in a specific album        |
 | `includeAll` | `false` | All items, grouped and ungrouped |
 
 ## Recommended workflow

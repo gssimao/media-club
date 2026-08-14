@@ -33,7 +33,9 @@ export async function searchMovies(apiKey: string, query: string): Promise<Searc
 		include_adult: 'false'
 	});
 
-	const response = await fetch(`${TMDB_API_BASE}/search/movie?${params.toString()}`);
+	const response = await fetch(`${TMDB_API_BASE}/search/movie?${params.toString()}`, {
+		signal: AbortSignal.timeout(10_000)
+	});
 	if (!response.ok) {
 		throw new Error(`TMDB search failed (${response.status})`);
 	}

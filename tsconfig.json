@@ -3,7 +3,10 @@
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
 		"allowJs": true,
-		"checkJs": true,
+		// checkJs stays off: wrangler's generated worker-configuration.d.ts imports
+		// the built .svelte-kit/cloudflare/_worker.js bundle, and checking that
+		// minified output produces ~1000 meaningless diagnostics. App code is TS.
+		"checkJs": false,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
@@ -12,5 +15,15 @@
 		"strict": true,
 		"moduleResolution": "bundler",
 		"types": ["./worker-configuration.d.ts"]
-	}
+	},
+	// Keep svelte-check away from build artifacts; the generated
+	// .svelte-kit/tsconfig.json only excludes node_modules.
+	"exclude": [
+		"node_modules/**",
+		".svelte-kit/cloudflare/**",
+		".svelte-kit/cloudflare-tmp/**",
+		".svelte-kit/output/**",
+		"build/**",
+		".wrangler/**"
+	]
 }

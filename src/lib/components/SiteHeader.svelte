@@ -4,20 +4,18 @@
 		FilmStrip,
 		VinylRecord,
 		BookOpen,
+		Faders,
 		Heart,
 		SignIn,
-		SignOut,
 		Gear,
-		Sun,
-		Moon,
 		House
 	} from 'phosphor-svelte';
-	import { theme } from '$lib/stores/theme.svelte';
-	import type { AdminUser } from '$lib/server/db/schema';
+	import HeaderActions from './HeaderActions.svelte';
+	import type { SessionUser } from '$lib/types/auth';
 	import type { Component } from 'svelte';
 
 	interface Props {
-		user: AdminUser | null;
+		user: SessionUser | null;
 		pathname: string;
 	}
 
@@ -40,6 +38,12 @@
 			label: 'Wishlist',
 			icon: Heart,
 			match: (p) => p.startsWith('/wishlist')
+		},
+		{
+			href: '/settings',
+			label: 'Settings',
+			icon: Faders,
+			match: (p) => p.startsWith('/settings')
 		}
 	];
 
@@ -65,7 +69,12 @@
 				]
 	);
 
-	const activeIndex = $derived(Math.max(0, navItems.findIndex((item) => item.match(pathname))));
+	const activeIndex = $derived(
+		Math.max(
+			0,
+			navItems.findIndex((item) => item.match(pathname))
+		)
+	);
 	const activeItem = $derived(navItems[activeIndex] ?? navItems[0]);
 	const ActiveIcon = $derived(activeItem.icon);
 
@@ -157,14 +166,22 @@
 	}
 
 	$effect(() => {
-		pathname;
-		if (!dragging && !animating) snapToPath(pathname);
+		// Read pathname unconditionally so this effect re-runs on navigation
+		// even while a drag or snap animation is in progress.
+		const path = pathname;
+		if (!dragging && !animating) snapToPath(path);
+	});
+
+	let navTimer: ReturnType<typeof setTimeout> | undefined;
+
+	$effect(() => {
+		return () => clearTimeout(navTimer);
 	});
 
 	function navigateToIndex(index: number) {
 		animating = true;
 		snapRotationToIndex(index);
-		window.setTimeout(() => {
+		navTimer = setTimeout(() => {
 			animating = false;
 			const item = navItems[index];
 			if (item && item.href !== pathname) void goto(item.href);
@@ -186,7 +203,8 @@
 	function onPointerMove(event: PointerEvent) {
 		if (!dragging) return;
 		const angle = pointerAngle(event.clientX, event.clientY);
-		const delta = unwrapAngleDelta(angle - lastPointerAngle) * centerDragBoost(event.clientX, event.clientY);
+		const delta =
+			unwrapAngleDelta(angle - lastPointerAngle) * centerDragBoost(event.clientX, event.clientY);
 		lastPointerAngle = angle;
 		if (Math.abs(delta) > 2) dragMoved = true;
 		// Inverted so clockwise drag spins the dial clockwise.
@@ -212,32 +230,12 @@
 		if (dragMoved || animating) return;
 		navigateToIndex(index);
 	}
-
 </script>
 
 <header class="site-header">
 	<div class="header-stack">
-		<div class="header-actions" data-dial-hub>
-			<button
-				type="button"
-				class="header-action-btn"
-				onclick={() => theme.toggle()}
-				aria-label="Toggle theme"
-			>
-				{#if theme.current === 'dark'}
-					<Sun size={16} weight="bold" />
-				{:else}
-					<Moon size={16} weight="bold" />
-				{/if}
-			</button>
-
-			{#if user}
-				<form method="POST" action="/logout">
-					<button type="submit" class="header-action-btn" aria-label="Log out">
-						<SignOut size={16} weight="bold" />
-					</button>
-				</form>
-			{/if}
+		<div class="header-actions-slot" data-dial-hub>
+			<HeaderActions showLogout={!!user} --action-btn-size="var(--nav-dial-actions-h)" />
 		</div>
 
 		<div class="nav-dial-panel">
@@ -312,10 +310,7 @@
 							disabled={animating}
 							onclick={(event) => onNodeClick(event, i)}
 						>
-							<span
-								class="dial-node-inner"
-								style="transform: rotate({-angle - rotation}deg)"
-							>
+							<span class="dial-node-inner" style="transform: rotate({-angle - rotation}deg)">
 								<span class="dial-node-button">
 									<Icon size={22} weight="bold" />
 								</span>
@@ -328,7 +323,13 @@
 				</div>
 
 				<div class="dial-center" data-dial-hub>
-					<a href={previewItem.href} class="dial-center-slot" aria-current="page">
+					<a
+						href={previewItem.href}
+						class="dial-center-slot"
+						aria-current={!dragging && !animating && previewItem.match(pathname)
+							? 'page'
+							: undefined}
+					>
 						<span class="dial-center-disc" class:is-preview={dragging || animating}>
 							{#if dragging || animating}
 								<PreviewIcon size={28} weight="bold" />
@@ -364,31 +365,11 @@
 		gap: var(--nav-dial-stack-gap);
 	}
 
-	.header-actions {
+	.header-actions-slot {
 		display: flex;
 		align-self: flex-end;
-		gap: 0.35rem;
 		margin-right: 0.15rem;
 		min-height: var(--nav-dial-actions-h);
-	}
-
-	.header-action-btn {
-		display: inline-flex;
-		width: var(--nav-dial-actions-h);
-		height: var(--nav-dial-actions-h);
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		border: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-surface-raised) / 0.92);
-		color: rgb(var(--color-text-secondary));
-		cursor: pointer;
-		backdrop-filter: blur(6px);
-	}
-
-	.header-action-btn:hover {
-		border-color: rgb(var(--color-accent));
-		color: rgb(var(--color-text));
 	}
 
 	.nav-dial-panel {
@@ -561,7 +542,7 @@
 		top: 1.55rem;
 		left: 50%;
 		width: max-content;
-		max-width: 5rem;
+		max-width: 6.5rem;
 		transform: translateX(-50%);
 		font-size: 0.55rem;
 		font-weight: 800;

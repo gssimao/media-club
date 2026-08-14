@@ -41,7 +41,11 @@ export function registerCollectionTools(server: McpServer) {
 		async ({ category, title, description }) => {
 			const ctx = getMcpContext();
 			logMcpTool('create_album', `${category} "${title}"`);
-			const album = await createAlbum(ctx.db, { category, title, description: description ?? null });
+			const album = await createAlbum(ctx.db, {
+				category,
+				title,
+				description: description ?? null
+			});
 			if (!album) return toolFailure('Failed to create album');
 			return toolSuccess(album);
 		}

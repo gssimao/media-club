@@ -3,12 +3,13 @@ import type { AppDatabase } from '$lib/server/db';
 import { adminUser } from '$lib/server/db/schema';
 import { hashPassword } from './password';
 
-export async function ensureAdminUser(db: AppDatabase) {
+export async function ensureAdminUser(db: AppDatabase, platform?: App.Platform) {
 	const [{ value }] = await db.select({ value: count() }).from(adminUser);
 	if (value > 0) return;
 
-	const username = process.env.ADMIN_USERNAME ?? 'admin';
-	const password = process.env.ADMIN_PASSWORD;
+	const env = platform?.env as Record<string, string | undefined> | undefined;
+	const username = env?.ADMIN_USERNAME ?? process.env.ADMIN_USERNAME ?? 'admin';
+	const password = env?.ADMIN_PASSWORD ?? process.env.ADMIN_PASSWORD;
 
 	if (!password) {
 		console.warn('[media-club] ADMIN_PASSWORD is not set; skipping admin seed.');

@@ -3,6 +3,9 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"engines": {
+		"node": ">=20"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "wrangler types && vite build",
@@ -17,12 +20,14 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"gen": "wrangler types",
+		"theme": "tsx scripts/generate-theme.ts",
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "DRIZZLE_LOCAL=1 drizzle-kit migrate",
 		"db:migrate:remote": "drizzle-kit migrate",
 		"db:studio": "DRIZZLE_LOCAL=1 drizzle-kit studio",
 		"db:seed": "tsx scripts/seed.ts",
+		"db:seed:mock": "tsx scripts/seed-mock.ts",
 		"deploy": "npm run build && wrangler deploy",
 		"deploy:migrate": "npm run db:migrate:remote && npm run deploy"
 	},
@@ -46,6 +51,7 @@
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",
+		"tsx": "^4.23.6",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
 		"vite": "^8.0.16",
@@ -63,7 +69,6 @@
 		"fuse.js": "^7.5.0",
 		"phosphor-svelte": "^3.1.0",
 		"tailwind-merge": "^3.6.0",
-		"tsx": "^4.23.6",
 		"zod": "^4.4.3"
 	}
 }

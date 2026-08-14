@@ -13,6 +13,7 @@ export interface MediaItem {
 	coverUrl: string | null;
 	metadata: Record<string, unknown> | null;
 	notes: string | null;
+	albumWatchedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -38,15 +39,33 @@ export interface SearchResult {
 	metadata?: Record<string, unknown>;
 }
 
+/** URL path segment for each category (e.g. /movies, /music, /books). */
+export const CATEGORY_PATHS: Record<MediaCategory, string> = {
+	movie: 'movies',
+	music: 'music',
+	book: 'books'
+};
+
 export const CATEGORY_LABELS: Record<MediaCategory, string> = {
 	movie: 'Movies',
 	music: 'Music',
 	book: 'Books'
 };
 
-export const LIST_TYPE_LABELS: Record<ListType, string> = {
-	owned: 'Collection',
-	wishlist: 'Wishlist'
+export interface CategoryActionWording {
+	/** Infinitive, e.g. "watch" in "To watch" */
+	verb: string;
+	/** Past participle, e.g. "watched" in "Mark watched" */
+	done: string;
+	/** Negated past participle, e.g. "unwatched" in "Mark unwatched" */
+	notDone: string;
+}
+
+/** Category-appropriate consumption wording — movies are watched, records played, books read. */
+export const CATEGORY_ACTION_WORDING: Record<MediaCategory, CategoryActionWording> = {
+	movie: { verb: 'watch', done: 'watched', notDone: 'unwatched' },
+	music: { verb: 'play', done: 'played', notDone: 'unplayed' },
+	book: { verb: 'read', done: 'read', notDone: 'unread' }
 };
 
 export function isMediaCategory(value: string): value is MediaCategory {

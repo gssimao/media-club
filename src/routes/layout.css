@@ -1,23 +1,18 @@
 @import 'tailwindcss';
 
+/* All light/dark color tokens live in src/lib/theme/palette.ts.
+   Edit colors there and run `npm run theme` to regenerate theme.css. */
+@import './theme.css';
+
+/* Bind Tailwind's dark: variant to the in-app theme toggle (data-theme on <html>),
+   not the OS prefers-color-scheme default — otherwise dark: utilities ignore the toggle. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 @layer base {
 	:root {
 		--font-sans:
-			-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-
-		/* Light theme - 90s Blockbuster inspired with warm colors */
-		--color-bg: 253 250 241;
-		--color-surface: 255 254 247;
-		--color-surface-raised: 255 255 255;
-		--color-border: 245 224 180;
-		--color-text: 40 35 28;
-		--color-text-secondary: 102 85 60;
-		--color-text-tertiary: 156 135 103;
-		--color-accent: 252 185 0;
-		--color-accent-hover: 230 160 0;
-		--color-accent-light: 255 248 220;
-		--color-secondary: 0 83 155;
-		--color-secondary-hover: 0 60 120;
+			'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui,
+			sans-serif;
 
 		/* Fixed nav dial footprint — keep in sync with SiteHeader.svelte */
 		--nav-dial-r: clamp(5.5rem, 20vw, 8.5rem);
@@ -30,22 +25,6 @@
 			var(--nav-dial-inset) + var(--nav-dial-actions-h) + var(--nav-dial-stack-gap) +
 				var(--nav-dial-size) + 0.5rem
 		);
-	}
-
-	[data-theme='dark'] {
-		/* Dark theme - Warm late-night video store aesthetic */
-		--color-bg: 28 25 23;
-		--color-surface: 38 35 32;
-		--color-surface-raised: 48 45 42;
-		--color-border: 68 60 50;
-		--color-text: 255 250 240;
-		--color-text-secondary: 220 200 170;
-		--color-text-tertiary: 180 160 130;
-		--color-accent: 252 185 0;
-		--color-accent-hover: 255 200 50;
-		--color-accent-light: 80 70 40;
-		--color-secondary: 80 150 210;
-		--color-secondary-hover: 100 170 230;
 	}
 
 	* {
@@ -86,6 +65,39 @@
 		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 		transition-duration: 200ms;
 	}
+
+	/* Amber focus ring — keyboard navigation on any control */
+	:focus-visible {
+		outline: 2px solid rgb(var(--color-accent));
+		outline-offset: 2px;
+	}
+}
+
+/* Shared motion vocabulary — records spin, content rises like a lifted needle */
+@keyframes mc-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes mc-rise {
+	from {
+		opacity: 0;
+		transform: translateY(0.75rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes mc-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @layer components {
@@ -95,15 +107,37 @@
 	}
 
 	.btn-secondary {
-		@apply inline-flex items-center gap-2 rounded-full border-2 border-stone-300 bg-white px-8 py-4 text-base font-black tracking-wide text-stone-700 uppercase transition-all hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700;
+		@apply inline-flex items-center gap-2 rounded-full border-2 px-8 py-4 text-base font-black tracking-wide uppercase transition-all;
+		border-color: rgb(var(--color-border));
+		background-color: rgb(var(--color-surface-raised));
+		color: rgb(var(--color-text-secondary));
+	}
+
+	.btn-secondary:hover {
+		border-color: rgb(var(--color-accent) / 0.6);
+		background-color: rgb(var(--color-accent-light));
+		color: rgb(var(--color-text));
 	}
 
 	.surface-round {
-		@apply rounded-[2rem] border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-800;
+		@apply rounded-[2rem] border;
+		border-color: rgb(var(--color-border));
+		background-color: rgb(var(--color-surface-raised));
 	}
 
 	.input-round {
-		@apply rounded-full border border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-900 transition-colors focus:border-amber-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-white dark:focus:border-amber-500;
+		@apply rounded-full border px-4 py-2.5 font-medium transition-colors focus:outline-none;
+		border-color: rgb(var(--color-border));
+		background-color: rgb(var(--color-surface-raised));
+		color: rgb(var(--color-text));
+	}
+
+	.input-round::placeholder {
+		color: rgb(var(--color-text-tertiary));
+	}
+
+	.input-round:focus {
+		border-color: rgb(var(--color-accent));
 	}
 
 	.pill-nav {
@@ -114,6 +148,47 @@
 		padding-left: 0;
 		padding-top: 0;
 	}
+
+	/* Staggered entrance — set --rise-delay per item (see MediaGrid) */
+	.anim-rise {
+		animation: mc-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+		animation-delay: var(--rise-delay, 0ms);
+	}
+
+	/* Opacity-only entrance — safe on wrappers that contain position:fixed children */
+	.anim-fade {
+		animation: mc-fade 0.3s ease-out backwards;
+	}
+
+	/* Continuous record rotation for decorative discs — override --spin-period to change speed */
+	.record-spin {
+		animation: mc-spin var(--spin-period, 12s) linear infinite;
+		transform-box: fill-box;
+		transform-origin: center;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.anim-rise,
+	.anim-fade {
+		animation-duration: 0.01ms;
+		animation-delay: 0ms;
+	}
+
+	.record-spin {
+		animation: none;
+	}
+}
+
+/* In-app motion preference (Settings → Motion fader) — mirrors prefers-reduced-motion */
+[data-motion='reduced'] .anim-rise,
+[data-motion='reduced'] .anim-fade {
+	animation-duration: 0.01ms;
+	animation-delay: 0ms;
+}
+
+[data-motion='reduced'] .record-spin {
+	animation: none;
 }
 
 @media (min-width: 768px) {

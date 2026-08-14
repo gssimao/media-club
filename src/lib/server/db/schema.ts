@@ -37,6 +37,7 @@ export const items = sqliteTable(
 		coverUrl: text('cover_url'),
 		metadata: text('metadata'),
 		notes: text('notes'),
+		albumWatchedAt: integer('album_watched_at', { mode: 'timestamp' }),
 		createdAt: integer('created_at', { mode: 'timestamp' })
 			.notNull()
 			.$defaultFn(() => new Date()),

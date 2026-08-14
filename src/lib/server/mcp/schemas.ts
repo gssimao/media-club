@@ -14,9 +14,5 @@ export const searchResultFields = {
 };
 
 export const ownedAlbumIdField = {
-	albumId: z
-		.string()
-		.nullable()
-		.optional()
-		.describe('Optional album/shelf id (owned items only)')
+	albumId: z.string().nullable().optional().describe('Optional album/shelf id (owned items only)')
 };

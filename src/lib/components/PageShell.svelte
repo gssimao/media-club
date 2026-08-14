@@ -14,10 +14,8 @@
 <div class="page-shell">
 	<aside class="page-shell__control" aria-label="Page control center">
 		<div class="page-shell__now-playing">
-			<p class="page-shell__kicker">
-				Now playing <span aria-hidden="true">—</span>
-				<em class="page-shell__title">{title}</em>
-			</p>
+			<p class="page-shell__kicker">Now playing <span aria-hidden="true">—</span></p>
+			<h1 class="page-shell__title">{title}</h1>
 			{#if description}
 				<p class="page-shell__description">{description}</p>
 			{/if}
@@ -59,7 +57,7 @@
 	.page-shell__now-playing {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.35rem;
 	}
 
 	.page-shell__kicker {
@@ -74,7 +72,7 @@
 
 	.page-shell__title {
 		display: block;
-		margin-top: 0.15rem;
+		margin: 0.15rem 0 0;
 		font-style: italic;
 		font-size: 1.35rem;
 		font-weight: 900;

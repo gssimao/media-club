@@ -1,16 +1,13 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
 	import MediaGrid from '$lib/components/MediaGrid.svelte';
+	import NavLink from '$lib/components/NavLink.svelte';
+	import { CATEGORY_PATHS } from '$lib/types/media';
 	import { FilmStrip, VinylRecord, BookOpen } from 'phosphor-svelte';
 
 	let { data } = $props();
 
-	const ownedHref = $derived(
-		data.category === 'movie' ? '/movies' : data.category === 'music' ? '/music' : '/books'
-	);
-
-	const tabClass = (active: boolean) =>
-		`pill-nav ${active ? 'bg-amber-400 text-stone-900' : 'text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700'}`;
+	const ownedHref = $derived(`/${CATEGORY_PATHS[data.category]}`);
 </script>
 
 <svelte:head>
@@ -19,23 +16,21 @@
 
 <PageShell title="{data.label} Wishlist">
 	{#snippet controls()}
-		<a href={ownedHref} class="pill-nav bg-amber-400/10 text-amber-600 dark:text-amber-400">
-			View collection →
-		</a>
+		<NavLink href={ownedHref} variant="accent">View collection →</NavLink>
 
 		<div class="flex flex-col items-start gap-2">
-			<a href="/wishlist/movies" class={tabClass(data.category === 'movie')}>
+			<NavLink href="/wishlist/movies" active={data.category === 'movie'}>
 				<FilmStrip size={16} weight="bold" />
 				Movies
-			</a>
-			<a href="/wishlist/music" class={tabClass(data.category === 'music')}>
+			</NavLink>
+			<NavLink href="/wishlist/music" active={data.category === 'music'}>
 				<VinylRecord size={16} weight="bold" />
 				Music
-			</a>
-			<a href="/wishlist/books" class={tabClass(data.category === 'book')}>
+			</NavLink>
+			<NavLink href="/wishlist/books" active={data.category === 'book'}>
 				<BookOpen size={16} weight="bold" />
 				Books
-			</a>
+			</NavLink>
 		</div>
 	{/snippet}
 

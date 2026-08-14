@@ -7,9 +7,16 @@ class ThemeStore {
 
 	constructor() {
 		if (browser) {
-			const stored = localStorage.getItem('theme') as Theme | null;
-			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			this._theme = stored || (prefersDark ? 'dark' : 'light');
+			// The inline script in app.html already resolved the theme before first
+			// paint — trust the attribute it set so store and DOM never disagree.
+			const applied = document.documentElement.getAttribute('data-theme');
+			if (applied === 'light' || applied === 'dark') {
+				this._theme = applied;
+			} else {
+				const stored = localStorage.getItem('theme') as Theme | null;
+				const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+				this._theme = stored || (prefersDark ? 'dark' : 'light');
+			}
 			this.apply();
 		}
 	}

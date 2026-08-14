@@ -1,18 +1,21 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import {
+	backToReferer,
+	MAX_DESCRIPTION_LENGTH,
+	MAX_TITLE_LENGTH,
+	requireAdmin,
+	sanitizeHttpUrl
+} from '$lib/server/admin';
+import { redirect } from '@sveltejs/kit';
 import {
 	assignItemToAlbum,
 	createAlbum,
 	deleteAlbum,
+	getAlbumById,
 	updateAlbum
 } from '$lib/server/albums';
 import { isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
-
-function requireAdmin(locals: App.Locals) {
-	if (!locals.user) {
-		redirect(303, '/login');
-	}
-}
 
 export const actions: Actions = {
 	createAlbum: async ({ request, locals }) => {
@@ -21,15 +24,15 @@ export const actions: Actions = {
 		const category = String(form.get('category') ?? '');
 		const title = String(form.get('title') ?? '').trim();
 		const description = form.get('description')
-			? String(form.get('description')).trim()
+			? String(form.get('description')).trim().slice(0, MAX_DESCRIPTION_LENGTH)
 			: null;
 
-		if (!isMediaCategory(category) || !title) {
+		if (!isMediaCategory(category) || !title || title.length > MAX_TITLE_LENGTH) {
 			return fail(400, { message: 'Category and title are required.' });
 		}
 
-		await createAlbum(locals.db, category, title, description);
-		return { success: true };
+		await createAlbum(locals.db, { category, title, description });
+		backToReferer(request);
 	},
 
 	updateAlbum: async ({ request, locals }) => {
@@ -38,16 +41,16 @@ export const actions: Actions = {
 		const id = String(form.get('id') ?? '');
 		const title = String(form.get('title') ?? '').trim();
 		const description = form.get('description')
-			? String(form.get('description')).trim()
+			? String(form.get('description')).trim().slice(0, MAX_DESCRIPTION_LENGTH)
 			: null;
-		const coverUrl = form.get('coverUrl') ? String(form.get('coverUrl')).trim() : null;
+		const coverUrl = sanitizeHttpUrl(form.get('coverUrl'));
 
-		if (!id || !title) {
+		if (!id || !title || title.length > MAX_TITLE_LENGTH) {
 			return fail(400, { message: 'Album id and title are required.' });
 		}
 
 		await updateAlbum(locals.db, id, { title, description, coverUrl });
-		return { success: true };
+		backToReferer(request);
 	},
 
 	deleteAlbum: async ({ request, locals }) => {
@@ -56,8 +59,12 @@ export const actions: Actions = {
 		const id = String(form.get('id') ?? '');
 		if (!id) return fail(400, { message: 'Missing album id.' });
 
+		const album = await getAlbumById(locals.db, id);
 		await deleteAlbum(locals.db, id);
-		return { success: true };
+
+		// The referer is usually the deleted album's own page, so send the
+		// admin to the surviving album library for that category instead.
+		redirect(303, album ? `/albums/${album.category}` : '/admin');
 	},
 
 	assignToAlbum: async ({ request, locals }) => {
@@ -72,6 +79,6 @@ export const actions: Actions = {
 		const ok = await assignItemToAlbum(locals.db, itemId, albumId);
 		if (!ok) return fail(400, { message: 'Could not assign item to album.' });
 
-		return { success: true };
+		backToReferer(request);
 	}
 };

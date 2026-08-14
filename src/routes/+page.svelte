@@ -1,17 +1,19 @@
 <script lang="ts">
 	import {
 		BookOpen,
+		Faders,
 		FilmStrip,
 		Gear,
 		Heart,
 		House,
-		Moon,
+		Pause,
+		Play,
 		SignIn,
-		SignOut,
-		Sun,
 		VinylRecord
 	} from 'phosphor-svelte';
-	import { theme } from '$lib/stores/theme.svelte';
+	import HeaderActions from '$lib/components/HeaderActions.svelte';
+	import { settings } from '$lib/stores/settings.svelte';
+	import { CATEGORY_PATHS } from '$lib/types/media';
 	import type { Component } from 'svelte';
 
 	let { data } = $props();
@@ -27,7 +29,6 @@
 	const CD_BTN_SIZE = 56;
 	const CD_BTN_HALF = CD_BTN_SIZE / 2;
 
-	const SPIN_PERIOD_MS = 24_000;
 	const HOVER_PLAYBACK_RATE = 0.05;
 	const NORMAL_PLAYBACK_RATE = 1;
 	const RATE_TWEEN_MS = 1500;
@@ -45,7 +46,8 @@
 		{ href: '/movies', label: 'Movies', icon: FilmStrip },
 		{ href: '/music', label: 'Music', icon: VinylRecord },
 		{ href: '/books', label: 'Books', icon: BookOpen },
-		{ href: '/wishlist/movies', label: 'Wishlist', icon: Heart }
+		{ href: '/wishlist/movies', label: 'Wishlist', icon: Heart },
+		{ href: '/settings', label: 'Settings', icon: Faders }
 	] as const;
 
 	const cdNavButtons = $derived.by((): CdNavButton[] => {
@@ -64,10 +66,18 @@
 	let cdSpinEl = $state<SVGGElement | undefined>(undefined);
 
 	let spinAnim: Animation | undefined;
+	let counterAnims: Animation[] = [];
 	let rateTweenFrame: number | undefined;
 	let currentPlaybackRate = NORMAL_PLAYBACK_RATE;
 	let slowPinned = $state(false);
 	let isHovering = false;
+
+	function applyPlaybackRate(rate: number) {
+		if (spinAnim) spinAnim.playbackRate = rate;
+		for (const counter of counterAnims) {
+			counter.playbackRate = rate;
+		}
+	}
 
 	function cdNavPosition(angleDeg: number) {
 		const rad = (angleDeg * Math.PI) / 180;
@@ -107,7 +117,7 @@
 		function tick(now: number) {
 			const t = Math.min((now - startTime) / durationMs, 1);
 			currentPlaybackRate = startRate + (targetRate - startRate) * easing(t);
-			spinAnim!.playbackRate = currentPlaybackRate;
+			applyPlaybackRate(currentPlaybackRate);
 
 			if (t < 1) {
 				rateTweenFrame = requestAnimationFrame(tick);
@@ -127,11 +137,6 @@
 		tweenPlaybackRate(NORMAL_PLAYBACK_RATE, RATE_TWEEN_MS, easeInCubic);
 	}
 
-	function isNavClickTarget(target: EventTarget | null) {
-		if (!(target instanceof Element)) return false;
-		return target.closest('.cd-nav-btn, a') !== null;
-	}
-
 	function onCdMouseEnter() {
 		isHovering = true;
 		slowDown();
@@ -144,9 +149,7 @@
 		}
 	}
 
-	function onCdClick(e: MouseEvent) {
-		if (isNavClickTarget(e.target)) return;
-
+	function toggleSlow() {
 		slowPinned = !slowPinned;
 		if (slowPinned) {
 			slowDown();
@@ -157,23 +160,54 @@
 
 	$effect(() => {
 		const el = cdSpinEl;
+		const navCount = cdNavButtons.length;
+		// Settings are reactive — RPM or motion changes rebuild the animations.
+		const spinPeriodMs = settings.spinPeriodMs;
+		const motionReducedInApp = settings.motion === 'reduced';
 		if (!el) return;
 
 		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		if (reducedMotion) return;
+		if (reducedMotion || motionReducedInApp) return;
+
+		const timing = {
+			duration: spinPeriodMs,
+			iterations: Infinity,
+			easing: 'linear'
+		} as const;
 
 		const anim = el.animate(
 			[{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
-			{ duration: SPIN_PERIOD_MS, iterations: Infinity, easing: 'linear' }
+			timing
 		);
 
+		// Counter-rotate each icon at the same rate so they stay upright while orbiting.
+		// Query the live DOM instead of reactive bind:this refs — array bindings retrigger
+		// this effect on every slot mount and were resetting the disc mid-spin.
+		void navCount;
+		const iconEls = el.querySelectorAll<HTMLSpanElement>('.cd-nav-icon');
+		const counters = [...iconEls].map((icon) =>
+			icon.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(-360deg)' }], timing)
+		);
+
+		// Align start times so the counter-rotation cancels the disc rotation exactly.
+		void anim.ready.then(() => {
+			for (const counter of counters) {
+				counter.startTime = anim.startTime;
+			}
+		});
+
 		spinAnim = anim;
+		counterAnims = counters;
 		currentPlaybackRate = NORMAL_PLAYBACK_RATE;
 
 		return () => {
 			cancelRateTween();
 			anim.cancel();
+			for (const counter of counters) {
+				counter.cancel();
+			}
 			spinAnim = undefined;
+			counterAnims = [];
 		};
 	});
 </script>
@@ -184,27 +218,40 @@
 </svelte:head>
 
 <div class="home-actions">
-	<button
-		type="button"
-		class="home-action-btn"
-		onclick={() => theme.toggle()}
-		aria-label="Toggle theme"
-	>
-		{#if theme.current === 'dark'}
-			<Sun size={16} weight="bold" />
-		{:else}
-			<Moon size={16} weight="bold" />
-		{/if}
-	</button>
-
-	{#if data.user}
-		<form method="POST" action="/logout">
-			<button type="submit" class="home-action-btn" aria-label="Log out">
-				<SignOut size={16} weight="bold" />
-			</button>
-		</form>
-	{/if}
+	<HeaderActions showLogout={!!data.user} />
 </div>
+
+{#snippet categoryStats(compact: boolean)}
+	{#each data.summary as row (row.category)}
+		{@const Icon = icons[row.category]}
+		<a
+			href="/{CATEGORY_PATHS[row.category]}"
+			class="group pointer-events-auto flex flex-col items-center gap-1.5 transition-transform hover:-translate-y-0.5"
+		>
+			<span
+				class="flex flex-col items-center justify-center gap-0.5 rounded-full bg-amber-400/15 ring-2 ring-amber-400/60 transition-all group-hover:bg-amber-400/25 group-hover:ring-amber-500 {compact
+					? 'size-12 sm:size-14'
+					: 'size-14 xl:size-16'}"
+			>
+				<Icon size={compact ? 16 : 18} weight="bold" class="text-amber-700 dark:text-amber-400" />
+				<span
+					class="font-black text-amber-700 group-hover:text-amber-800 dark:text-amber-400 dark:group-hover:text-amber-300 {compact
+						? 'text-xs sm:text-sm'
+						: 'text-sm xl:text-base'}"
+				>
+					{row.owned + row.wishlist}
+				</span>
+			</span>
+			<span
+				class="font-bold tracking-wider text-stone-600 uppercase dark:text-stone-400 {compact
+					? 'text-[0.6rem] sm:text-[0.65rem]'
+					: 'text-[0.65rem] xl:text-xs'}"
+			>
+				{row.label}
+			</span>
+		</a>
+	{/each}
+{/snippet}
 
 <section class="flex min-h-[80vh] flex-col items-center px-4 pt-10 pb-16">
 	<div class="w-full max-w-2xl space-y-3 text-center">
@@ -219,38 +266,27 @@
 	</div>
 
 	<div class="relative mx-auto my-10 flex w-full max-w-6xl flex-col items-center px-2">
-		<p class="mb-5 text-sm font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
-			Hover or click to slow disc
-		</p>
+		<button
+			type="button"
+			class="mb-5 inline-flex items-center gap-2 rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised)/0.7)] px-4 py-1.5 text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400"
+			onclick={toggleSlow}
+			aria-pressed={slowPinned}
+		>
+			{#if slowPinned}
+				<Play size={13} weight="bold" />
+				Spin the disc
+			{:else}
+				<Pause size={13} weight="bold" />
+				Slow the disc
+			{/if}
+		</button>
 
 		<div class="relative flex shrink-0 flex-col items-center">
 			<!-- Desktop: decorative overlay left of disc — does not affect CD centering -->
 			<div
 				class="pointer-events-none absolute top-1/2 right-full hidden -translate-y-1/2 pr-5 lg:flex lg:flex-col lg:gap-3.5 xl:pr-7"
 			>
-				{#each data.summary as row (row.category)}
-					{@const Icon = icons[row.category]}
-					<a
-						href="/{row.category === 'movie' ? 'movies' : row.category === 'music' ? 'music' : 'books'}"
-						class="group pointer-events-auto flex flex-col items-center gap-1.5 transition-transform hover:-translate-y-0.5"
-					>
-						<span
-							class="flex size-14 flex-col items-center justify-center gap-0.5 rounded-full bg-amber-400/15 ring-2 ring-amber-400/60 transition-all group-hover:bg-amber-400/25 group-hover:ring-amber-500 xl:size-16"
-						>
-							<Icon size={18} weight="bold" class="text-amber-600 dark:text-amber-400" />
-							<span
-								class="text-sm font-black text-amber-500 group-hover:text-amber-600 xl:text-base"
-							>
-								{row.owned + row.wishlist}
-							</span>
-						</span>
-						<span
-							class="text-[0.65rem] font-bold tracking-wider text-stone-600 uppercase dark:text-stone-400 xl:text-xs"
-						>
-							{row.label}
-						</span>
-					</a>
-				{/each}
+				{@render categoryStats(false)}
 			</div>
 
 			<svg
@@ -262,7 +298,6 @@
 				aria-label="Media Club disc navigation"
 				onmouseenter={onCdMouseEnter}
 				onmouseleave={onCdMouseLeave}
-				onclick={onCdClick}
 			>
 				<defs>
 					<radialGradient id="cdSurface" cx="50%" cy="50%" r="50%">
@@ -323,7 +358,7 @@
 						pointer-events="none"
 					/>
 
-					{#each cdNavButtons as btn (btn.href)}
+					{#each cdNavButtons as btn, i (btn.href)}
 						{@const Icon = btn.icon}
 						{@const pos = cdNavPosition(btn.angle)}
 						<foreignObject
@@ -340,7 +375,9 @@
 								title={btn.label}
 								xmlns="http://www.w3.org/1999/xhtml"
 							>
-								<Icon size={22} weight="bold" />
+								<span class="cd-nav-icon">
+									<Icon size={22} weight="bold" />
+								</span>
 							</a>
 						</foreignObject>
 					{/each}
@@ -349,27 +386,7 @@
 
 			<!-- Mobile: compact row below disc -->
 			<div class="mt-6 flex flex-wrap items-center justify-center gap-5 sm:gap-6 lg:hidden">
-				{#each data.summary as row (row.category)}
-					{@const Icon = icons[row.category]}
-					<a
-						href="/{row.category === 'movie' ? 'movies' : row.category === 'music' ? 'music' : 'books'}"
-						class="group flex flex-col items-center gap-1 transition-transform hover:-translate-y-0.5"
-					>
-						<span
-							class="flex size-12 flex-col items-center justify-center gap-0.5 rounded-full bg-amber-400/15 ring-2 ring-amber-400/60 transition-all group-hover:bg-amber-400/25 group-hover:ring-amber-500 sm:size-14"
-						>
-							<Icon size={16} weight="bold" class="text-amber-600 dark:text-amber-400" />
-							<span class="text-xs font-black text-amber-500 group-hover:text-amber-600 sm:text-sm">
-								{row.owned + row.wishlist}
-							</span>
-						</span>
-						<span
-							class="text-[0.6rem] font-bold tracking-wider text-stone-600 uppercase sm:text-[0.65rem] dark:text-stone-400"
-						>
-							{row.label}
-						</span>
-					</a>
-				{/each}
+				{@render categoryStats(true)}
 			</div>
 		</div>
 	</div>
@@ -381,27 +398,6 @@
 		top: 0.75rem;
 		right: 0.75rem;
 		z-index: 50;
-		display: flex;
-		gap: 0.35rem;
-	}
-
-	.home-action-btn {
-		display: inline-flex;
-		width: 2.25rem;
-		height: 2.25rem;
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		border: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-surface-raised) / 0.92);
-		color: rgb(var(--color-text-secondary));
-		cursor: pointer;
-		backdrop-filter: blur(6px);
-	}
-
-	.home-action-btn:hover {
-		border-color: rgb(var(--color-accent));
-		color: rgb(var(--color-text));
 	}
 
 	.cd-disc {
@@ -409,7 +405,6 @@
 		height: min(720px, 88vw);
 		flex-shrink: 0;
 		opacity: 0.48;
-		cursor: pointer;
 	}
 
 	:global([data-theme='dark']) .cd-disc {
@@ -444,6 +439,13 @@
 		transform: scale(1.08);
 	}
 
+	/* Counter-rotated by WAAPI so icons stay upright while orbiting */
+	.cd-nav-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
 	.cd-nav-btn--primary {
 		border-color: rgb(245 158 11);
 		background-color: rgb(251 191 36);
@@ -454,23 +456,16 @@
 		background-color: rgb(245 158 11);
 	}
 
+	/* Theme tokens keep the orbiting buttons in tune with both themes */
 	.cd-nav-btn--secondary {
-		border-color: rgb(214 211 209);
-		background-color: rgb(255 255 255);
-		color: rgb(68 64 60);
+		border-color: rgb(var(--color-border));
+		background-color: rgb(var(--color-surface-raised));
+		color: rgb(var(--color-text-secondary));
 	}
 
 	.cd-nav-btn--secondary:hover {
-		background-color: rgb(250 250 249);
-	}
-
-	:global([data-theme='dark']) .cd-nav-btn--secondary {
-		border-color: rgb(87 83 78);
-		background-color: rgb(41 37 36);
-		color: rgb(214 211 209);
-	}
-
-	:global([data-theme='dark']) .cd-nav-btn--secondary:hover {
-		background-color: rgb(68 64 60);
+		border-color: rgb(var(--color-accent) / 0.6);
+		background-color: rgb(var(--color-accent-light));
+		color: rgb(var(--color-text));
 	}
 </style>

@@ -1,0 +1,1 @@
+ALTER TABLE `items` ADD `album_watched_at` integer;

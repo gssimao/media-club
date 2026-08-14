@@ -1,4 +1,4 @@
-import { and, asc, count, eq, isNotNull } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { albums, items } from '$lib/server/db/schema';
 import { setItemAlbumId, listItemsByAlbum } from '$lib/server/items';
@@ -58,20 +58,13 @@ export async function listItemsInAlbum(db: AppDatabase, albumId: string) {
 
 export async function createAlbum(
 	db: AppDatabase,
-	categoryOrInput: MediaCategory | {
+	input: {
 		category: MediaCategory;
 		title: string;
 		description?: string | null;
 		coverUrl?: string | null;
-	},
-	title?: string,
-	description?: string | null
+	}
 ) {
-	const input =
-		typeof categoryOrInput === 'string'
-			? { category: categoryOrInput, title: title ?? '', description: description ?? null }
-			: categoryOrInput;
-
 	const now = new Date();
 	const id = crypto.randomUUID();
 
@@ -133,9 +126,10 @@ export async function assignItemToAlbum(
 	return true;
 }
 
+/** Falls back to the cover of an item in the album when the album has none of its own. */
 export async function resolveAlbumCoverUrl(
 	db: AppDatabase,
-	album: typeof albums.$inferSelect
+	album: { id: string; coverUrl: string | null }
 ): Promise<string | null> {
 	if (album.coverUrl) return album.coverUrl;
 
@@ -148,25 +142,30 @@ export async function resolveAlbumCoverUrl(
 	return rows[0]?.coverUrl ?? null;
 }
 
+/** Batched variant of {@link resolveAlbumCoverUrl} — one query for all albums instead of one per album. */
 export async function resolveAlbumCoverUrls(
 	db: AppDatabase,
 	albumList: AlbumType[]
 ): Promise<Record<string, string | null>> {
 	const coverUrls: Record<string, string | null> = {};
+	const missing: string[] = [];
 
 	for (const album of albumList) {
-		if (album.coverUrl) {
-			coverUrls[album.id] = album.coverUrl;
-			continue;
-		}
+		coverUrls[album.id] = album.coverUrl;
+		if (!album.coverUrl) missing.push(album.id);
+	}
 
+	if (missing.length > 0) {
 		const rows = await db
-			.select({ coverUrl: items.coverUrl })
+			.select({ albumId: items.albumId, coverUrl: items.coverUrl })
 			.from(items)
-			.where(and(eq(items.albumId, album.id), isNotNull(items.coverUrl)))
-			.limit(1);
+			.where(and(inArray(items.albumId, missing), isNotNull(items.coverUrl)));
 
-		coverUrls[album.id] = rows[0]?.coverUrl ?? null;
+		for (const row of rows) {
+			if (row.albumId && !coverUrls[row.albumId]) {
+				coverUrls[row.albumId] = row.coverUrl;
+			}
+		}
 	}
 
 	return coverUrls;

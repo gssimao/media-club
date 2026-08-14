@@ -12,7 +12,14 @@ function createD1Db(d1: D1Database) {
 	return drizzleD1(d1, { schema });
 }
 
+// Reuse one connection per database file — opening a new better-sqlite3
+// handle on every request leaks file descriptors and defeats WAL caching.
+const localDbCache = new Map<string, ReturnType<typeof drizzleSqlite>>();
+
 function createLocalDb(url: string) {
+	const cached = localDbCache.get(url);
+	if (cached) return cached;
+
 	const filePath = url.replace(/^file:/, '');
 	const dir = dirname(filePath);
 	if (!existsSync(dir)) {
@@ -21,16 +28,17 @@ function createLocalDb(url: string) {
 
 	const sqlite = new Database(filePath);
 	sqlite.pragma('journal_mode = WAL');
-	return drizzleSqlite(sqlite, { schema });
+	const db = drizzleSqlite(sqlite, { schema });
+	localDbCache.set(url, db);
+	return db;
 }
 
 export function getDb(platform: App.Platform | undefined): AppDatabase {
-	const localUrl = process.env.DATABASE_URL ?? 'file:./data/media-club.db';
-
 	if (!dev && platform?.env?.DB) {
 		return createD1Db(platform.env.DB);
 	}
 
+	const localUrl = process.env.DATABASE_URL ?? 'file:./data/media-club.db';
 	return createLocalDb(localUrl) as unknown as AppDatabase;
 }
 

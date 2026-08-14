@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { type ListType, type MediaCategory } from '$lib/types/media';
 	import type { SearchResult } from '$lib/types/media';
-	import { CircleNotch, Plus, CheckCircle } from 'phosphor-svelte';
+	import { Plus, CheckCircle, VinylRecord } from 'phosphor-svelte';
 
 	let category = $state<MediaCategory>('movie');
 	let listType = $state<ListType>('owned');
@@ -13,20 +15,35 @@
 	let addedMessage = $state('');
 
 	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+	let abortController: AbortController | null = null;
+
+	$effect(() => {
+		return () => {
+			clearTimeout(debounceTimer);
+			abortController?.abort();
+		};
+	});
 
 	async function runSearch(value: string) {
+		// Cancel any in-flight request so a slow response can't overwrite a newer one.
+		abortController?.abort();
+
 		const trimmed = value.trim();
 		if (trimmed.length < 2) {
 			results = [];
+			loading = false;
 			return;
 		}
 
+		const controller = new AbortController();
+		abortController = controller;
 		loading = true;
 		errorMessage = '';
 
 		try {
 			const response = await fetch(
-				`/api/search?category=${category}&q=${encodeURIComponent(trimmed)}`
+				`/api/search?category=${category}&q=${encodeURIComponent(trimmed)}`,
+				{ signal: controller.signal }
 			);
 
 			if (!response.ok) {
@@ -36,10 +53,11 @@
 
 			const data = (await response.json()) as { results: SearchResult[] };
 			results = data.results;
+			loading = false;
 		} catch (error) {
+			if (controller.signal.aborted) return;
 			errorMessage = error instanceof Error ? error.message : 'Search failed';
 			results = [];
-		} finally {
 			loading = false;
 		}
 	}
@@ -48,6 +66,11 @@
 		query = value;
 		clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(() => runSearch(value), 350);
+	}
+
+	function handleCategoryChange() {
+		clearTimeout(debounceTimer);
+		runSearch(query);
 	}
 </script>
 
@@ -62,7 +85,7 @@
 	{#snippet controls()}
 		<label class="space-y-2 text-sm">
 			<span class="font-bold text-stone-700 dark:text-stone-300">Category</span>
-			<select bind:value={category} onchange={() => runSearch(query)} class="input-round w-full">
+			<select bind:value={category} onchange={handleCategoryChange} class="input-round w-full">
 				<option value="movie">Movies (TMDB)</option>
 				<option value="music">Music (Discogs)</option>
 				<option value="book">Books (Open Library)</option>
@@ -76,7 +99,7 @@
 					class="inline-flex items-center gap-2 rounded-full px-4 py-2 transition-colors {listType ===
 					'owned'
 						? 'bg-amber-400 font-bold text-stone-900'
-						: 'font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-700'}"
+						: 'font-medium text-stone-700 hover:bg-[rgb(var(--color-accent-light))] dark:text-stone-300 dark:hover:bg-stone-700'}"
 				>
 					<input type="radio" bind:group={listType} value="owned" class="accent-amber-500" />
 					Collection
@@ -85,7 +108,7 @@
 					class="inline-flex items-center gap-2 rounded-full px-4 py-2 transition-colors {listType ===
 					'wishlist'
 						? 'bg-amber-400 font-bold text-stone-900'
-						: 'font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-700'}"
+						: 'font-medium text-stone-700 hover:bg-[rgb(var(--color-accent-light))] dark:text-stone-300 dark:hover:bg-stone-700'}"
 				>
 					<input type="radio" bind:group={listType} value="wishlist" class="accent-amber-500" />
 					Wishlist
@@ -95,16 +118,10 @@
 	{/snippet}
 
 	<div class="space-y-6">
-		<label class="block space-y-2 text-sm">
+		<div class="space-y-2 text-sm">
 			<span class="font-bold text-stone-700 dark:text-stone-300">Search</span>
-			<input
-				type="search"
-				value={query}
-				oninput={(event) => handleInput(event.currentTarget.value)}
-				placeholder="Start typing a title…"
-				class="input-round w-full"
-			/>
-		</label>
+			<SearchBar bind:value={query} onInput={handleInput} placeholder="Start typing a title…" />
+		</div>
 
 		{#if addedMessage}
 			<div
@@ -127,20 +144,32 @@
 			<p
 				class="inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400"
 			>
-				<CircleNotch size={16} weight="bold" class="animate-spin" />
-				Searching…
+				<VinylRecord
+					size={18}
+					weight="bold"
+					class="animate-spin text-amber-500 [animation-duration:1.4s]"
+				/>
+				Spinning up results…
 			</p>
 		{/if}
 
 		{#if results.length > 0}
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				{#each results as result (result.externalId)}
-					<article class="surface-round flex gap-4 p-4">
+				{#each results as result, index (result.externalId)}
+					<article
+						class="surface-round anim-rise flex gap-4 p-4"
+						style="--rise-delay: {Math.min(index * 40, 320)}ms"
+					>
 						<div
-							class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-stone-100 dark:bg-stone-900"
+							class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 						>
 							{#if result.coverUrl}
-								<img src={result.coverUrl} alt="" class="h-full w-full object-cover" loading="lazy" />
+								<img
+									src={result.coverUrl}
+									alt="{result.title} cover"
+									class="h-full w-full object-cover"
+									loading="lazy"
+								/>
 							{/if}
 						</div>
 						<div class="flex flex-1 flex-col gap-3">
@@ -149,12 +178,14 @@
 									{result.title}
 								</h2>
 								{#if result.subtitle}
-									<p class="mt-1 line-clamp-1 text-xs font-medium text-stone-600 dark:text-stone-400">
+									<p
+										class="mt-1 line-clamp-1 text-xs font-medium text-stone-600 dark:text-stone-400"
+									>
 										{result.subtitle}
 									</p>
 								{/if}
 								{#if result.year}
-									<p class="mt-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+									<p class="mt-1 text-xs font-bold text-amber-700 dark:text-amber-400">
 										{result.year}
 									</p>
 								{/if}
@@ -163,8 +194,17 @@
 							<form
 								method="POST"
 								action="/admin/items?/add"
-								onsubmit={() => {
-									addedMessage = `Added "${result.title}" to ${listType}.`;
+								use:enhance={() => {
+									addedMessage = '';
+									errorMessage = '';
+									return async ({ result: actionResult, update }) => {
+										if (actionResult.type === 'failure') {
+											errorMessage = String(actionResult.data?.message ?? 'Could not add item.');
+										} else {
+											addedMessage = `Added "${result.title}" to ${listType === 'owned' ? 'the collection' : 'the wishlist'}.`;
+										}
+										await update();
+									};
 								}}
 							>
 								<input type="hidden" name="category" value={category} />

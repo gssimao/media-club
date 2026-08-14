@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
-	import { Plus, MagnifyingGlass, Clock } from 'phosphor-svelte';
+	import { Plus, Clock } from 'phosphor-svelte';
 
 	let { data } = $props();
 </script>
@@ -11,27 +11,26 @@
 
 <PageShell
 	title="Admin"
-	description="Welcome, {data.user?.username}. Add items from metadata APIs, manage notes, or move wishlist items into the collection."
+	description="Welcome, {data.user
+		?.username}. Add items from metadata APIs, manage notes, or move wishlist items into the collection."
 >
 	{#snippet controls()}
 		<a href="/admin/search" class="btn-primary px-5 py-2.5 text-sm">
 			<Plus size={16} weight="bold" />
 			Add from search
 		</a>
-
-		<a
-			href="/admin/search"
-			class="pill-nav text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-stone-800"
-		>
-			<MagnifyingGlass size={16} weight="bold" />
-			Open search panel
-		</a>
 	{/snippet}
 
 	<div class="surface-round p-6">
 		<div class="flex items-center gap-2">
-			<span class="flex size-10 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-900">
-				<Clock size={20} weight="bold" class="text-stone-600 dark:text-stone-400" />
+			<span
+				class="flex size-10 items-center justify-center rounded-full bg-[rgb(var(--color-accent-light))] dark:bg-stone-900"
+			>
+				<Clock
+					size={20}
+					weight="bold"
+					class="text-[rgb(var(--color-text-secondary))] dark:text-stone-400"
+				/>
 			</span>
 			<h2 class="text-lg font-black text-stone-900 uppercase dark:text-amber-50">Recent changes</h2>
 		</div>
@@ -43,7 +42,7 @@
 			<ul class="mt-4 space-y-2">
 				{#each data.recent as item (item.id)}
 					<li
-						class="flex items-center justify-between gap-4 rounded-[2rem] bg-stone-50 px-4 py-3 dark:bg-stone-900/50"
+						class="flex items-center justify-between gap-4 rounded-[2rem] bg-[rgb(var(--color-surface))] px-4 py-3 dark:bg-stone-900/50"
 					>
 						<div class="min-w-0 flex-1">
 							<p class="truncate font-bold text-stone-900 dark:text-amber-50">{item.title}</p>

@@ -22,14 +22,16 @@ export async function searchMusic(token: string, query: string): Promise<SearchR
 	const params = new URLSearchParams({
 		q: query,
 		type: 'release',
-		format: 'Vinyl'
+		format: 'Vinyl',
+		per_page: '12'
 	});
 
 	const response = await fetch(`${DISCOGS_API_BASE}/database/search?${params.toString()}`, {
 		headers: {
 			Authorization: `Discogs token=${token}`,
 			'User-Agent': 'MediaClub/1.0 (self-hosted media inventory)'
-		}
+		},
+		signal: AbortSignal.timeout(10_000)
 	});
 
 	if (!response.ok) {

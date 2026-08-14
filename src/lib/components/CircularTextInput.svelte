@@ -53,7 +53,7 @@
 <div class={cn('flex flex-col items-center gap-2', className)}>
 	<div
 		role="presentation"
-		class="group relative size-56 cursor-text rounded-full border-2 border-stone-300 bg-stone-50 transition-all dark:border-stone-600 dark:bg-stone-900 {focused
+		class="group relative size-48 cursor-text rounded-full border-2 border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] transition-all sm:size-56 {focused
 			? 'border-amber-400 shadow-[0_0_0_4px_rgba(251,191,36,0.25)] dark:border-amber-500'
 			: 'hover:border-amber-300 dark:hover:border-amber-600'}"
 		onclick={focusInput}
@@ -78,8 +78,24 @@
 				stroke-width="1"
 				class="opacity-20"
 			/>
-			<circle cx="120" cy="120" r="98" fill="none" stroke="currentColor" stroke-width="0.75" class="opacity-15" />
-			<circle cx="120" cy="120" r="86" fill="none" stroke="currentColor" stroke-width="0.75" class="opacity-10" />
+			<circle
+				cx="120"
+				cy="120"
+				r="98"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="0.75"
+				class="opacity-15"
+			/>
+			<circle
+				cx="120"
+				cy="120"
+				r="86"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="0.75"
+				class="opacity-10"
+			/>
 			<circle
 				cx="120"
 				cy="120"
@@ -119,14 +135,18 @@
 		</svg>
 
 		{#if value.length === 0 && placeholder}
-			<svg viewBox="0 0 240 240" class="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
+			<svg
+				viewBox="0 0 240 240"
+				class="pointer-events-none absolute inset-0 size-full"
+				aria-hidden="true"
+			>
 				<text
 					x="120"
 					y="46"
 					text-anchor="middle"
 					dominant-baseline="middle"
 					transform="rotate(-90 120 120)"
-					class="fill-stone-400/70 text-[11px] font-semibold tracking-widest uppercase dark:fill-stone-500/70"
+					class="fill-[rgb(var(--color-text-tertiary))] text-[11px] font-semibold tracking-widest uppercase"
 				>
 					{placeholder}
 				</text>
@@ -160,9 +180,9 @@
 		/>
 	</div>
 
-	<span class="text-xs font-bold tracking-wide text-stone-600 uppercase dark:text-stone-400">
+	<span class="text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase">
 		{label}
-		<span class="font-medium text-stone-400 normal-case dark:text-stone-500">
+		<span class="font-medium text-[rgb(var(--color-text-tertiary))] normal-case">
 			· {value.length}/{MAX_CHARS}
 		</span>
 	</span>

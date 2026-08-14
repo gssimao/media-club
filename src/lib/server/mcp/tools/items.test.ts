@@ -29,19 +29,12 @@ function parseToolResult(result: ReturnType<typeof toolSuccess>) {
 describe('MCP item workflow', () => {
 	let sqlite: Database.Database;
 	let db: AppDatabase;
-	let ctx: McpContext;
 
 	beforeAll(() => {
 		sqlite = new Database(':memory:');
 		const localDb = drizzle(sqlite, { schema });
 		migrate(localDb, { migrationsFolder: join(process.cwd(), 'drizzle') });
 		db = localDb as unknown as AppDatabase;
-		ctx = {
-			db,
-			platform: undefined,
-			clientIp: 'test',
-			rateLimitKey: 'mcp-key:test'
-		};
 	});
 
 	afterAll(() => {
@@ -194,9 +187,7 @@ describe('mcpAddMediaItem', () => {
 		};
 
 		await runWithMcpContext(ctx, () => mcpAddMediaItem(input, 'add_media_item'));
-		const duplicate = await runWithMcpContext(ctx, () =>
-			mcpAddMediaItem(input, 'add_media_item')
-		);
+		const duplicate = await runWithMcpContext(ctx, () => mcpAddMediaItem(input, 'add_media_item'));
 		const parsed = parseToolResult(duplicate);
 		expect(parsed.success).toBe(true);
 		expect(parsed.data).toMatchObject({

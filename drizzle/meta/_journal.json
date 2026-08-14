@@ -15,6 +15,13 @@
       "when": 1786450934729,
       "tag": "0001_aromatic_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786590725523,
+      "tag": "0002_amused_kronos",
+      "breakpoints": true
     }
   ]
 }

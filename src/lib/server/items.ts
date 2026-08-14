@@ -26,6 +26,7 @@ export function mapItem(row: typeof items.$inferSelect) {
 		coverUrl: row.coverUrl,
 		metadata: parseMetadata(row.metadata),
 		notes: row.notes,
+		albumWatchedAt: row.albumWatchedAt,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt
 	};
@@ -59,26 +60,6 @@ export async function listItemsFiltered(
 		.select()
 		.from(items)
 		.where(and(...conditions))
-		.orderBy(desc(items.createdAt));
-
-	return rows.map(mapItem);
-}
-
-export async function listUngroupedItems(
-	db: AppDatabase,
-	category: MediaCategory,
-	listType: ListType
-) {
-	const rows = await db
-		.select()
-		.from(items)
-		.where(
-			and(
-				eq(items.category, category),
-				eq(items.listType, listType),
-				isNull(items.albumId)
-			)
-		)
 		.orderBy(desc(items.createdAt));
 
 	return rows.map(mapItem);
@@ -157,7 +138,7 @@ export async function addItem(
 	const now = new Date();
 	const metadata = result.metadata ? JSON.stringify(result.metadata) : null;
 
-	await db
+	const inserted = await db
 		.insert(items)
 		.values({
 			category,
@@ -173,21 +154,26 @@ export async function addItem(
 			createdAt: now,
 			updatedAt: now
 		})
-		.onConflictDoNothing();
+		.onConflictDoNothing()
+		.returning({ id: items.id });
 
-	const inserted = await db
-		.select({ id: items.id })
-		.from(items)
-		.where(
-			and(
-				eq(items.category, category),
-				eq(items.externalId, result.externalId),
-				eq(items.listType, listType)
+	// A concurrent insert can win the race; report the existing row in that case.
+	if (!inserted[0]) {
+		const existingAfterConflict = await db
+			.select({ id: items.id })
+			.from(items)
+			.where(
+				and(
+					eq(items.category, category),
+					eq(items.externalId, result.externalId),
+					eq(items.listType, listType)
+				)
 			)
-		)
-		.limit(1);
+			.limit(1);
+		return { inserted: false, id: existingAfterConflict[0]?.id ?? null };
+	}
 
-	return { inserted: true, id: inserted[0]?.id ?? null };
+	return { inserted: true, id: inserted[0].id };
 }
 
 export async function getItemById(db: AppDatabase, id: string) {
@@ -206,19 +192,32 @@ export async function listItemsByAlbum(db: AppDatabase, albumId: string) {
 	return rows.map(mapItem);
 }
 
-export async function setItemAlbumId(
-	db: AppDatabase,
-	itemId: string,
-	albumId: string | null
-) {
+export async function setItemAlbumId(db: AppDatabase, itemId: string, albumId: string | null) {
+	const rows = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+	const item = rows[0];
+	if (!item) return;
+
+	const albumChanged = item.albumId !== albumId;
+
 	await db
 		.update(items)
-		.set({ albumId, updatedAt: new Date() })
+		.set({
+			albumId,
+			albumWatchedAt: albumChanged ? null : item.albumWatchedAt,
+			updatedAt: new Date()
+		})
 		.where(eq(items.id, itemId));
 }
 
 export async function updateItemNotes(db: AppDatabase, id: string, notes: string | null) {
 	await db.update(items).set({ notes, updatedAt: new Date() }).where(eq(items.id, id));
+}
+
+export async function setAlbumWatched(db: AppDatabase, id: string, watched: boolean) {
+	await db
+		.update(items)
+		.set({ albumWatchedAt: watched ? new Date() : null, updatedAt: new Date() })
+		.where(eq(items.id, id));
 }
 
 export async function updateItemTags(db: AppDatabase, id: string, tags: string[]) {

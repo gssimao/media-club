@@ -30,7 +30,7 @@ export function resolveDefaultRoute(raw: string | undefined | null): string | nu
 	const trimmed = raw?.trim();
 	if (!trimmed || trimmed === '/') return null;
 
-	let path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+	const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
 	if (path.includes('://') || path.startsWith('//')) return null;
 
 	const pathname = path.split(/[?#]/)[0];

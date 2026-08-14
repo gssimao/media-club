@@ -1,14 +1,21 @@
-import { fail, redirect } from '@sveltejs/kit';
-import { assignItemToAlbum, createAlbum, deleteAlbum } from '$lib/server/albums';
-import { addItem, deleteItem, moveToOwned, updateItemNotes, updateItemTags } from '$lib/server/items';
+import { fail } from '@sveltejs/kit';
+import {
+	backToReferer,
+	MAX_NOTES_LENGTH,
+	MAX_TITLE_LENGTH,
+	requireAdmin,
+	sanitizeHttpUrl
+} from '$lib/server/admin';
+import {
+	addItem,
+	deleteItem,
+	moveToOwned,
+	setAlbumWatched,
+	updateItemNotes,
+	updateItemTags
+} from '$lib/server/items';
 import { isListType, isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
-
-function requireAdmin(locals: App.Locals) {
-	if (!locals.user) {
-		redirect(303, '/login');
-	}
-}
 
 export const actions: Actions = {
 	add: async ({ request, locals }) => {
@@ -22,12 +29,15 @@ export const actions: Actions = {
 		const subtitle = form.get('subtitle') ? String(form.get('subtitle')) : null;
 		const yearRaw = form.get('year');
 		const year = yearRaw ? Number.parseInt(String(yearRaw), 10) : null;
-		const coverUrl = form.get('coverUrl') ? String(form.get('coverUrl')) : null;
+		const coverUrl = sanitizeHttpUrl(form.get('coverUrl'));
 		const metadataRaw = form.get('metadata');
-		const notes = form.get('notes') ? String(form.get('notes')) : null;
+		const notes = form.get('notes') ? String(form.get('notes')).slice(0, MAX_NOTES_LENGTH) : null;
 
 		if (!isMediaCategory(category) || !isListType(listType) || !externalId || !title) {
 			return fail(400, { message: 'Invalid item payload.' });
+		}
+		if (title.length > MAX_TITLE_LENGTH) {
+			return fail(400, { message: 'Title is too long.' });
 		}
 
 		let metadata: Record<string, unknown> | undefined;
@@ -54,7 +64,7 @@ export const actions: Actions = {
 			{ notes }
 		);
 
-		return { success: true };
+		backToReferer(request, '/admin/search');
 	},
 
 	delete: async ({ request, locals }) => {
@@ -64,7 +74,7 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await deleteItem(locals.db, id);
-		return { success: true };
+		backToReferer(request);
 	},
 
 	moveToOwned: async ({ request, locals }) => {
@@ -74,18 +84,20 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await moveToOwned(locals.db, id);
-		return { success: true };
+		backToReferer(request);
 	},
 
 	updateNotes: async ({ request, locals }) => {
 		requireAdmin(locals);
 		const form = await request.formData();
 		const id = String(form.get('id') ?? '');
-		const notes = String(form.get('notes') ?? '').trim();
+		const notes = String(form.get('notes') ?? '')
+			.trim()
+			.slice(0, MAX_NOTES_LENGTH);
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await updateItemNotes(locals.db, id, notes || null);
-		return { success: true };
+		backToReferer(request);
 	},
 
 	updateTags: async ({ request, locals }) => {
@@ -106,46 +118,18 @@ export const actions: Actions = {
 		}
 
 		await updateItemTags(locals.db, id, tags);
-		return { success: true };
+		backToReferer(request);
 	},
 
-	createAlbum: async ({ request, locals }) => {
-		requireAdmin(locals);
-		const form = await request.formData();
-		const category = String(form.get('category') ?? '');
-		const title = String(form.get('title') ?? '').trim();
-		const description = form.get('description') ? String(form.get('description')) : null;
-
-		if (!isMediaCategory(category) || !title) {
-			return fail(400, { message: 'Invalid album payload.' });
-		}
-
-		await createAlbum(locals.db, { category, title, description });
-		return { success: true };
-	},
-
-	assignAlbum: async ({ request, locals }) => {
-		requireAdmin(locals);
-		const form = await request.formData();
-		const itemId = String(form.get('itemId') ?? '');
-		const albumIdRaw = form.get('albumId');
-		const albumId = albumIdRaw ? String(albumIdRaw) : null;
-
-		if (!itemId) return fail(400, { message: 'Missing item id.' });
-
-		const ok = await assignItemToAlbum(locals.db, itemId, albumId);
-		if (!ok) return fail(400, { message: 'Could not assign item to album.' });
-
-		return { success: true };
-	},
-
-	deleteAlbum: async ({ request, locals }) => {
+	toggleAlbumWatched: async ({ request, locals }) => {
 		requireAdmin(locals);
 		const form = await request.formData();
 		const id = String(form.get('id') ?? '');
-		if (!id) return fail(400, { message: 'Missing album id.' });
+		const watchedRaw = String(form.get('watched') ?? '');
+		if (!id) return fail(400, { message: 'Missing item id.' });
 
-		await deleteAlbum(locals.db, id);
-		return { success: true };
+		const watched = watchedRaw === 'true' || watchedRaw === '1';
+		await setAlbumWatched(locals.db, id, watched);
+		backToReferer(request);
 	}
 };

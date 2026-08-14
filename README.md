@@ -29,15 +29,15 @@ Default admin credentials (change in `.env` before seeding):
 
 ## Features
 
-| Feature            | Description                                          |
-| ------------------ | ---------------------------------------------------- |
-| Collections        | Owned movies, music (vinyl), and books               |
+| Feature            | Description                                               |
+| ------------------ | --------------------------------------------------------- |
+| Collections        | Owned movies, music (vinyl), and books                    |
 | Albums             | Per-category folders for owned media (one album per item) |
-| Wishlists          | Separate lists per category                          |
-| API search         | Admin adds items from TMDB / Discogs / Open Library  |
-| Move to collection | One-click wishlist → owned                           |
-| Notes              | Optional per-item notes (edition, format, condition) |
-| Public read        | Anyone can view; mutations require admin login       |
+| Wishlists          | Separate lists per category                               |
+| API search         | Admin adds items from TMDB / Discogs / Open Library       |
+| Move to collection | One-click wishlist → owned                                |
+| Notes              | Optional per-item notes (edition, format, condition)      |
+| Public read        | Anyone can view; mutations require admin login            |
 
 ## Deployment
 
@@ -52,15 +52,28 @@ Architecture overview: [docs/architecture.md](docs/architecture.md)
 
 ## Scripts
 
-| Command                     | Purpose                        |
-| --------------------------- | ------------------------------ |
-| `npm run dev`               | Local dev server (SQLite file) |
-| `npm run build`             | Cloudflare Worker build        |
-| `npm run build:docker`      | Node adapter build for Docker  |
-| `npm run deploy`            | Deploy to Cloudflare           |
-| `npm run db:migrate`        | Apply migrations locally       |
-| `npm run db:migrate:remote` | Apply migrations to D1         |
-| `npm run db:seed`           | Seed admin user + demo items   |
+| Command                     | Purpose                                     |
+| --------------------------- | ------------------------------------------- |
+| `npm run dev`               | Local dev server (SQLite file)              |
+| `npm run build`             | Cloudflare Worker build                     |
+| `npm run build:docker`      | Node adapter build for Docker               |
+| `npm run deploy`            | Deploy to Cloudflare                        |
+| `npm run db:migrate`        | Apply migrations locally                    |
+| `npm run db:migrate:remote` | Apply migrations to D1                      |
+| `npm run db:seed`           | Seed admin user + demo items                |
+| `npm run theme`             | Regenerate theme CSS from the color palette |
+
+## Customizing colors
+
+All light and dark mode colors live in one file: [`src/lib/theme/palette.ts`](src/lib/theme/palette.ts).
+
+1. Edit the hex values in `palette.ts` (each token is documented inline)
+2. Run `npm run theme` — this regenerates `src/routes/theme.css`
+3. Refresh the app (the dev server hot-reloads automatically)
+
+The generator checks WCAG contrast for every text/background pair and warns you if a
+combination will be hard to read (and exits non-zero so CI can catch it). Never edit
+`src/routes/theme.css` directly — it is overwritten on every run.
 
 ## Environment variables
 

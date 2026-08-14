@@ -1,18 +1,6 @@
-import { listAlbumsByCategory, resolveAlbumCoverUrls } from '$lib/server/albums';
-import { listUngroupedItems } from '$lib/server/items';
+import { loadCategoryPage } from '$lib/server/category-page';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const [albums, items] = await Promise.all([
-		listAlbumsByCategory(locals.db, 'book'),
-		listUngroupedItems(locals.db, 'book', 'owned')
-	]);
-	const coverUrls = await resolveAlbumCoverUrls(locals.db, albums);
-
-	return {
-		albums,
-		coverUrls,
-		items,
-		isAdmin: Boolean(locals.user)
-	};
+	return loadCategoryPage(locals.db, 'book', Boolean(locals.user));
 };

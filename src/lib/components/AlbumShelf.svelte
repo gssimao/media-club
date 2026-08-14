@@ -21,15 +21,26 @@
 			</h2>
 			<a
 				href="/albums/{category}"
-				class="pill-nav bg-amber-400/10 text-amber-600 hover:bg-amber-400/20 dark:text-amber-400"
+				class="pill-nav bg-amber-400/15 text-amber-700 hover:bg-amber-400/25 dark:text-amber-400"
 			>
 				See all
 			</a>
 		</div>
-		<div class="flex gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-			{#each preview as album (album.id)}
-				<AlbumCard album={album} displayCoverUrl={coverUrls[album.id] ?? null} />
-			{/each}
+		<div class="relative">
+			<div
+				class="flex snap-x [scrollbar-width:none] gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+			>
+				{#each preview as album, index (album.id)}
+					<div class="anim-rise shrink-0 snap-start" style="--rise-delay: {index * 50}ms">
+						<AlbumCard {album} displayCoverUrl={coverUrls[album.id] ?? null} />
+					</div>
+				{/each}
+			</div>
+			<!-- Edge fade hints that the shelf keeps scrolling -->
+			<div
+				class="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[rgb(var(--color-bg))] to-transparent"
+				aria-hidden="true"
+			></div>
 		</div>
 	</section>
 {/if}

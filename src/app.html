@@ -10,6 +10,29 @@
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 			rel="stylesheet"
 		/>
+		<script nonce="%sveltekit.nonce%">
+			// Apply saved theme and motion preferences before first paint to avoid flashes.
+			(function () {
+				try {
+					var stored = localStorage.getItem('theme');
+					var theme =
+						stored === 'light' || stored === 'dark'
+							? stored
+							: window.matchMedia('(prefers-color-scheme: dark)').matches
+								? 'dark'
+								: 'light';
+					document.documentElement.setAttribute('data-theme', theme);
+
+					var settings = JSON.parse(localStorage.getItem('media-club-settings') || '{}');
+					document.documentElement.setAttribute(
+						'data-motion',
+						settings.motion === 'reduced' ? 'reduced' : 'full'
+					);
+				} catch (e) {
+					document.documentElement.setAttribute('data-theme', 'dark');
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

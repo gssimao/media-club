@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Fuse from 'fuse.js';
 	import type { Album, MediaItem } from '$lib/types/media';
+	import { settings } from '$lib/stores/settings.svelte';
+	import EmptyState from './EmptyState.svelte';
 	import MediaCard from './MediaCard.svelte';
 	import SearchBar from './SearchBar.svelte';
 
@@ -10,9 +12,23 @@
 		albums?: Album[];
 		emptyTitle: string;
 		emptyDescription: string;
+		highlightedId?: string | null;
+		showAlbumWatchedToggle?: boolean;
+		sectionTitle?: string;
+		showSearch?: boolean;
 	}
 
-	let { items, isAdmin, albums = [], emptyTitle, emptyDescription }: Props = $props();
+	let {
+		items,
+		isAdmin,
+		albums = [],
+		emptyTitle,
+		emptyDescription,
+		highlightedId = null,
+		showAlbumWatchedToggle = false,
+		sectionTitle,
+		showSearch = true
+	}: Props = $props();
 
 	let query = $state('');
 
@@ -33,29 +49,55 @@
 		if (!trimmed) return items;
 		return fuse.search(trimmed).map((result) => result.item);
 	});
+
+	// Shelf density from Settings — Compact packs more discs per row (they scale down fluidly).
+	const gridClass = $derived(
+		settings.density === 'compact'
+			? 'grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
+			: 'grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+	);
 </script>
 
 <div class="media-grid">
-	<div class="media-grid__search">
-		<SearchBar bind:value={query} onInput={(value) => (query = value)} />
-	</div>
+	{#if showSearch}
+		<div class="media-grid__search">
+			<SearchBar bind:value={query} onInput={(value) => (query = value)} />
+		</div>
+	{/if}
 
 	<div class="media-grid__body space-y-6">
 		<p class="text-sm font-bold tracking-wide text-stone-600 uppercase dark:text-stone-400">
-			{filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
+			{#if sectionTitle}
+				{sectionTitle}
+				<span class="font-medium text-[rgb(var(--color-text-tertiary))] normal-case">
+					· {filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
+				</span>
+			{:else}
+				{filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
+			{/if}
 		</p>
 
 		{#if filteredItems.length === 0}
-			<div class="surface-round border-dashed px-6 py-16 text-center">
-				<h2 class="text-lg font-black text-stone-900 uppercase dark:text-white">{emptyTitle}</h2>
-				<p class="mt-2 text-sm font-medium text-stone-600 dark:text-stone-400">
-					{emptyDescription}
-				</p>
-			</div>
+			{#if query.trim()}
+				<EmptyState
+					title="No matches"
+					description={`Nothing in this list matches “${query.trim()}”.`}
+				/>
+			{:else}
+				<EmptyState title={emptyTitle} description={emptyDescription} />
+			{/if}
 		{:else}
-			<div class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-				{#each filteredItems as item (item.id)}
-					<MediaCard {item} {isAdmin} {albums} />
+			<div class={gridClass}>
+				{#each filteredItems as item, index (item.id)}
+					<div class="anim-rise min-w-0" style="--rise-delay: {Math.min(index * 40, 400)}ms">
+						<MediaCard
+							{item}
+							{isAdmin}
+							{albums}
+							highlighted={highlightedId === item.id}
+							{showAlbumWatchedToggle}
+						/>
+					</div>
 				{/each}
 			</div>
 		{/if}

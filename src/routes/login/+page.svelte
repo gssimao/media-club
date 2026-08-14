@@ -13,7 +13,10 @@
 	title="Admin login"
 	description="Only the site admin can add, edit, or remove items. Everyone else can browse the catalog."
 >
-	<form method="POST" class="surface-round mx-auto max-w-md space-y-6 p-8">
+	<form
+		method="POST"
+		class="surface-round mx-auto w-full max-w-md space-y-6 p-6 sm:p-8 lg:max-w-2xl"
+	>
 		{#if form?.message}
 			<div
 				class="rounded-[2rem] border border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
@@ -22,7 +25,7 @@
 			</div>
 		{/if}
 
-		<div class="flex flex-col items-center gap-8 sm:flex-row sm:justify-center">
+		<div class="flex flex-col items-center gap-8 lg:flex-row lg:justify-center">
 			<CircularTextInput
 				name="username"
 				label="Username"

@@ -30,7 +30,9 @@ export async function searchBooks(query: string): Promise<SearchResult[]> {
 		fields: 'key,title,author_name,first_publish_year,cover_i'
 	});
 
-	const response = await fetch(`${OPEN_LIBRARY_SEARCH}?${params.toString()}`);
+	const response = await fetch(`${OPEN_LIBRARY_SEARCH}?${params.toString()}`, {
+		signal: AbortSignal.timeout(10_000)
+	});
 	if (!response.ok) {
 		throw new Error(`Open Library search failed (${response.status})`);
 	}
