@@ -12,7 +12,8 @@ import {
 	moveToOwned,
 	setAlbumWatched,
 	updateItemNotes,
-	updateItemTags
+	updateItemTags,
+	updateItemCover
 } from '$lib/server/items';
 import { isListType, isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
@@ -118,6 +119,27 @@ export const actions: Actions = {
 		}
 
 		await updateItemTags(locals.db, id, tags);
+		backToReferer(request);
+	},
+
+	updateCover: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		const coverUrl = sanitizeHttpUrl(form.get('coverUrl'));
+		const metadataRaw = form.get('metadata');
+		if (!id) return fail(400, { message: 'Missing item id.' });
+
+		let metadataPatch: Record<string, unknown> | undefined;
+		if (metadataRaw) {
+			try {
+				metadataPatch = JSON.parse(String(metadataRaw)) as Record<string, unknown>;
+			} catch {
+				metadataPatch = undefined;
+			}
+		}
+
+		await updateItemCover(locals.db, id, coverUrl, metadataPatch);
 		backToReferer(request);
 	},
 

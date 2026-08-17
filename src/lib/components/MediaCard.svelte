@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
 	import AssignAlbumControl from './AssignAlbumControl.svelte';
+	import CoverSearchPicker from './CoverSearchPicker.svelte';
 	import { CATEGORY_ACTION_WORDING, type Album, type MediaItem } from '$lib/types/media';
 	import {
 		FORMAT_TAG_PRESETS,
@@ -8,7 +10,7 @@
 		getDisplayTags,
 		toggleTag
 	} from '$lib/utils/format-tags';
-	import { Check, Eye, EyeSlash, PencilSimple, Trash } from 'phosphor-svelte';
+	import { Check, Eye, EyeSlash, Image, PencilSimple, Trash } from 'phosphor-svelte';
 
 	interface Props {
 		item: MediaItem;
@@ -33,6 +35,16 @@
 	const wording = $derived(CATEGORY_ACTION_WORDING[item.category]);
 
 	let editingNotes = $state(false);
+	let editingCover = $state(false);
+	let pendingCoverUrl = $state<string | null>(null);
+	let pendingCoverMetadata = $state<string>('');
+	let coverForm: HTMLFormElement | undefined = $state();
+
+	function handleCoverSelect(coverUrl: string, metadata?: Record<string, unknown>) {
+		pendingCoverUrl = coverUrl;
+		pendingCoverMetadata = metadata ? JSON.stringify(metadata) : '';
+		void tick().then(() => coverForm?.requestSubmit());
+	}
 </script>
 
 <article
@@ -232,7 +244,7 @@
 				</form>
 			{/if}
 
-			{#if !editingNotes}
+			{#if !editingNotes && !(isAdmin && item.category === 'movie' && editingCover)}
 				<button
 					type="button"
 					onclick={() => (editingNotes = true)}
@@ -241,6 +253,64 @@
 					<PencilSimple size={11} weight="bold" />
 					Notes
 				</button>
+			{/if}
+
+			{#if item.category === 'movie' && !editingNotes && !editingCover}
+				<button
+					type="button"
+					onclick={() => (editingCover = true)}
+					class="btn-secondary inline-flex w-full justify-center px-2.5 py-1.5 text-[10px]"
+				>
+					<Image size={11} weight="bold" />
+					Change cover
+				</button>
+			{/if}
+
+			{#if item.category === 'movie' && editingCover}
+				<div class="surface-round space-y-2 p-3">
+					<CoverSearchPicker category="movie" onSelect={handleCoverSelect} />
+					<form
+						bind:this={coverForm}
+						method="POST"
+						action="/admin/items?/updateCover"
+						class="hidden"
+						use:enhance={() => {
+							return async ({ update }) => {
+								editingCover = false;
+								pendingCoverUrl = null;
+								pendingCoverMetadata = '';
+								await update();
+							};
+						}}
+					>
+						<input type="hidden" name="id" value={item.id} />
+						<input type="hidden" name="coverUrl" value={pendingCoverUrl ?? ''} />
+						<input type="hidden" name="metadata" value={pendingCoverMetadata} />
+					</form>
+					<form
+						method="POST"
+						action="/admin/items?/updateCover"
+						use:enhance={() => {
+							return async ({ update }) => {
+								editingCover = false;
+								await update();
+							};
+						}}
+					>
+						<input type="hidden" name="id" value={item.id} />
+						<input type="hidden" name="coverUrl" value="" />
+						<button type="submit" class="btn-secondary w-full justify-center px-3 py-1.5 text-[10px]">
+							Remove cover
+						</button>
+					</form>
+					<button
+						type="button"
+						onclick={() => (editingCover = false)}
+						class="btn-secondary w-full justify-center px-3 py-1.5 text-[10px]"
+					>
+						Cancel
+					</button>
+				</div>
 			{/if}
 
 			{#if editingNotes}

@@ -213,6 +213,39 @@ export async function updateItemNotes(db: AppDatabase, id: string, notes: string
 	await db.update(items).set({ notes, updatedAt: new Date() }).where(eq(items.id, id));
 }
 
+export async function updateItemCover(
+	db: AppDatabase,
+	id: string,
+	coverUrl: string | null,
+	metadataPatch?: Record<string, unknown>
+) {
+	const rows = await db.select().from(items).where(eq(items.id, id)).limit(1);
+	const item = rows[0];
+	if (!item) return;
+
+	let metadata: Record<string, unknown> = {};
+	if (item.metadata) {
+		try {
+			metadata = JSON.parse(item.metadata) as Record<string, unknown>;
+		} catch {
+			metadata = {};
+		}
+	}
+
+	if (metadataPatch) {
+		Object.assign(metadata, metadataPatch);
+	}
+
+	await db
+		.update(items)
+		.set({
+			coverUrl,
+			metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
+			updatedAt: new Date()
+		})
+		.where(eq(items.id, id));
+}
+
 export async function setAlbumWatched(db: AppDatabase, id: string, watched: boolean) {
 	await db
 		.update(items)
