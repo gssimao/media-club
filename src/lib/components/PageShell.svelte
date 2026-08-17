@@ -103,20 +103,27 @@
 		padding-right: 0.25rem;
 	}
 
-	@media (max-width: 639px) {
+	@media (max-width: 767px) {
 		.page-shell {
 			grid-template-columns: minmax(0, 1fr);
 			gap: 1rem;
+			min-height: auto;
 		}
 
 		.page-shell__control {
 			position: static;
 			max-width: none;
-			padding-left: var(--nav-dial-inset);
+			padding-top: 0.35rem;
+			padding-left: 0.25rem;
+			padding-right: 0.25rem;
 		}
 
 		.page-shell__title {
 			font-size: 1.2rem;
+		}
+
+		.page-shell__content {
+			padding-top: 0.25rem;
 		}
 	}
 </style>

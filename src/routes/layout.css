@@ -148,8 +148,6 @@
 		padding-left: 0;
 		padding-top: 0;
 	}
-
-	/* Staggered entrance — set --rise-delay per item (see MediaGrid) */
 	.anim-rise {
 		animation: mc-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 		animation-delay: var(--rise-delay, 0ms);
@@ -191,8 +189,25 @@
 	animation: none;
 }
 
+@media (max-width: 767px) {
+	:root {
+		--nav-dial-reserve-w: 0px;
+		--nav-dial-reserve-h: 3.5rem;
+		--mobile-nav-fab-reserve: 5.75rem;
+	}
+
+	.app-main--shell {
+		padding-bottom: var(--mobile-nav-fab-reserve);
+	}
+
+	footer {
+		margin-bottom: var(--mobile-nav-fab-reserve);
+	}
+}
+
 @media (min-width: 768px) {
 	:root {
+		--mobile-nav-fab-reserve: 0px;
 		--nav-dial-r: clamp(6.5rem, 14vw, 9rem);
 		--nav-dial-inset: 0.75rem;
 		--nav-dial-actions-h: 1.75rem;
