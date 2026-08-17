@@ -3,7 +3,7 @@
 		BookOpen,
 		Faders,
 		FilmStrip,
-		Gear,
+		Clock,
 		Heart,
 		House,
 		Pause,
@@ -52,7 +52,7 @@
 
 	const cdNavButtons = $derived.by((): CdNavButton[] => {
 		const items = data.user
-			? [...catalogNav, { href: '/admin', label: 'Admin', icon: Gear }]
+			? [...catalogNav, { href: '/admin', label: 'Admin', icon: Clock }]
 			: [...catalogNav, { href: '/login', label: 'Log in', icon: SignIn }];
 		const count = items.length;
 

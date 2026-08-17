@@ -1,8 +1,10 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
-	import { Plus, Clock } from 'phosphor-svelte';
+	import ImportJsonDialog from '$lib/components/ImportJsonDialog.svelte';
+	import { Clock, FileArrowUp, Plus } from 'phosphor-svelte';
 
 	let { data } = $props();
+	let showImportDialog = $state(false);
 </script>
 
 <svelte:head>
@@ -15,6 +17,14 @@
 		?.username}. Add items from metadata APIs, manage notes, or move wishlist items into the collection."
 >
 	{#snippet controls()}
+		<button
+			type="button"
+			class="btn-secondary px-5 py-2.5 text-sm"
+			onclick={() => (showImportDialog = true)}
+		>
+			<FileArrowUp size={16} weight="bold" />
+			Import JSON
+		</button>
 		<a href="/admin/search" class="btn-primary px-5 py-2.5 text-sm">
 			<Plus size={16} weight="bold" />
 			Add from search
@@ -36,7 +46,7 @@
 		</div>
 		{#if data.recent.length === 0}
 			<p class="mt-4 text-sm font-medium text-stone-600 dark:text-stone-400">
-				No items yet. Use search to add your first entry.
+				No items yet. Use search to add your first entry, or import a JSON catalog.
 			</p>
 		{:else}
 			<ul class="mt-4 space-y-2">
@@ -61,3 +71,5 @@
 		{/if}
 	</div>
 </PageShell>
+
+<ImportJsonDialog open={showImportDialog} onClose={() => (showImportDialog = false)} />

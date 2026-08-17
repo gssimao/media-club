@@ -7,7 +7,7 @@
 		Faders,
 		Heart,
 		SignIn,
-		Gear,
+		Clock,
 		House
 	} from 'phosphor-svelte';
 	import type { SessionUser } from '$lib/types/auth';
@@ -55,7 +55,7 @@
 					{
 						href: '/admin',
 						label: 'Admin',
-						icon: Gear,
+						icon: Clock,
 						match: (p) => p.startsWith('/admin')
 					}
 				]
