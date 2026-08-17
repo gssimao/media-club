@@ -1,5 +1,9 @@
+import type { AlbumAccentColor } from '$lib/theme/album-colors';
+
 export type MediaCategory = 'movie' | 'music' | 'book';
 export type ListType = 'owned' | 'wishlist';
+
+export type { AlbumAccentColor };
 
 export interface MediaItem {
 	id: string;
@@ -24,6 +28,7 @@ export interface Album {
 	title: string;
 	description: string | null;
 	coverUrl: string | null;
+	accentColor: AlbumAccentColor | null;
 	sortOrder: number;
 	itemCount: number;
 	createdAt: Date;

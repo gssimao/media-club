@@ -4,6 +4,7 @@ import {
 	MAX_DESCRIPTION_LENGTH,
 	MAX_TITLE_LENGTH,
 	requireAdmin,
+	sanitizeAlbumAccentColor,
 	sanitizeHttpUrl
 } from '$lib/server/admin';
 import { redirect } from '@sveltejs/kit';
@@ -44,12 +45,13 @@ export const actions: Actions = {
 			? String(form.get('description')).trim().slice(0, MAX_DESCRIPTION_LENGTH)
 			: null;
 		const coverUrl = sanitizeHttpUrl(form.get('coverUrl'));
+		const accentColor = sanitizeAlbumAccentColor(form.get('accentColor'));
 
 		if (!id || !title || title.length > MAX_TITLE_LENGTH) {
 			return fail(400, { message: 'Album id and title are required.' });
 		}
 
-		await updateAlbum(locals.db, id, { title, description, coverUrl });
+		await updateAlbum(locals.db, id, { title, description, coverUrl, accentColor });
 		backToReferer(request);
 	},
 

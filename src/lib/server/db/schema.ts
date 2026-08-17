@@ -10,6 +10,7 @@ export const albums = sqliteTable(
 		title: text('title').notNull(),
 		description: text('description'),
 		coverUrl: text('cover_url'),
+		accentColor: text('accent_color'),
 		sortOrder: integer('sort_order').notNull().default(0),
 		createdAt: integer('created_at', { mode: 'timestamp' })
 			.notNull()

@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { isAlbumAccentColor, type AlbumAccentColor } from '$lib/theme/album-colors';
 
 /** Field length caps — protects the DB from unbounded form input. */
 export const MAX_TITLE_LENGTH = 500;
@@ -47,4 +48,14 @@ export function sanitizeHttpUrl(value: FormDataEntryValue | null): string | null
 		// Not a valid absolute URL.
 	}
 	return null;
+}
+
+/** Accepts only whitelisted album accent color slugs; anything else becomes null. */
+export function sanitizeAlbumAccentColor(
+	value: FormDataEntryValue | null
+): AlbumAccentColor | null {
+	if (!value) return null;
+	const raw = String(value).trim();
+	if (!raw) return null;
+	return isAlbumAccentColor(raw) ? raw : null;
 }

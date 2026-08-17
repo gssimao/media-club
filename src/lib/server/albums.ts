@@ -2,7 +2,7 @@ import { and, asc, count, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { albums, items } from '$lib/server/db/schema';
 import { setItemAlbumId, listItemsByAlbum } from '$lib/server/items';
-import type { Album as AlbumType, MediaCategory } from '$lib/types/media';
+import type { Album as AlbumType, AlbumAccentColor, MediaCategory } from '$lib/types/media';
 
 function mapAlbum(row: typeof albums.$inferSelect, itemCount: number): AlbumType {
 	return {
@@ -11,6 +11,7 @@ function mapAlbum(row: typeof albums.$inferSelect, itemCount: number): AlbumType
 		title: row.title,
 		description: row.description,
 		coverUrl: row.coverUrl,
+		accentColor: (row.accentColor as AlbumAccentColor | null) ?? null,
 		sortOrder: row.sortOrder,
 		itemCount,
 		createdAt: row.createdAt,
@@ -89,6 +90,7 @@ export async function updateAlbum(
 		title?: string;
 		description?: string | null;
 		coverUrl?: string | null;
+		accentColor?: AlbumAccentColor | null;
 		sortOrder?: number;
 	}
 ) {
@@ -96,6 +98,7 @@ export async function updateAlbum(
 	if (input.title !== undefined) updates.title = input.title.trim();
 	if (input.description !== undefined) updates.description = input.description;
 	if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl;
+	if (input.accentColor !== undefined) updates.accentColor = input.accentColor;
 	if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
 
 	await db.update(albums).set(updates).where(eq(albums.id, id));

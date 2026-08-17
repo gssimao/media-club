@@ -1,0 +1,1 @@
+ALTER TABLE `albums` ADD `accent_color` text;
