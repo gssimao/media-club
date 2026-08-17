@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import ToastHost from '$lib/components/ToastHost.svelte';
 	import VinylDisc from '$lib/components/VinylDisc.svelte';
 
 	let { data, children } = $props();
@@ -29,6 +30,8 @@
 		</div>
 	{/key}
 </main>
+
+<ToastHost />
 
 <footer
 	class="mt-8 rounded-t-[2rem] border-t border-amber-400/80 bg-[rgb(var(--color-surface))] py-8 text-center text-sm font-bold text-[rgb(var(--color-text-secondary))] dark:border-amber-500/60"
