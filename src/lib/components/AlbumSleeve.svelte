@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Album } from '$lib/types/media';
+	import { getAlbumColorPreset } from '$lib/theme/album-colors';
+	import { cn } from '$lib/utils/cn';
 	import VinylDisc from './VinylDisc.svelte';
 
 	interface Props {
@@ -10,6 +12,7 @@
 	let { album, displayCoverUrl = null }: Props = $props();
 
 	const cover = $derived(displayCoverUrl ?? album.coverUrl);
+	const colorPreset = $derived(getAlbumColorPreset(album.accentColor));
 </script>
 
 <div class="sleeve-hero group mx-auto w-full max-w-xs">
@@ -23,15 +26,17 @@
 			aria-hidden="true"
 		></div>
 		<div
-			class="relative ml-2 aspect-[3/4] overflow-hidden rounded-[2rem] border-2 border-amber-500/50 bg-[rgb(var(--color-surface))] shadow-xl dark:bg-stone-900"
+			class={cn(
+				'relative ml-2 aspect-[3/4] overflow-hidden rounded-[2rem] border-2 shadow-xl',
+				colorPreset.border,
+				cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
+			)}
 		>
 			{#if cover}
 				<img src={cover} alt="{album.title} album cover" class="h-full w-full object-cover" />
 			{:else}
-				<div
-					class="flex h-full items-center justify-center px-6 text-center text-sm font-bold text-[rgb(var(--color-text-secondary))] dark:text-stone-400"
-				>
-					{album.title}
+				<div class="flex h-full items-center justify-center p-6">
+					<VinylDisc class="size-[58%] drop-shadow-md" />
 				</div>
 			{/if}
 		</div>

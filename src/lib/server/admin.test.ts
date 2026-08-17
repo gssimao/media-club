@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeHttpUrl } from './admin';
+import { sanitizeAlbumAccentColor, sanitizeHttpUrl } from './admin';
 
 describe('sanitizeHttpUrl', () => {
 	it('accepts https URLs', () => {
@@ -31,5 +31,23 @@ describe('sanitizeHttpUrl', () => {
 		expect(sanitizeHttpUrl(null)).toBeNull();
 		expect(sanitizeHttpUrl('')).toBeNull();
 		expect(sanitizeHttpUrl('   ')).toBeNull();
+	});
+});
+
+describe('sanitizeAlbumAccentColor', () => {
+	it('accepts whitelisted accent colors', () => {
+		expect(sanitizeAlbumAccentColor('rose')).toBe('rose');
+		expect(sanitizeAlbumAccentColor('amber')).toBe('amber');
+	});
+
+	it('rejects unknown values', () => {
+		expect(sanitizeAlbumAccentColor('red')).toBeNull();
+		expect(sanitizeAlbumAccentColor('javascript:alert(1)')).toBeNull();
+	});
+
+	it('returns null for empty values', () => {
+		expect(sanitizeAlbumAccentColor(null)).toBeNull();
+		expect(sanitizeAlbumAccentColor('')).toBeNull();
+		expect(sanitizeAlbumAccentColor('   ')).toBeNull();
 	});
 });

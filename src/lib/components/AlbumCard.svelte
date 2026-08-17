@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Album } from '$lib/types/media';
-	import { CATEGORY_LABELS } from '$lib/types/media';
+	import { getAlbumColorPreset } from '$lib/theme/album-colors';
+	import { cn } from '$lib/utils/cn';
 	import VinylDisc from './VinylDisc.svelte';
 
 	interface Props {
@@ -12,6 +13,8 @@
 	let { album, displayCoverUrl = null, href }: Props = $props();
 
 	const link = $derived(href ?? `/albums/${album.category}/${album.id}`);
+	const cover = $derived(displayCoverUrl ?? album.coverUrl);
+	const colorPreset = $derived(getAlbumColorPreset(album.accentColor));
 </script>
 
 <a href={link} class="group flex w-[8.5rem] shrink-0 flex-col sm:w-[9.5rem]">
@@ -25,21 +28,22 @@
 			aria-hidden="true"
 		></div>
 		<div
-			class="relative ml-1 aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg dark:border-stone-600 dark:bg-stone-900"
+			class={cn(
+				'relative ml-1 aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg',
+				colorPreset.border,
+				cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
+			)}
 		>
-			{#if displayCoverUrl ?? album.coverUrl}
+			{#if cover}
 				<img
-					src={displayCoverUrl ?? album.coverUrl}
+					src={cover}
 					alt="{album.title} album cover"
 					class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 					loading="lazy"
 				/>
 			{:else}
-				<div
-					class="flex h-full flex-col items-center justify-center gap-1 px-3 text-center text-[10px] font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase dark:text-stone-400"
-				>
-					<span>{CATEGORY_LABELS[album.category]}</span>
-					<span class="text-[9px] font-medium normal-case">Album</span>
+				<div class="flex h-full items-center justify-center p-4">
+					<VinylDisc class="size-[55%]" />
 				</div>
 			{/if}
 		</div>
