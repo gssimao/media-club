@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import { formatApiErrorMessage } from '$lib/utils/api-error';
 	import { type ListType, type MediaCategory } from '$lib/types/media';
 	import type { SearchResult } from '$lib/types/media';
 	import { Plus, CheckCircle, VinylRecord } from 'phosphor-svelte';
@@ -48,7 +49,7 @@
 
 			if (!response.ok) {
 				const text = await response.text();
-				throw new Error(text || `Search failed (${response.status})`);
+				throw new Error(formatApiErrorMessage(text, `Search failed (${response.status})`));
 			}
 
 			const data = (await response.json()) as { results: SearchResult[] };

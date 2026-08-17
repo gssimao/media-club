@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error, isHttpError, json } from '@sveltejs/kit';
 import { searchMusic } from '$lib/server/apis/discogs';
 import { searchBooks } from '$lib/server/apis/openlibrary';
 import { searchMovies } from '$lib/server/apis/tmdb';
@@ -24,21 +24,32 @@ export const GET: RequestHandler = async (event) => {
 		return json({ results: [] });
 	}
 
-	try {
-		if (category === 'movie') {
-			const apiKey = getSecret(event, 'TMDB_API_KEY');
-			if (!apiKey) error(503, 'TMDB_API_KEY is not configured');
+	if (category === 'movie') {
+		const apiKey = getSecret(event, 'TMDB_API_KEY');
+		if (!apiKey) error(503, 'TMDB_API_KEY is not configured');
+		try {
 			return json({ results: await searchMovies(apiKey, query) });
+		} catch (err) {
+			console.error(err);
+			error(502, 'Search provider failed');
 		}
+	}
 
-		if (category === 'music') {
-			const token = getSecret(event, 'DISCOGS_TOKEN');
-			if (!token) error(503, 'DISCOGS_TOKEN is not configured');
+	if (category === 'music') {
+		const token = getSecret(event, 'DISCOGS_TOKEN');
+		if (!token) error(503, 'DISCOGS_TOKEN is not configured');
+		try {
 			return json({ results: await searchMusic(token, query) });
+		} catch (err) {
+			console.error(err);
+			error(502, 'Search provider failed');
 		}
+	}
 
+	try {
 		return json({ results: await searchBooks(query) });
 	} catch (err) {
+		if (isHttpError(err)) throw err;
 		console.error(err);
 		error(502, 'Search provider failed');
 	}
