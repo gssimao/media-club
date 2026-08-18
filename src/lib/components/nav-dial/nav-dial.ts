@@ -74,6 +74,15 @@ export function itemAnglesForCount(count: number): number[] {
 	});
 }
 
+export function normalizeAngle(angle: number): number {
+	return ((angle % 360) + 360) % 360;
+}
+
+export function angularDistance(from: number, to: number): number {
+	const diff = normalizeAngle(from - to);
+	return diff > 180 ? 360 - diff : diff;
+}
+
 export function unwrapAngleDelta(delta: number): number {
 	let d = delta;
 	while (d > 180) d -= 360;
@@ -89,9 +98,8 @@ export function nearestItemIndex(
 	let best = 0;
 	let bestDist = Infinity;
 	for (let i = 0; i < itemAngles.length; i++) {
-		const worldAngle = itemAngles[i] + forRotation;
-		let dist = Math.abs(worldAngle - selector);
-		if (dist > 180) dist = 360 - dist;
+		const worldAngle = normalizeAngle(itemAngles[i] + forRotation);
+		const dist = angularDistance(worldAngle, selector);
 		if (dist < bestDist) {
 			bestDist = dist;
 			best = i;
@@ -105,7 +113,7 @@ export function snapRotationToIndex(
 	index: number,
 	selector = SELECTOR
 ): number {
-	return selector - itemAngles[index];
+	return normalizeAngle(selector - itemAngles[index] + 180) - 180;
 }
 
 export function pointerAngle(

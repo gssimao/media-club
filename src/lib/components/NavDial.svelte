@@ -38,6 +38,8 @@
 	let targetNavIndex = $state<number | null>(null);
 	let snapComplete = $state(false);
 	let lastPointerAngle = 0;
+	let rotationAtDragStart = 0;
+	let totalDragDelta = 0;
 
 	const itemAngles = $derived(itemAnglesForCount(navItems.length));
 	const previewIndex = $derived(
@@ -108,6 +110,8 @@
 
 		dragging = true;
 		dragMoved = false;
+		rotationAtDragStart = rotation;
+		totalDragDelta = 0;
 		lastPointerAngle = pointerAngle(dialRoot, event.clientX, event.clientY);
 		dialRoot?.setPointerCapture(event.pointerId);
 	}
@@ -115,12 +119,13 @@
 	function onPointerMove(event: PointerEvent) {
 		if (!dragging) return;
 		const angle = pointerAngle(dialRoot, event.clientX, event.clientY);
-		const delta =
+		const step =
 			unwrapAngleDelta(angle - lastPointerAngle) *
 			centerDragBoost(dialRoot, event.clientX, event.clientY);
 		lastPointerAngle = angle;
-		if (Math.abs(delta) > 2) dragMoved = true;
-		rotation -= delta;
+		totalDragDelta += step;
+		if (Math.abs(totalDragDelta) > 2) dragMoved = true;
+		rotation = rotationAtDragStart - totalDragDelta;
 	}
 
 	function onPointerUp(event: PointerEvent) {
