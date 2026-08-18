@@ -24,7 +24,7 @@ Fork it, run it on your machine, or deploy to Cloudflare or Docker. Public visit
 
 ## Quick start
 
-**Requirements:** Node.js 20+, npm
+**Requirements:** Node.js 22+, npm
 
 ```bash
 git clone https://github.com/YOUR_ORG/media-club.git

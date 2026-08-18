@@ -7,7 +7,7 @@ This is the recommended deployment path: free tier hosting, global CDN, and a ma
 ## Prerequisites
 
 - [Cloudflare account](https://dash.cloudflare.com/sign-up) (free)
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 22+
 - Wrangler CLI (included as a dev dependency)
 
 ## 1. Create the D1 database

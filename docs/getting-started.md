@@ -6,7 +6,7 @@ This guide walks you from a fresh clone (or fork) to a running Media Club instan
 
 | Requirement     | Notes                           |
 | --------------- | ------------------------------- |
-| **Node.js 20+** | Check with `node -v`            |
+| **Node.js 22+** | Check with `node -v`            |
 | **npm**         | Comes with Node                 |
 | **Git**         | To clone or fork the repository |
 
