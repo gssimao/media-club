@@ -30,6 +30,7 @@
 		"db:seed": "tsx scripts/seed.ts",
 		"db:seed:mock": "tsx scripts/seed-mock.ts",
 		"deploy": "npm run build && wrangler deploy",
+		"deploy:ci": "node scripts/deploy-cloudflare.mjs",
 		"deploy:migrate": "npm run db:migrate:remote && npm run deploy",
 		"audit": "npm audit --audit-level=moderate"
 	},
