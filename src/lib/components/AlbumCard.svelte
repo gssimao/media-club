@@ -23,11 +23,11 @@
 		<div class="album-disc" aria-hidden="true">
 			<VinylDisc class="size-full" />
 		</div>
-		<div class="sleeve-assembly">
+		<div class="sleeve-assembly transition-transform duration-300 group-hover:-translate-y-1">
 			<div class="sleeve-spine" aria-hidden="true"></div>
 			<div
 				class={cn(
-					'sleeve-front aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg',
+					'sleeve-front aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-shadow duration-300 group-hover:shadow-lg',
 					colorPreset.border,
 					cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
 				)}
