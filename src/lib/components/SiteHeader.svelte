@@ -16,7 +16,7 @@
 	let mobileMenuOpen = $state(false);
 
 	$effect(() => {
-		pathname;
+		void pathname;
 		mobileMenuOpen = false;
 	});
 
@@ -94,12 +94,7 @@
 				<X size={18} weight="bold" />
 			</button>
 			<p class="mobile-nav-overlay__hint">Spin the dial or tap a destination</p>
-			<NavDial
-				instanceId="mobile"
-				{user}
-				{pathname}
-				onNavigate={closeMobileMenu}
-			/>
+			<NavDial instanceId="mobile" {user} {pathname} onNavigate={closeMobileMenu} />
 		</div>
 	</div>
 {/if}

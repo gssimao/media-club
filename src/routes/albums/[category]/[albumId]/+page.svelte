@@ -44,9 +44,7 @@
 			accentColorDraft !== data.album.accentColor
 	);
 
-	const itemFallbackCover = $derived(
-		data.items.find((item) => item.coverUrl)?.coverUrl ?? null
-	);
+	const itemFallbackCover = $derived(data.items.find((item) => item.coverUrl)?.coverUrl ?? null);
 	const previewDisplayCover = $derived(
 		coverUrlDraft.trim() ? coverUrlDraft.trim() : itemFallbackCover
 	);
@@ -176,11 +174,7 @@
 				</span>
 			</label>
 
-			<button
-				type="button"
-				class="btn-secondary px-4 py-1.5 text-xs"
-				onclick={clearCover}
-			>
+			<button type="button" class="btn-secondary px-4 py-1.5 text-xs" onclick={clearCover}>
 				Clear cover URL
 			</button>
 
@@ -242,9 +236,7 @@
 					{isSaving ? 'Saving…' : isDirty ? 'Save changes' : 'Save album'}
 				</button>
 				{#if isDirty && !isSaving}
-					<p class="text-xs font-semibold text-amber-700 dark:text-amber-400">
-						Unsaved changes
-					</p>
+					<p class="text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</p>
 				{/if}
 			</div>
 		</form>

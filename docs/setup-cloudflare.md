@@ -1,5 +1,7 @@
 # Cloudflare Workers + D1 Setup
 
+New to the project? Start with [getting-started.md](getting-started.md), then return here for production deployment.
+
 This is the recommended deployment path: free tier hosting, global CDN, and a managed SQLite-compatible database.
 
 ## Prerequisites
@@ -33,7 +35,6 @@ Set production secrets via Wrangler (never commit these):
 
 ```bash
 npx wrangler secret put ADMIN_PASSWORD
-npx wrangler secret put SESSION_SECRET
 npx wrangler secret put TMDB_API_KEY
 npx wrangler secret put DISCOGS_TOKEN
 ```

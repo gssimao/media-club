@@ -1,5 +1,7 @@
 # Docker Self-Host Setup
 
+New to the project? Start with [getting-started.md](getting-started.md), then return here for container deployment.
+
 Run Media Club on your own server, NAS, or home lab with a single container and a SQLite file on a volume.
 
 ## Prerequisites
@@ -16,8 +18,8 @@ cp .env.example .env
 
 Edit `.env` or set variables in `docker-compose.yml`:
 
-- `ADMIN_PASSWORD` — **change this**
-- `SESSION_SECRET` — long random string
+- `ADMIN_PASSWORD` — **required**; Compose will not start without it
+- `ADMIN_USERNAME` — optional; default `admin`
 - `DEFAULT_ROUTE` — optional; e.g. `/login` or `/movies` instead of the welcome page at `/`
 - `TMDB_API_KEY` — for movie search
 - `DISCOGS_TOKEN` — for vinyl search

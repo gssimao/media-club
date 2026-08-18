@@ -134,9 +134,7 @@ export function parseImportPayload(rawJson: string): ImportItemInput[] {
 		if (wishlist !== undefined) {
 			if (!Array.isArray(wishlist)) throw new Error('"wishlist" must be an array when present.');
 			wishlist.forEach((entry, index) => {
-				items.push(
-					normalizeRawItem(entry, { listType: 'wishlist' }, `wishlist[${index}]`)
-				);
+				items.push(normalizeRawItem(entry, { listType: 'wishlist' }, `wishlist[${index}]`));
 			});
 		}
 	}
@@ -182,9 +180,7 @@ export async function importItemsFromJson(
 			else skipped += 1;
 		} catch (error) {
 			const label = `${item.listType}/${item.category}/${item.externalId}`;
-			errors.push(
-				`${label}: ${error instanceof Error ? error.message : 'Could not import item.'}`
-			);
+			errors.push(`${label}: ${error instanceof Error ? error.message : 'Could not import item.'}`);
 		}
 	}
 

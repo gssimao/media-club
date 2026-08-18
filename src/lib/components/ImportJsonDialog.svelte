@@ -72,8 +72,8 @@
 						Import catalog JSON
 					</h2>
 					<p class="mt-2 text-sm leading-snug font-medium text-[rgb(var(--color-text-secondary))]">
-						Bulk-add movies, music, books, and wishlist items. Duplicates (same category,
-						listType, and externalId) are skipped.
+						Bulk-add movies, music, books, and wishlist items. Duplicates (same category, listType,
+						and externalId) are skipped.
 					</p>
 				</div>
 				<button
@@ -88,25 +88,56 @@
 			</div>
 
 			<div class="mt-4 space-y-3">
-				<div class="surface-round space-y-2 bg-[rgb(var(--color-surface))] p-3 dark:bg-stone-900/40">
-					<p class="text-[11px] font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase">
+				<div
+					class="surface-round space-y-2 bg-[rgb(var(--color-surface))] p-3 dark:bg-stone-900/40"
+				>
+					<p
+						class="text-[11px] font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase"
+					>
 						Format
 					</p>
 					<ul class="space-y-1 text-xs leading-relaxed text-[rgb(var(--color-text-secondary))]">
 						<li>
-							Use top-level arrays <code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">movies</code>,
-							<code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">music</code>,
-							<code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">books</code>
+							Use top-level arrays <code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>movies</code
+							>,
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>music</code
+							>,
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>books</code
+							>
 							for owned items, or
-							<code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">wishlist</code>
-							with a <code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">category</code>
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>wishlist</code
+							>
+							with a
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>category</code
+							>
 							on each row.
 						</li>
 						<li>
 							Or provide a flat
-							<code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">items</code>
-							array with <code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">category</code>
-							and <code class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]">listType</code>.
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>items</code
+							>
+							array with
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>category</code
+							>
+							and
+							<code
+								class="rounded-full bg-[rgb(var(--color-accent-light))] px-1.5 py-0.5 text-[10px]"
+								>listType</code
+							>.
 						</li>
 						<li>
 							Each entry needs <strong>externalId</strong> and <strong>title</strong>; optional
@@ -114,12 +145,15 @@
 						</li>
 					</ul>
 					<pre
-						class="max-h-40 overflow-auto rounded-[1.5rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-bg))] p-3 text-[10px] leading-relaxed text-[rgb(var(--color-text-secondary))]"
-					><code>{IMPORT_JSON_EXAMPLE}</code></pre>
+						class="max-h-40 overflow-auto rounded-[1.5rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-bg))] p-3 text-[10px] leading-relaxed text-[rgb(var(--color-text-secondary))]"><code
+							>{IMPORT_JSON_EXAMPLE}</code
+						></pre>
 				</div>
 
 				<label class="block space-y-1.5">
-					<span class="text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase">
+					<span
+						class="text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase"
+					>
 						Upload .json file
 					</span>
 					<input
@@ -137,7 +171,9 @@
 				</label>
 
 				<label class="block space-y-1.5">
-					<span class="text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase">
+					<span
+						class="text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase"
+					>
 						Or paste JSON
 					</span>
 					<textarea
@@ -170,7 +206,8 @@
 							const skipped = data.skipped ?? 0;
 							const errorCount = data.errors?.length ?? 0;
 							let message = `Imported ${inserted} item${inserted === 1 ? '' : 's'}`;
-							if (skipped > 0) message += `, skipped ${skipped} duplicate${skipped === 1 ? '' : 's'}`;
+							if (skipped > 0)
+								message += `, skipped ${skipped} duplicate${skipped === 1 ? '' : 's'}`;
 							if (errorCount > 0) message += ` (${errorCount} error${errorCount === 1 ? '' : 's'})`;
 							toast.success(`${message}.`);
 							payload = '';

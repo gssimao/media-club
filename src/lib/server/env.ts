@@ -1,6 +1,20 @@
 import type { RequestEvent } from '@sveltejs/kit';
+import { building } from '$app/environment';
 
 export type SecretKey = 'TMDB_API_KEY' | 'DISCOGS_TOKEN' | 'MCP_API_KEY';
+
+const REQUIRED_ENV_VARS = ['ADMIN_PASSWORD'] as const;
+
+function validateRequiredEnvVars() {
+	if (building) return;
+
+	const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+	if (missing.length > 0) {
+		console.warn(`Missing env vars: ${missing.join(', ')}`);
+	}
+}
+
+validateRequiredEnvVars();
 
 export function getPlatformSecret(
 	platform: App.Platform | undefined,

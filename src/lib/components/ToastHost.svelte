@@ -20,23 +20,20 @@
 </script>
 
 <div
-	class="pointer-events-none fixed right-4 z-[90] flex w-[min(100%,24rem)] flex-col gap-3 max-md:bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))] bottom-4"
+	class="pointer-events-none fixed right-4 bottom-4 z-[90] flex w-[min(100%,24rem)] flex-col gap-3 max-md:bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))]"
 	aria-live="polite"
 	aria-relevant="additions"
 >
 	{#each toast.items as item (item.id)}
 		<div
 			class={cn(
-				'pointer-events-auto anim-rise relative overflow-hidden rounded-[2rem] border-2 shadow-lg backdrop-blur-md',
+				'anim-rise pointer-events-auto relative overflow-hidden rounded-[2rem] border-2 shadow-lg backdrop-blur-md',
 				kindStyles[item.kind]
 			)}
 			role="status"
 		>
 			<!-- Ghost disc — decorative spin behind the toast body -->
-			<div
-				class="pointer-events-none absolute -top-6 -left-6 opacity-30"
-				aria-hidden="true"
-			>
+			<div class="pointer-events-none absolute -top-6 -left-6 opacity-30" aria-hidden="true">
 				<ToastRecord kind={item.kind} class="size-24" />
 			</div>
 

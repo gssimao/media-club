@@ -358,7 +358,7 @@
 						pointer-events="none"
 					/>
 
-					{#each cdNavButtons as btn, i (btn.href)}
+					{#each cdNavButtons as btn (btn.href)}
 						{@const Icon = btn.icon}
 						{@const pos = cdNavPosition(btn.angle)}
 						<foreignObject

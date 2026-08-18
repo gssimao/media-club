@@ -38,11 +38,7 @@
 		aria-modal="true"
 		aria-labelledby="confirm-dialog-title"
 	>
-		<button
-			type="button"
-			class="confirm-dialog__backdrop"
-			aria-label="Cancel"
-			onclick={onCancel}
+		<button type="button" class="confirm-dialog__backdrop" aria-label="Cancel" onclick={onCancel}
 		></button>
 
 		<div

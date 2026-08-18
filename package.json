@@ -1,5 +1,6 @@
 {
 	"name": "media-club",
+	"description": "Self-hosted catalog for movies, vinyl, and books — browse publicly, admin-only writes.",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -12,7 +13,7 @@
 		"build:docker": "ADAPTER=node vite build",
 		"preview": "wrangler d1 migrations apply media-club-db --local && wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
 		"preview:docker": "ADAPTER=node node build/index.js",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "svelte-kit sync || echo '' ; husky || true",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
@@ -29,7 +30,14 @@
 		"db:seed": "tsx scripts/seed.ts",
 		"db:seed:mock": "tsx scripts/seed-mock.ts",
 		"deploy": "npm run build && wrangler deploy",
-		"deploy:migrate": "npm run db:migrate:remote && npm run deploy"
+		"deploy:migrate": "npm run db:migrate:remote && npm run deploy",
+		"audit": "npm audit --audit-level=moderate"
+	},
+	"overrides": {
+		"cookie": "^0.7.2",
+		"@esbuild-kit/core-utils": {
+			"esbuild": "^0.25.12"
+		}
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
@@ -45,6 +53,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.19.0",
 		"globals": "^17.6.0",
+		"husky": "^9.1.7",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",

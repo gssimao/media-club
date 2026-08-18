@@ -76,7 +76,9 @@ export function isAlbumAccentColor(value: string): value is AlbumAccentColor {
 	return (ALBUM_ACCENT_COLORS as readonly string[]).includes(value);
 }
 
-export function getAlbumColorPreset(accentColor: AlbumAccentColor | null | undefined): AlbumColorPreset {
+export function getAlbumColorPreset(
+	accentColor: AlbumAccentColor | null | undefined
+): AlbumColorPreset {
 	if (accentColor && accentColor in ALBUM_COLOR_PRESETS) {
 		return ALBUM_COLOR_PRESETS[accentColor];
 	}

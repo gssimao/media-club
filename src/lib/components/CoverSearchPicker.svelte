@@ -9,11 +9,7 @@
 		onSelect?: (coverUrl: string, metadata?: Record<string, unknown>) => void;
 	}
 
-	let {
-		category,
-		placeholder = 'Search for a cover image…',
-		onSelect
-	}: Props = $props();
+	let { category, placeholder = 'Search for a cover image…', onSelect }: Props = $props();
 
 	let query = $state('');
 	let results = $state<SearchResult[]>([]);
