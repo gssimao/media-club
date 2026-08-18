@@ -1,34 +1,33 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
+	import AlbumEditForm from '$lib/components/AlbumEditForm.svelte';
 	import AlbumSleeve from '$lib/components/AlbumSleeve.svelte';
 	import AlbumRandomPicker from '$lib/components/AlbumRandomPicker.svelte';
-	import CoverSearchPicker from '$lib/components/CoverSearchPicker.svelte';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import MediaGrid from '$lib/components/MediaGrid.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
-	import {
-		ALBUM_ACCENT_COLORS,
-		ALBUM_COLOR_PRESETS,
-		type AlbumAccentColor
-	} from '$lib/theme/album-colors';
+	import { type AlbumAccentColor } from '$lib/theme/album-colors';
 	import { CATEGORY_ACTION_WORDING, CATEGORY_PATHS, type MediaItem } from '$lib/types/media';
-	import { toast } from '$lib/stores/toast.svelte';
-	import { cn } from '$lib/utils/cn';
+	import { PencilSimple, Trash } from 'phosphor-svelte';
 
 	let { data } = $props();
 
 	const categoryPath = $derived(CATEGORY_PATHS[data.category]);
 	const wording = $derived(CATEGORY_ACTION_WORDING[data.category]);
+	const itemCount = $derived(data.items.length);
 
 	const unwatchedItems = $derived(data.items.filter((item) => !item.albumWatchedAt));
 	const watchedItems = $derived(data.items.filter((item) => item.albumWatchedAt));
 
 	let highlightedId = $state<string | null>(null);
+	let editingAlbum = $state(false);
+	let showDeleteConfirm = $state(false);
+	let deleteForm: HTMLFormElement | undefined = $state();
 	let titleDraft = $state('');
 	let descriptionDraft = $state('');
 	let coverUrlDraft = $state('');
 	let accentColorDraft = $state<AlbumAccentColor | null>(null);
-	let isSaving = $state(false);
 
 	$effect(() => {
 		titleDraft = data.album.title;
@@ -52,6 +51,29 @@
 		...data.album,
 		accentColor: accentColorDraft
 	});
+
+	function resetDrafts() {
+		titleDraft = data.album.title;
+		descriptionDraft = data.album.description ?? '';
+		coverUrlDraft = data.album.coverUrl ?? '';
+		accentColorDraft = data.album.accentColor;
+	}
+
+	function toggleEditAlbum() {
+		if (editingAlbum && isDirty && !confirm('Discard unsaved album changes?')) {
+			return;
+		}
+		editingAlbum = !editingAlbum;
+		if (!editingAlbum) resetDrafts();
+	}
+
+	function closeEditAlbum() {
+		if (isDirty && !confirm('Discard unsaved album changes?')) {
+			return;
+		}
+		editingAlbum = false;
+		resetDrafts();
+	}
 
 	function handlePick(item: MediaItem) {
 		highlightedId = item.id;
@@ -87,159 +109,88 @@
 			isAdmin={data.isAdmin}
 			onPick={handlePick}
 		/>
-
-		{#if data.isAdmin}
-			<form
-				method="POST"
-				action="/admin/albums?/deleteAlbum"
-				use:enhance={({ cancel }) => {
-					if (!confirm(`Delete the album "${data.album.title}"? Items stay in the catalog.`)) {
-						cancel();
-					}
-				}}
-			>
-				<input type="hidden" name="id" value={data.album.id} />
-				<button
-					type="submit"
-					class="pill-nav border border-red-400/80 text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
-				>
-					Delete album
-				</button>
-			</form>
-		{/if}
 	{/snippet}
 
-	<div class="mb-8">
-		<AlbumSleeve
-			album={data.isAdmin ? previewAlbum : data.album}
-			displayCoverUrl={data.isAdmin ? previewDisplayCover : data.displayCoverUrl}
-		/>
+	<div class="mb-8 flex justify-center">
+		<div class="flex items-start gap-3">
+			<div class="w-full max-w-xs">
+				<AlbumSleeve
+					album={data.isAdmin && editingAlbum ? previewAlbum : data.album}
+					displayCoverUrl={data.isAdmin && editingAlbum
+						? previewDisplayCover
+						: data.displayCoverUrl}
+				/>
+			</div>
+
+			{#if data.isAdmin}
+				<div class="flex shrink-0 flex-col gap-2 pt-3">
+					<button
+						type="button"
+						class="inline-flex size-9 items-center justify-center rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] text-[rgb(var(--color-text-secondary))] shadow-sm transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400 {editingAlbum
+							? 'border-amber-500 text-amber-700 dark:text-amber-400'
+							: ''}"
+						aria-label={editingAlbum ? 'Close album editor' : 'Edit album'}
+						aria-expanded={editingAlbum}
+						aria-controls="album-edit-panel"
+						onclick={toggleEditAlbum}
+					>
+						<PencilSimple size={16} weight="bold" />
+					</button>
+					<button
+						type="button"
+						class="inline-flex size-9 items-center justify-center rounded-full border border-red-400/80 bg-[rgb(var(--color-surface-raised))] text-red-700 shadow-sm transition-colors hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+						aria-label="Delete album"
+						onclick={() => (showDeleteConfirm = true)}
+					>
+						<Trash size={15} weight="bold" />
+					</button>
+				</div>
+
+				<form
+					bind:this={deleteForm}
+					method="POST"
+					action="/admin/albums?/deleteAlbum"
+					class="hidden"
+					use:enhance
+				>
+					<input type="hidden" name="id" value={data.album.id} />
+				</form>
+
+				<ConfirmDialog
+					open={showDeleteConfirm}
+					title="Delete album?"
+					message={`Delete "${data.album.title}"? ${itemCount === 0 ? 'This album is empty.' : itemCount === 1 ? 'Its item will return to the main collection list.' : `All ${itemCount} items will return to the main collection list.`}`}
+					confirmLabel="Delete album"
+					cancelLabel="Keep album"
+					variant="danger"
+					onCancel={() => (showDeleteConfirm = false)}
+					onConfirm={() => {
+						showDeleteConfirm = false;
+						deleteForm?.requestSubmit();
+					}}
+				/>
+			{/if}
+		</div>
 	</div>
 
-	{#if data.isAdmin}
-		<form
-			method="POST"
-			action="/admin/albums?/updateAlbum"
-			class="surface-round mb-8 space-y-4 p-4"
-			use:enhance={() => {
-				isSaving = true;
-				return async ({ result, update }) => {
-					isSaving = false;
-					if (result.type === 'failure') {
-						toast.error(String(result.data?.message ?? 'Could not save album.'));
-						return;
-					}
-					toast.success('Album saved.');
-					await update();
-				};
-			}}
-		>
-			<input type="hidden" name="id" value={data.album.id} />
-			<label class="block space-y-1 text-sm">
-				<span class="font-bold text-stone-700 dark:text-stone-300">Title</span>
-				<input
-					type="text"
-					name="title"
-					bind:value={titleDraft}
-					required
-					class="input-round w-full"
-				/>
-			</label>
-			<label class="block space-y-1 text-sm">
-				<span class="font-bold text-stone-700 dark:text-stone-300">Description</span>
-				<input
-					type="text"
-					name="description"
-					bind:value={descriptionDraft}
-					class="input-round w-full"
-				/>
-			</label>
-
-			<div class="space-y-2">
-				<span class="block text-sm font-bold text-stone-700 dark:text-stone-300">Cover image</span>
-				<CoverSearchPicker category={data.category} onSelect={handleCoverSelect} />
-			</div>
-
-			<label class="block space-y-1 text-sm">
-				<span class="font-bold text-stone-700 dark:text-stone-300">Cover URL (optional)</span>
-				<input
-					type="url"
-					name="coverUrl"
-					bind:value={coverUrlDraft}
-					class="input-round w-full"
-					placeholder="Paste any image link (JPG, PNG, GIF…)"
-				/>
-				<span class="block text-xs text-[rgb(var(--color-text-secondary))]">
-					Leave blank to use the first item cover in this album.
-				</span>
-			</label>
-
-			<button type="button" class="btn-secondary px-4 py-1.5 text-xs" onclick={clearCover}>
-				Clear cover URL
-			</button>
-
-			<fieldset class="space-y-2">
-				<legend class="text-sm font-bold text-stone-700 dark:text-stone-300">Accent color</legend>
-				<div class="flex flex-wrap gap-2">
-					<label class="flex items-center gap-2">
-						<input
-							type="radio"
-							name="accentColor"
-							value=""
-							checked={accentColorDraft === null}
-							onchange={() => (accentColorDraft = null)}
-							class="sr-only"
-						/>
-						<span
-							class="inline-flex size-9 items-center justify-center rounded-full border-2 text-[9px] font-bold transition-transform {accentColorDraft ===
-							null
-								? 'scale-110 border-stone-900 dark:border-amber-50'
-								: 'border-[rgb(var(--color-border))]'}"
-						>
-							Default
-						</span>
-					</label>
-					{#each ALBUM_ACCENT_COLORS as color (color)}
-						<label class="flex items-center">
-							<input
-								type="radio"
-								name="accentColor"
-								value={color}
-								checked={accentColorDraft === color}
-								onchange={() => (accentColorDraft = color)}
-								class="sr-only"
-							/>
-							<span
-								class="inline-block size-9 rounded-full {ALBUM_COLOR_PRESETS[color]
-									.swatch} transition-transform {accentColorDraft === color
-									? 'scale-110 ring-2 ring-stone-900 ring-offset-2 ring-offset-[rgb(var(--color-bg))] dark:ring-amber-50'
-									: ''}"
-								title={ALBUM_COLOR_PRESETS[color].label}
-								aria-label={ALBUM_COLOR_PRESETS[color].label}
-							></span>
-						</label>
-					{/each}
-				</div>
-			</fieldset>
-
-			<div class="flex flex-wrap items-center gap-3 pt-1">
-				<button
-					type="submit"
-					disabled={!isDirty || isSaving}
-					class={cn(
-						'btn-primary px-5 py-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-amber-400',
-						isDirty &&
-							!isSaving &&
-							'ring-2 ring-amber-500 ring-offset-2 ring-offset-[rgb(var(--color-bg))]'
-					)}
-				>
-					{isSaving ? 'Saving…' : isDirty ? 'Save changes' : 'Save album'}
-				</button>
-				{#if isDirty && !isSaving}
-					<p class="text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</p>
-				{/if}
-			</div>
-		</form>
+	{#if data.isAdmin && editingAlbum}
+		<div id="album-edit-panel">
+			<AlbumEditForm
+				albumId={data.album.id}
+				category={data.category}
+				bind:titleDraft
+				bind:descriptionDraft
+				bind:coverUrlDraft
+				bind:accentColorDraft
+				{isDirty}
+				onCoverSelect={handleCoverSelect}
+				onClearCover={clearCover}
+				onSaved={() => {
+					editingAlbum = false;
+				}}
+				onCancel={closeEditAlbum}
+			/>
+		</div>
 	{/if}
 
 	<MediaGrid

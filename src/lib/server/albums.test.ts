@@ -1,11 +1,12 @@
 import Database from 'better-sqlite3';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as schema from '$lib/server/db/schema';
 import type { AppDatabase } from '$lib/server/db';
-import { createAlbum, resolveAlbumCoverUrl, resolveAlbumCoverUrls } from './albums';
+import { createAlbum, deleteAlbum, resolveAlbumCoverUrl, resolveAlbumCoverUrls } from './albums';
 import { addItem } from './items';
 
 describe('album covers', () => {
@@ -83,5 +84,44 @@ describe('album covers', () => {
 		expect(covers[withOwn!.id]).toBe('https://example.com/a.jpg');
 		expect(covers[withItem!.id]).toBe('https://example.com/b.jpg');
 		expect(covers[bare!.id]).toBeNull();
+	});
+});
+
+describe('deleteAlbum', () => {
+	let sqlite: Database.Database;
+	let db: AppDatabase;
+
+	beforeAll(() => {
+		sqlite = new Database(':memory:');
+		const localDb = drizzle(sqlite, { schema });
+		migrate(localDb, { migrationsFolder: join(process.cwd(), 'drizzle') });
+		db = localDb as unknown as AppDatabase;
+	});
+
+	afterAll(() => {
+		sqlite.close();
+	});
+
+	it('returns assigned items to the ungrouped collection', async () => {
+		const album = await createAlbum(db, { category: 'movie', title: 'To Delete' });
+		const { id } = await addItem(
+			db,
+			'movie',
+			'owned',
+			{
+				externalId: 'ungroup-1',
+				title: 'In Album',
+				subtitle: null,
+				year: null,
+				coverUrl: null
+			},
+			{ albumId: album!.id }
+		);
+		expect(id).toBeTruthy();
+
+		await deleteAlbum(db, album!.id);
+
+		const rows = await db.select().from(schema.items).where(eq(schema.items.id, id!));
+		expect(rows[0]?.albumId).toBeNull();
 	});
 });

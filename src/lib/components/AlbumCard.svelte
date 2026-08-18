@@ -19,33 +19,31 @@
 
 <a href={link} class="group flex w-[8.5rem] shrink-0 flex-col sm:w-[9.5rem]">
 	<div class="relative">
-		<!-- Vinyl slides out of the sleeve on hover -->
 		<div class="album-disc" aria-hidden="true">
 			<VinylDisc class="size-full" />
 		</div>
-		<div
-			class="absolute top-1 -left-1 h-[calc(100%-0.25rem)] w-3 rounded-l-full bg-[rgb(var(--color-border)/0.9)] shadow-inner dark:bg-stone-600/60"
-			aria-hidden="true"
-		></div>
-		<div
-			class={cn(
-				'relative ml-1 aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg',
-				colorPreset.border,
-				cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
-			)}
-		>
-			{#if cover}
-				<img
-					src={cover}
-					alt="{album.title} album cover"
-					class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-					loading="lazy"
-				/>
-			{:else}
-				<div class="flex h-full items-center justify-center p-4">
-					<VinylDisc class="size-[55%]" />
-				</div>
-			{/if}
+		<div class="sleeve-assembly">
+			<div class="sleeve-spine" aria-hidden="true"></div>
+			<div
+				class={cn(
+					'sleeve-front aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg',
+					colorPreset.border,
+					cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
+				)}
+			>
+				{#if cover}
+					<img
+						src={cover}
+						alt="{album.title} album cover"
+						class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+						loading="lazy"
+					/>
+				{:else}
+					<div class="flex h-full items-center justify-center p-4">
+						<VinylDisc class="size-[55%]" />
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
 	<div class="mt-2.5 px-0.5">
@@ -61,6 +59,36 @@
 </a>
 
 <style>
+	.sleeve-assembly {
+		position: relative;
+		width: 100%;
+		--sleeve-peek: 8px;
+		--sleeve-underlap: 18px;
+	}
+
+	.sleeve-spine {
+		position: absolute;
+		top: 0.25rem;
+		bottom: 0.125rem;
+		left: 0;
+		z-index: 0;
+		width: calc(var(--sleeve-peek) + var(--sleeve-underlap));
+		border-radius: 1.5rem 0 0 1.5rem;
+		background: rgb(var(--color-border));
+		box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.12);
+	}
+
+	:global([data-theme='dark']) .sleeve-spine {
+		background: rgb(87 83 78);
+		box-shadow: inset 0 2px 5px rgb(0 0 0 / 0.28);
+	}
+
+	.sleeve-front {
+		position: relative;
+		z-index: 1;
+		margin-left: var(--sleeve-peek);
+	}
+
 	.album-disc {
 		position: absolute;
 		top: 50%;
