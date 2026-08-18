@@ -2,6 +2,7 @@
 	import type { Album } from '$lib/types/media';
 	import { getAlbumColorPreset } from '$lib/theme/album-colors';
 	import { cn } from '$lib/utils/cn';
+	import AlbumSleevePattern from './AlbumSleevePattern.svelte';
 	import VinylDisc from './VinylDisc.svelte';
 
 	interface Props {
@@ -39,7 +40,8 @@
 						loading="lazy"
 					/>
 				{:else}
-					<div class="flex h-full items-center justify-center p-4">
+					<AlbumSleevePattern seed={album.id} accentColor={album.accentColor} />
+					<div class="relative z-[1] flex h-full items-center justify-center p-4">
 						<VinylDisc class="size-[55%]" />
 					</div>
 				{/if}
