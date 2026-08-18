@@ -35,10 +35,14 @@
 	let dragging = $state(false);
 	let dragMoved = $state(false);
 	let animating = $state(false);
+	let targetNavIndex = $state<number | null>(null);
+	let snapComplete = $state(false);
 	let lastPointerAngle = 0;
 
 	const itemAngles = $derived(itemAnglesForCount(navItems.length));
-	const previewIndex = $derived(dragging ? nearestItemIndex(itemAngles, rotation) : activeIndex);
+	const previewIndex = $derived(
+		dragging || animating ? nearestItemIndex(itemAngles, rotation) : activeIndex
+	);
 
 	function setRotationForIndex(index: number) {
 		rotation = snapRotationToIndex(itemAngles, index);
@@ -50,8 +54,26 @@
 		setRotationForIndex(index);
 	}
 
+	function finishNavigation() {
+		animating = false;
+		targetNavIndex = null;
+		snapComplete = false;
+	}
+
 	$effect(() => {
 		const path = pathname;
+
+		if (targetNavIndex !== null) {
+			const targetItem = navItems[targetNavIndex];
+			if (targetItem?.match(path)) {
+				finishNavigation();
+			} else if (snapComplete) {
+				finishNavigation();
+				if (!dragging) snapToPath(path);
+			}
+			return;
+		}
+
 		if (!dragging && !animating) snapToPath(path);
 	});
 
@@ -62,12 +84,18 @@
 	});
 
 	function navigateToIndex(index: number) {
+		const item = navItems[index];
+		if (!item) return;
+
+		targetNavIndex = index;
+		snapComplete = false;
 		animating = true;
 		setRotationForIndex(index);
+
 		navTimer = setTimeout(() => {
-			animating = false;
-			const item = navItems[index];
-			if (item && item.href !== pathname) void goto(item.href);
+			snapComplete = true;
+			if (item.href !== pathname) void goto(item.href);
+			else finishNavigation();
 			onNavigate?.();
 		}, DIAL_SNAP_MS);
 	}
