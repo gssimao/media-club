@@ -16,6 +16,7 @@
 		albums?: Album[];
 		highlighted?: boolean;
 		showAlbumWatchedToggle?: boolean;
+		showCollectionLink?: boolean;
 	}
 
 	let {
@@ -23,13 +24,17 @@
 		isAdmin,
 		albums = [],
 		highlighted = false,
-		showAlbumWatchedToggle = false
+		showAlbumWatchedToggle = false,
+		showCollectionLink = false
 	}: Props = $props();
 
 	const label = $derived(item.year ? `${item.title} (${item.year})` : item.title);
 	const displayTags = $derived(getDisplayTags(item));
 	const displayNotes = $derived(getDisplayNotes(item));
 	const presetTags = $derived(FORMAT_TAG_PRESETS[item.category]);
+	const collection = $derived(
+		item.albumId ? (albums.find((album) => album.id === item.albumId) ?? null) : null
+	);
 
 	let deleteForm: HTMLFormElement | undefined = $state();
 	let showDeleteConfirm = $state(false);
@@ -153,6 +158,14 @@
 			<p class="mt-0.5 line-clamp-1 text-[11px] font-medium text-stone-600 dark:text-stone-400">
 				{item.subtitle}
 			</p>
+		{/if}
+		{#if showCollectionLink && collection}
+			<a
+				href="/albums/{collection.category}/{collection.id}"
+				class="mt-1 inline-block max-w-full truncate rounded-full bg-amber-400/15 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase hover:bg-amber-400/25 dark:text-amber-400"
+			>
+				In {collection.title}
+			</a>
 		{/if}
 	</div>
 

@@ -35,7 +35,7 @@
 				{#if cover}
 					<img
 						src={cover}
-						alt="{album.title} album cover"
+						alt="{album.title} collection cover"
 						class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 						loading="lazy"
 					/>

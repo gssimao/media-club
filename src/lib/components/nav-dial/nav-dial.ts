@@ -25,6 +25,8 @@ export const tickAngles = [0, 45, 90, 135, 180, 225, 270, 315] as const;
 export const CENTER_BOOST_THRESHOLD = 0.45;
 export const CENTER_BOOST_MAX = 1.2;
 export const DIAL_SNAP_MS = 450;
+/** Extra degrees before switching sticky preview during drag (wider drop zone). */
+export const SELECTOR_STICKINESS_DEG = 12;
 
 const catalogItems: NavItem[] = [
 	{ href: '/', label: 'Home', icon: House, match: (p) => p === '/' },
@@ -106,6 +108,26 @@ export function nearestItemIndex(
 		}
 	}
 	return best;
+}
+
+/** Keeps the current selection until another item is clearly closer to the selector. */
+export function nearestItemIndexWithHysteresis(
+	itemAngles: number[],
+	forRotation: number,
+	stickyIndex: number,
+	selector = SELECTOR,
+	stickinessDeg = SELECTOR_STICKINESS_DEG
+): number {
+	const candidate = nearestItemIndex(itemAngles, forRotation, selector);
+	if (candidate === stickyIndex || itemAngles.length <= 1) return candidate;
+
+	const stickyWorld = normalizeAngle(itemAngles[stickyIndex] + forRotation);
+	const candidateWorld = normalizeAngle(itemAngles[candidate] + forRotation);
+	const distSticky = angularDistance(stickyWorld, selector);
+	const distCandidate = angularDistance(candidateWorld, selector);
+
+	if (distCandidate + stickinessDeg < distSticky) return candidate;
+	return stickyIndex;
 }
 
 export function snapRotationToIndex(

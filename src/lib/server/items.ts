@@ -91,16 +91,16 @@ async function validateAlbumForItem(
 	if (!albumId) return;
 
 	if (listType === 'wishlist') {
-		throw new Error('Wishlist items cannot be assigned to an album');
+		throw new Error('Wishlist items cannot be assigned to a collection');
 	}
 
 	const albumRows = await db.select().from(albums).where(eq(albums.id, albumId)).limit(1);
 	const album = albumRows[0];
 	if (!album) {
-		throw new Error(`Album not found: ${albumId}`);
+		throw new Error(`Collection not found: ${albumId}`);
 	}
 	if (album.category !== category) {
-		throw new Error('Album category must match item category');
+		throw new Error('Collection category must match item category');
 	}
 }
 

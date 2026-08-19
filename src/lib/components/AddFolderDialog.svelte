@@ -39,10 +39,10 @@
 			<div class="mb-6 flex items-start justify-between">
 				<div>
 					<h2 id="folder-dialog-title" class="text-2xl font-bold text-stone-900 dark:text-amber-50">
-						Create Album
+						Create Collection
 					</h2>
 					<p class="mt-1 text-sm font-medium text-stone-600 dark:text-stone-400">
-						Add a new album to organize your collection
+						Add a new collection to organize your media
 					</p>
 				</div>
 				<button
@@ -73,7 +73,7 @@
 				<input type="hidden" name="category" value={category} />
 
 				<label class="block space-y-1 text-sm">
-					<span class="font-bold text-stone-700 dark:text-stone-300">Album Title *</span>
+					<span class="font-bold text-stone-700 dark:text-stone-300">Collection title *</span>
 					<input
 						type="text"
 						name="title"
@@ -95,7 +95,7 @@
 					</button>
 					<button type="submit" class="btn-primary px-5 py-2.5 text-sm">
 						<FolderPlus size={16} weight="bold" />
-						Create Album
+						Create Collection
 					</button>
 				</div>
 			</form>

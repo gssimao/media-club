@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const album = await getAlbum(locals.db, params.albumId);
 	if (!album || album.category !== params.category) {
-		error(404, 'Album not found');
+		error(404, 'Collection not found');
 	}
 
 	const items = await listItemsInAlbum(locals.db, album.id);

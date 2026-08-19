@@ -8,6 +8,7 @@
 	category="movie"
 	title="Movies"
 	items={data.items}
+	allItems={data.allItems}
 	albums={data.albums}
 	coverUrls={data.coverUrls}
 	isAdmin={data.isAdmin}

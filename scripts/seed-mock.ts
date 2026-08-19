@@ -683,8 +683,8 @@ const counts = sqlite
 
 console.log(`Mock seed complete → ${dbPath}`);
 console.log(`  Items: ${counts.items} (${itemsAdded} new, ${itemsUpdated} updated)`);
-console.log(`  Albums: ${counts.albums} (${MOCK_ALBUMS.length} collections configured)`);
-console.log(`  In albums: ${counts.in_albums} · Watched in album: ${counts.watched}`);
+console.log(`  Collections: ${counts.albums} (${MOCK_ALBUMS.length} configured)`);
+console.log(`  In collections: ${counts.in_albums} · Watched in collection: ${counts.watched}`);
 console.log('');
 console.log('Browse:');
 console.log('  /movies          /music          /books');

@@ -48,7 +48,7 @@ export const actions: Actions = {
 		const accentColor = sanitizeAlbumAccentColor(form.get('accentColor'));
 
 		if (!id || !title || title.length > MAX_TITLE_LENGTH) {
-			return fail(400, { message: 'Album id and title are required.' });
+			return fail(400, { message: 'Collection id and title are required.' });
 		}
 
 		await updateAlbum(locals.db, id, { title, description, coverUrl, accentColor });
@@ -59,7 +59,7 @@ export const actions: Actions = {
 		requireAdmin(locals);
 		const form = await request.formData();
 		const id = String(form.get('id') ?? '');
-		if (!id) return fail(400, { message: 'Missing album id.' });
+		if (!id) return fail(400, { message: 'Missing collection id.' });
 
 		const album = await getAlbumById(locals.db, id);
 		await deleteAlbum(locals.db, id);
@@ -79,7 +79,7 @@ export const actions: Actions = {
 		if (!itemId) return fail(400, { message: 'Missing item id.' });
 
 		const ok = await assignItemToAlbum(locals.db, itemId, albumId);
-		if (!ok) return fail(400, { message: 'Could not assign item to album.' });
+		if (!ok) return fail(400, { message: 'Could not assign item to collection.' });
 
 		backToReferer(request);
 	}

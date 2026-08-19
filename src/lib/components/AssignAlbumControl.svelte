@@ -26,7 +26,7 @@
 	}}
 >
 	<input type="hidden" name="itemId" value={itemId} />
-	<label class="sr-only" for="album-{itemId}">Assign to album</label>
+	<label class="sr-only" for="album-{itemId}">Assign to collection</label>
 	<select
 		id="album-{itemId}"
 		name="albumId"
@@ -35,7 +35,7 @@
 		class="input-round w-full py-1.5 text-[9px] font-bold tracking-wide uppercase disabled:opacity-60"
 		onchange={(e) => e.currentTarget.form?.requestSubmit()}
 	>
-		<option value="">No album</option>
+		<option value="">No collection</option>
 		{#each albums as album (album.id)}
 			<option value={album.id}>{album.title}</option>
 		{/each}

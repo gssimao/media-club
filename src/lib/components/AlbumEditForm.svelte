@@ -50,10 +50,10 @@
 		return async ({ result, update }) => {
 			isSaving = false;
 			if (result.type === 'failure') {
-				toast.error(String(result.data?.message ?? 'Could not save album.'));
+				toast.error(String(result.data?.message ?? 'Could not save collection.'));
 				return;
 			}
-			toast.success('Album saved.');
+			toast.success('Collection saved.');
 			await update();
 			onSaved();
 		};
@@ -61,7 +61,7 @@
 >
 	<div class="flex items-center justify-between gap-3">
 		<h2 class="text-sm font-black tracking-wide text-stone-800 uppercase dark:text-amber-50">
-			Edit album
+			Edit collection
 		</h2>
 		<button type="button" class="btn-secondary px-3 py-1 text-xs" onclick={onCancel}>
 			Close
@@ -98,7 +98,7 @@
 			placeholder="Paste any image link (JPG, PNG, GIF…)"
 		/>
 		<span class="block text-xs text-[rgb(var(--color-text-secondary))]">
-			Leave blank to use the first item cover in this album.
+			Leave blank to use the first item cover in this collection.
 		</span>
 	</label>
 
@@ -161,7 +161,7 @@
 					'ring-2 ring-amber-500 ring-offset-2 ring-offset-[rgb(var(--color-bg))]'
 			)}
 		>
-			{isSaving ? 'Saving…' : isDirty ? 'Save changes' : 'Save album'}
+			{isSaving ? 'Saving…' : isDirty ? 'Save changes' : 'Save collection'}
 		</button>
 		{#if isDirty && !isSaving}
 			<p class="text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</p>

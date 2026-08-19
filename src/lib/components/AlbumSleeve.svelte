@@ -32,7 +32,11 @@
 				)}
 			>
 				{#if cover}
-					<img src={cover} alt="{album.title} album cover" class="h-full w-full object-cover" />
+					<img
+						src={cover}
+						alt="{album.title} collection cover"
+						class="h-full w-full object-cover"
+					/>
 				{:else}
 					<AlbumSleevePattern seed={album.id} accentColor={album.accentColor} />
 					<div class="relative z-[1] flex h-full items-center justify-center p-6">

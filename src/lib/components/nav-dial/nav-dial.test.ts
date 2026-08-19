@@ -3,6 +3,7 @@ import {
 	angularDistance,
 	itemAnglesForCount,
 	nearestItemIndex,
+	nearestItemIndexWithHysteresis,
 	normalizeAngle,
 	snapRotationToIndex,
 	unwrapAngleDelta
@@ -57,6 +58,21 @@ describe('nearestItemIndex', () => {
 	});
 });
 
+describe('nearestItemIndexWithHysteresis', () => {
+	const angles = itemAnglesForCount(8);
+
+	it('keeps the sticky item until another is clearly closer', () => {
+		const base = snapRotationToIndex(angles, 0);
+		const nudged = base - 25;
+		expect(nearestItemIndex(angles, nudged)).toBe(1);
+		expect(nearestItemIndexWithHysteresis(angles, nudged, 0)).toBe(0);
+	});
+
+	it('switches when the candidate is far enough past the midpoint', () => {
+		const rotation = snapRotationToIndex(angles, 1);
+		expect(nearestItemIndexWithHysteresis(angles, rotation, 0)).toBe(1);
+	});
+});
 describe('snapRotationToIndex', () => {
 	const angles = itemAnglesForCount(8);
 

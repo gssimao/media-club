@@ -271,6 +271,13 @@
 			opacity 0.2s ease;
 	}
 
+	.dial-node-button::before {
+		content: '';
+		position: absolute;
+		inset: -0.85rem;
+		border-radius: 9999px;
+	}
+
 	.dial-node-label {
 		position: absolute;
 		top: 1.55rem;

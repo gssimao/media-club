@@ -23,7 +23,7 @@ export function registerItemTools(server: McpServer) {
 		'list_media',
 		{
 			description:
-				'List media items. Defaults to ungrouped items (not on an album shelf), matching the category pages. owned = items you have, wishlist = want list.',
+				'List media items. Defaults to ungrouped items (not in a collection), matching the category pages. owned = items you have, wishlist = want list.',
 			inputSchema: {
 				category: categorySchema,
 				listType: listTypeSchema,
@@ -31,15 +31,15 @@ export function registerItemTools(server: McpServer) {
 					.boolean()
 					.optional()
 					.default(true)
-					.describe('When true (default), only items not assigned to an album shelf'),
+					.describe('When true (default), only items not assigned to a collection'),
 				albumId: z
 					.string()
 					.optional()
-					.describe('When set, list items in this album/shelf instead of ungrouped filter'),
+					.describe('When set, list items in this collection instead of ungrouped filter'),
 				includeAll: z
 					.boolean()
 					.optional()
-					.describe('When true, return all items regardless of album assignment')
+					.describe('When true, return all items regardless of collection assignment')
 			}
 		},
 		async ({ category, listType, ungrouped, albumId, includeAll }) => {

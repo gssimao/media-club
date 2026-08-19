@@ -9,6 +9,7 @@
 	title="Music"
 	description="Vinyl and records in the collection."
 	items={data.items}
+	allItems={data.allItems}
 	albums={data.albums}
 	coverUrls={data.coverUrls}
 	isAdmin={data.isAdmin}

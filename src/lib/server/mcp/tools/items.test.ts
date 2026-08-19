@@ -211,7 +211,7 @@ describe('mcpAddMediaItem', () => {
 		);
 		const parsed = parseToolResult(result);
 		expect(parsed.success).toBe(false);
-		expect(parsed.error).toMatch(/album not found/i);
+		expect(parsed.error).toMatch(/collection not found/i);
 	});
 });
 

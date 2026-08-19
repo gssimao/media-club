@@ -14,6 +14,7 @@
 		title: string;
 		description?: string;
 		items: MediaItem[];
+		allItems: MediaItem[];
 		albums: Album[];
 		coverUrls: Record<string, string | null>;
 		isAdmin: boolean;
@@ -28,6 +29,7 @@
 		title,
 		description,
 		items,
+		allItems,
 		albums,
 		coverUrls,
 		isAdmin,
@@ -40,24 +42,31 @@
 	let selectedFormats = $state<string[]>([]);
 
 	const allGrouped = $derived(albums.length > 0 && items.length === 0);
-	const emptyTitle = $derived(allGrouped ? `All ${noun} are in albums` : `No ${noun} yet`);
+	const emptyTitle = $derived(allGrouped ? `All ${noun} are in collections` : `No ${noun} yet`);
 	const emptyText = $derived(
-		allGrouped ? 'Browse the albums above or open one to see everything inside.' : emptyDescription
+		allGrouped
+			? 'Browse the collections above or open one to see everything inside.'
+			: emptyDescription
 	);
 
-	const filteredItems = $derived.by(() => {
+	const filteredItems = $derived.by(() => applyFormatFilter(items));
+	const filteredSearchItems = $derived.by(() => applyFormatFilter(allItems));
+
+	function applyFormatFilter(source: MediaItem[]) {
 		if (category !== 'movie' || selectedFormats.length === 0) {
-			return items;
+			return source;
 		}
 
-		return items.filter((item) => {
+		return source.filter((item) => {
 			const metadata = item.metadata as Record<string, unknown> | null;
 			if (!metadata || !metadata.tags) return false;
 
 			const tags = metadata.tags as string[];
-			return selectedFormats.some((format) => tags.includes(format));
+			return selectedFormats.some((format) =>
+				tags.some((tag) => tag === format || tag.includes(format) || format.includes(tag))
+			);
 		});
-	});
+	}
 
 	function handleFilterChange(formats: string[]) {
 		selectedFormats = formats;
@@ -70,7 +79,7 @@
 
 <PageShell {title} {description}>
 	{#snippet controls()}
-		<NavLink href="/albums/{category}" variant="accent">View albums</NavLink>
+		<NavLink href="/albums/{category}" variant="accent">View collections</NavLink>
 		<NavLink href="/wishlist/{CATEGORY_PATHS[category]}" variant="accent">
 			<Heart size={16} weight="bold" />
 			View wishlist
@@ -81,7 +90,7 @@
 		{#if isAdmin}
 			<button
 				onclick={() => (showAddDialog = true)}
-				class="flex items-center gap-2 rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-bg-surface))] px-4 py-2.5 text-sm font-bold text-[rgb(var(--color-text))] transition-colors hover:bg-[rgb(var(--color-accent-light))]"
+				class="pill-nav bg-amber-400/15 text-amber-700 hover:bg-amber-400/25 dark:text-amber-400"
 			>
 				<Plus size={16} weight="bold" />
 				Add {category === 'movie' ? 'Movie' : category === 'music' ? 'Record' : 'Book'}
@@ -93,6 +102,7 @@
 
 	<MediaGrid
 		items={filteredItems}
+		searchItems={filteredSearchItems}
 		{isAdmin}
 		{albums}
 		{emptyTitle}

@@ -60,7 +60,7 @@
 	}
 
 	function toggleEditAlbum() {
-		if (editingAlbum && isDirty && !confirm('Discard unsaved album changes?')) {
+		if (editingAlbum && isDirty && !confirm('Discard unsaved collection changes?')) {
 			return;
 		}
 		editingAlbum = !editingAlbum;
@@ -68,7 +68,7 @@
 	}
 
 	function closeEditAlbum() {
-		if (isDirty && !confirm('Discard unsaved album changes?')) {
+		if (isDirty && !confirm('Discard unsaved collection changes?')) {
 			return;
 		}
 		editingAlbum = false;
@@ -100,7 +100,7 @@
 
 <PageShell title={data.album.title} description={data.album.description ?? undefined}>
 	{#snippet controls()}
-		<NavLink href="/albums/{data.category}" variant="accent">All {data.label} albums</NavLink>
+		<NavLink href="/albums/{data.category}" variant="accent">All {data.label} collections</NavLink>
 		<NavLink href="/{categoryPath}">Back to {data.label}</NavLink>
 
 		<AlbumRandomPicker
@@ -129,7 +129,7 @@
 						class="inline-flex size-9 items-center justify-center rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] text-[rgb(var(--color-text-secondary))] shadow-sm transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400 {editingAlbum
 							? 'border-amber-500 text-amber-700 dark:text-amber-400'
 							: ''}"
-						aria-label={editingAlbum ? 'Close album editor' : 'Edit album'}
+						aria-label={editingAlbum ? 'Close collection editor' : 'Edit collection'}
 						aria-expanded={editingAlbum}
 						aria-controls="album-edit-panel"
 						onclick={toggleEditAlbum}
@@ -139,7 +139,7 @@
 					<button
 						type="button"
 						class="inline-flex size-9 items-center justify-center rounded-full border border-red-400/80 bg-[rgb(var(--color-surface-raised))] text-red-700 shadow-sm transition-colors hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
-						aria-label="Delete album"
+						aria-label="Delete collection"
 						onclick={() => (showDeleteConfirm = true)}
 					>
 						<Trash size={15} weight="bold" />
@@ -158,10 +158,10 @@
 
 				<ConfirmDialog
 					open={showDeleteConfirm}
-					title="Delete album?"
-					message={`Delete "${data.album.title}"? ${itemCount === 0 ? 'This album is empty.' : itemCount === 1 ? 'Its item will return to the main collection list.' : `All ${itemCount} items will return to the main collection list.`}`}
-					confirmLabel="Delete album"
-					cancelLabel="Keep album"
+					title="Delete collection?"
+					message={`Delete "${data.album.title}"? ${itemCount === 0 ? 'This collection is empty.' : itemCount === 1 ? 'Its item will return to the main list.' : `All ${itemCount} items will return to the main list.`}`}
+					confirmLabel="Delete collection"
+					cancelLabel="Keep collection"
 					variant="danger"
 					onCancel={() => (showDeleteConfirm = false)}
 					onConfirm={() => {
@@ -202,8 +202,8 @@
 		showAlbumWatchedToggle={data.isAdmin}
 		emptyTitle="Nothing left to {wording.verb}"
 		emptyDescription={watchedItems.length > 0
-			? `Every item in this album has been marked ${wording.done}. Use Mark ${wording.notDone} on a card to add it back to the pool.`
-			: `Assign items from the ${data.label.toLowerCase()} collection using the album dropdown on each card.`}
+			? `Every item in this collection has been marked ${wording.done}. Use Mark ${wording.notDone} on a card to add it back to the pool.`
+			: `Assign items from the ${data.label.toLowerCase()} page using the collection dropdown on each card.`}
 	/>
 
 	{#if watchedItems.length > 0}

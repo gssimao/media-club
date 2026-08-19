@@ -12,15 +12,15 @@ Fork it, run it on your machine, or deploy to Cloudflare or Docker. Public visit
 
 ## Features
 
-| Feature            | Description                                               |
-| ------------------ | --------------------------------------------------------- |
-| Collections        | Owned movies, music (vinyl), and books                    |
-| Albums             | Per-category folders for owned media (one album per item) |
-| Wishlists          | Separate lists per category                               |
-| API search         | Admin adds items from TMDB / Discogs / Open Library       |
-| Move to collection | One-click wishlist → owned                                |
-| Notes              | Optional per-item notes (edition, format, condition)      |
-| Public read        | Anyone can view; mutations require admin login            |
+| Feature            | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| Catalog            | Owned movies, music (vinyl), and books                                  |
+| Collections        | Per-category folders for grouping owned media (one collection per item) |
+| Wishlists          | Separate lists per category                                             |
+| API search         | Admin adds items from TMDB / Discogs / Open Library                     |
+| Move to collection | One-click wishlist → owned                                              |
+| Notes              | Optional per-item notes (edition, format, condition)                    |
+| Public read        | Anyone can view; mutations require admin login                          |
 
 ## Quick start
 

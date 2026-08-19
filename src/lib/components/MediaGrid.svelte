@@ -11,6 +11,8 @@
 		items: MediaItem[];
 		isAdmin: boolean;
 		albums?: Album[];
+		/** When set, search runs against this pool (e.g. all owned items including collections). */
+		searchItems?: MediaItem[];
 		emptyTitle: string;
 		emptyDescription: string;
 		highlightedId?: string | null;
@@ -25,6 +27,7 @@
 		items,
 		isAdmin,
 		albums = [],
+		searchItems,
 		emptyTitle,
 		emptyDescription,
 		highlightedId = null,
@@ -37,8 +40,11 @@
 
 	let query = $state('');
 
+	const searchableItems = $derived(searchItems ?? items);
+	const isSearching = $derived(query.trim().length > 0);
+
 	const fuse = $derived(
-		new Fuse(items, {
+		new Fuse(searchableItems, {
 			keys: [
 				{ name: 'title', weight: 0.7 },
 				{ name: 'subtitle', weight: 0.2 },
@@ -87,23 +93,23 @@
 					<button
 						onclick={onAddFolder}
 						aria-describedby="add-album-tip"
-						class="flex items-center gap-2 rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-bg-surface))] px-3 py-2 text-xs font-bold text-[rgb(var(--color-text))] transition-colors hover:bg-[rgb(var(--color-accent-light))]"
+						class="flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-2 text-xs font-bold tracking-wide text-amber-700 uppercase transition-all hover:bg-amber-400/20 dark:text-amber-400"
 					>
 						<FolderPlus size={14} weight="bold" />
-						Add Album
+						Add Collection
 					</button>
 					<span id="add-album-tip" role="tooltip" class="add-album-tip">
-						Albums serve as a folder for you to put your media inside.
+						Collections group related items together within a category.
 					</span>
 				</span>
 			{/if}
 		</div>
 
 		{#if filteredItems.length === 0}
-			{#if query.trim()}
+			{#if isSearching}
 				<EmptyState
 					title="No matches"
-					description={`Nothing in this list matches “${query.trim()}”.`}
+					description={`Nothing in your catalog matches “${query.trim()}”, including items inside collections.`}
 				/>
 			{:else}
 				<EmptyState title={emptyTitle} description={emptyDescription} />
@@ -118,6 +124,7 @@
 							{albums}
 							highlighted={highlightedId === item.id}
 							{showAlbumWatchedToggle}
+							showCollectionLink={isSearching}
 						/>
 					</div>
 				{/each}

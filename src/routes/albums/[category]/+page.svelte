@@ -12,10 +12,10 @@
 </script>
 
 <svelte:head>
-	<title>{data.label} Albums · Media Club</title>
+	<title>{data.label} Collections · Media Club</title>
 </svelte:head>
 
-<PageShell title="{data.label} Albums">
+<PageShell title="{data.label} Collections">
 	{#snippet controls()}
 		<NavLink href="/{categoryPath}" variant="accent">Back to {data.label}</NavLink>
 	{/snippet}
@@ -29,7 +29,7 @@
 		>
 			<input type="hidden" name="category" value={data.category} />
 			<label class="min-w-[12rem] flex-1 space-y-1 text-sm">
-				<span class="font-bold text-stone-700 dark:text-stone-300">New album</span>
+				<span class="font-bold text-stone-700 dark:text-stone-300">New collection</span>
 				<input
 					type="text"
 					name="title"
@@ -38,16 +38,16 @@
 					class="input-round w-full"
 				/>
 			</label>
-			<button type="submit" class="btn-primary px-5 py-2.5 text-sm">Create album</button>
+			<button type="submit" class="btn-primary px-5 py-2.5 text-sm">Create collection</button>
 		</form>
 	{/if}
 
 	{#if data.albums.length === 0}
 		<EmptyState
-			title="No albums yet"
+			title="No collections yet"
 			description={data.isAdmin
-				? `Create an album to group your ${CATEGORY_LABELS[data.category].toLowerCase()} collection.`
-				: 'No albums have been published in this category yet.'}
+				? `Create a collection to group your ${CATEGORY_LABELS[data.category].toLowerCase()}.`
+				: 'No collections have been published in this category yet.'}
 		/>
 	{:else}
 		<div class="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

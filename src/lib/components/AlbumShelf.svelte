@@ -14,10 +14,10 @@
 </script>
 
 {#if preview.length > 0}
-	<section class="mb-8" aria-label="Albums">
+	<section class="mb-8" aria-label="Collections">
 		<div class="mb-3 flex items-end justify-between gap-3">
 			<h2 class="text-sm font-black tracking-wide text-stone-700 uppercase dark:text-stone-300">
-				Albums
+				Collections
 			</h2>
 			<a
 				href="/albums/{category}"

@@ -16,7 +16,7 @@ export function registerCollectionTools(server: McpServer) {
 	server.registerTool(
 		'list_albums',
 		{
-			description: 'List album shelves within a category, with item counts.',
+			description: 'List collections within a category, with item counts.',
 			inputSchema: {
 				category: categorySchema
 			}
@@ -31,10 +31,10 @@ export function registerCollectionTools(server: McpServer) {
 	server.registerTool(
 		'create_album',
 		{
-			description: 'Create a new album shelf to group owned items within a category.',
+			description: 'Create a new collection to group owned items within a category.',
 			inputSchema: {
 				category: categorySchema,
-				title: z.string().min(1).describe('Album title'),
+				title: z.string().min(1).describe('Collection title'),
 				description: z.string().nullable().optional().describe('Optional description')
 			}
 		},
@@ -46,7 +46,7 @@ export function registerCollectionTools(server: McpServer) {
 				title,
 				description: description ?? null
 			});
-			if (!album) return toolFailure('Failed to create album');
+			if (!album) return toolFailure('Failed to create collection');
 			return toolSuccess(album);
 		}
 	);
@@ -54,16 +54,16 @@ export function registerCollectionTools(server: McpServer) {
 	server.registerTool(
 		'delete_album',
 		{
-			description: 'Delete an album shelf. Items in it are unlinked but remain in the catalog.',
+			description: 'Delete a collection. Items in it are unlinked but remain in the catalog.',
 			inputSchema: {
-				id: z.string().describe('Album id')
+				id: z.string().describe('Collection id')
 			}
 		},
 		async ({ id }) => {
 			const ctx = getMcpContext();
 			logMcpTool('delete_album', id);
 			const existing = await getAlbumById(ctx.db, id);
-			if (!existing) return toolFailure(`Album not found: ${id}`);
+			if (!existing) return toolFailure(`Collection not found: ${id}`);
 
 			await deleteAlbum(ctx.db, id);
 			return toolSuccess({ removed: true, id });
@@ -73,10 +73,10 @@ export function registerCollectionTools(server: McpServer) {
 	server.registerTool(
 		'assign_to_album',
 		{
-			description: 'Assign an owned media item to an album shelf.',
+			description: 'Assign an owned media item to a collection.',
 			inputSchema: {
 				itemId: z.string().describe('Media item id'),
-				albumId: z.string().describe('Album id')
+				albumId: z.string().describe('Collection id')
 			}
 		},
 		async ({ itemId, albumId }) => {
@@ -86,11 +86,11 @@ export function registerCollectionTools(server: McpServer) {
 			const item = await getItemById(ctx.db, itemId);
 			if (!item) return toolFailure(`Item not found: ${itemId}`);
 			if (item.listType !== 'owned') {
-				return toolFailure('Only owned items can be assigned to an album');
+				return toolFailure('Only owned items can be assigned to a collection');
 			}
 
 			const ok = await assignItemToAlbum(ctx.db, itemId, albumId);
-			if (!ok) return toolFailure('Could not assign item to album');
+			if (!ok) return toolFailure('Could not assign item to collection');
 
 			return toolSuccess(await getItemById(ctx.db, itemId));
 		}
@@ -99,7 +99,7 @@ export function registerCollectionTools(server: McpServer) {
 	server.registerTool(
 		'remove_from_album',
 		{
-			description: 'Remove a media item from its album shelf. The item stays in the catalog.',
+			description: 'Remove a media item from its collection. The item stays in the catalog.',
 			inputSchema: {
 				itemId: z.string().describe('Media item id')
 			}
@@ -112,7 +112,7 @@ export function registerCollectionTools(server: McpServer) {
 			if (!item) return toolFailure(`Item not found: ${itemId}`);
 
 			const ok = await assignItemToAlbum(ctx.db, itemId, null);
-			if (!ok) return toolFailure('Could not remove item from album');
+			if (!ok) return toolFailure('Could not remove item from collection');
 
 			return toolSuccess(await getItemById(ctx.db, itemId));
 		}

@@ -7,6 +7,7 @@
 		DIAL_SNAP_MS,
 		itemAnglesForCount,
 		nearestItemIndex,
+		nearestItemIndexWithHysteresis,
 		pointerAngle,
 		snapRotationToIndex,
 		unwrapAngleDelta
@@ -36,14 +37,20 @@
 	let dragMoved = $state(false);
 	let animating = $state(false);
 	let targetNavIndex = $state<number | null>(null);
-	let snapComplete = $state(false);
+	let pendingHref = $state<string | null>(null);
+	let pathAtNavigationStart = '';
+	let stickyPreviewIndex = $state(0);
 	let lastPointerAngle = 0;
 	let rotationAtDragStart = 0;
 	let totalDragDelta = 0;
 
 	const itemAngles = $derived(itemAnglesForCount(navItems.length));
 	const previewIndex = $derived(
-		dragging || animating ? nearestItemIndex(itemAngles, rotation) : activeIndex
+		animating && targetNavIndex !== null
+			? targetNavIndex
+			: dragging
+				? stickyPreviewIndex
+				: activeIndex
 	);
 
 	function setRotationForIndex(index: number) {
@@ -59,7 +66,7 @@
 	function finishNavigation() {
 		animating = false;
 		targetNavIndex = null;
-		snapComplete = false;
+		pendingHref = null;
 	}
 
 	$effect(() => {
@@ -69,7 +76,7 @@
 			const targetItem = navItems[targetNavIndex];
 			if (targetItem?.match(path)) {
 				finishNavigation();
-			} else if (snapComplete) {
+			} else if (pendingHref && path !== pathAtNavigationStart && !targetItem?.match(path)) {
 				finishNavigation();
 				if (!dragging) snapToPath(path);
 			}
@@ -77,6 +84,12 @@
 		}
 
 		if (!dragging && !animating) snapToPath(path);
+	});
+
+	$effect(() => {
+		if (!dragging && !animating) {
+			stickyPreviewIndex = activeIndex;
+		}
 	});
 
 	let navTimer: ReturnType<typeof setTimeout> | undefined;
@@ -89,14 +102,14 @@
 		const item = navItems[index];
 		if (!item) return;
 
+		pathAtNavigationStart = pathname;
 		targetNavIndex = index;
-		snapComplete = false;
+		pendingHref = item.href !== pathname ? item.href : null;
 		animating = true;
 		setRotationForIndex(index);
 
 		navTimer = setTimeout(() => {
-			snapComplete = true;
-			if (item.href !== pathname) void goto(item.href);
+			if (pendingHref) void goto(pendingHref);
 			else finishNavigation();
 			onNavigate?.();
 		}, DIAL_SNAP_MS);
@@ -112,6 +125,7 @@
 		dragMoved = false;
 		rotationAtDragStart = rotation;
 		totalDragDelta = 0;
+		stickyPreviewIndex = nearestItemIndex(itemAngles, rotation);
 		lastPointerAngle = pointerAngle(dialRoot, event.clientX, event.clientY);
 		dialRoot?.setPointerCapture(event.pointerId);
 	}
@@ -126,6 +140,7 @@
 		totalDragDelta += step;
 		if (Math.abs(totalDragDelta) > 2) dragMoved = true;
 		rotation = rotationAtDragStart - totalDragDelta;
+		stickyPreviewIndex = nearestItemIndexWithHysteresis(itemAngles, rotation, stickyPreviewIndex);
 	}
 
 	function onPointerUp(event: PointerEvent) {
@@ -134,7 +149,7 @@
 		dialRoot?.releasePointerCapture(event.pointerId);
 
 		if (dragMoved) {
-			navigateToIndex(nearestItemIndex(itemAngles, rotation));
+			navigateToIndex(stickyPreviewIndex);
 		}
 
 		queueMicrotask(() => {

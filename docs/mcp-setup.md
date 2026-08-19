@@ -101,22 +101,22 @@ Open the inspector UI and connect to `http://localhost:5173/mcp` with the Bearer
 | `get_media_item`     | Get one item by id                                          |
 | `get_catalog_stats`  | Counts per category/list type                               |
 | `add_media_item`     | Add to owned collection or wishlist                         |
-| `add_to_wishlist`    | Shortcut for wishlist adds (no album assignment)            |
+| `add_to_wishlist`    | Shortcut for wishlist adds (no collection assignment)       |
 | `move_to_owned`      | Promote wishlist item to owned                              |
 | `update_media_notes` | Set or clear notes                                          |
 | `remove_media_item`  | Delete an item                                              |
-| `list_albums`        | List album shelves in a category                            |
-| `create_album`       | Create a new album shelf                                    |
-| `delete_album`       | Delete an album shelf                                       |
-| `assign_to_album`    | Put an owned item on an album shelf                         |
-| `remove_from_album`  | Unassign from album shelf                                   |
+| `list_albums`        | List collections in a category                              |
+| `create_album`       | Create a new collection                                     |
+| `delete_album`       | Delete a collection                                         |
+| `assign_to_album`    | Put an owned item in a collection                           |
+| `remove_from_album`  | Unassign from a collection                                  |
 
 ### `list_media` filters
 
 | Parameter    | Default | Meaning                          |
 | ------------ | ------- | -------------------------------- |
-| `ungrouped`  | `true`  | Only items not on an album shelf |
-| `albumId`    | —       | Items in a specific album        |
+| `ungrouped`  | `true`  | Only items not in a collection   |
+| `albumId`    | —       | Items in a specific collection   |
 | `includeAll` | `false` | All items, grouped and ungrouped |
 
 ## Recommended workflow
@@ -131,7 +131,7 @@ Open the inspector UI and connect to `http://localhost:5173/mcp` with the Bearer
 
 - "Search for Dune Part Two and add it to my owned movies"
 - "Add Kind of Blue to my music wishlist"
-- "Create an album called 90s Jazz and assign these records to it"
+- "Create a collection called 90s Jazz and assign these records to it"
 - "Add a note to item \<id\>: bought at Amoeba, mint condition"
 - "Remove the wishlist entry for \<title\>"
 
@@ -139,7 +139,7 @@ Open the inspector UI and connect to `http://localhost:5173/mcp` with the Bearer
 
 - **Owned** — items you have (`listType: owned`)
 - **Wishlist** — items you want (`listType: wishlist`)
-- **Album / shelf** — user-defined grouping within a category (Marvel movies, 90s jazz, etc.)
+- **Collection** — user-defined grouping within a category (Marvel movies, 90s jazz, etc.)
 
 ## Security notes
 
