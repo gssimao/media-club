@@ -29,7 +29,7 @@
 		"db:studio": "DRIZZLE_LOCAL=1 drizzle-kit studio",
 		"db:seed": "tsx scripts/seed.ts",
 		"db:seed:mock": "tsx scripts/seed-mock.ts",
-		"deploy": "npm run build && wrangler deploy",
+		"deploy": "npm run build && node scripts/deploy-cloudflare.mjs",
 		"deploy:ci": "node scripts/deploy-cloudflare.mjs",
 		"deploy:migrate": "npm run db:migrate:remote && npm run deploy",
 		"audit": "npm audit --audit-level=moderate"
