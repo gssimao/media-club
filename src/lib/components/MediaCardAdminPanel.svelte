@@ -11,7 +11,7 @@
 		type MediaItem
 	} from '$lib/types/media';
 	import { getDisplayNotes } from '$lib/utils/format-tags';
-	import { Check, Eye, EyeSlash, Image, PencilSimple } from 'phosphor-svelte';
+	import { Check, Eye, EyeSlash, Image, PencilSimple, Trash } from 'phosphor-svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
 	interface Props {
@@ -20,9 +20,25 @@
 		showAlbumWatchedToggle: boolean;
 		showAdminMenu: boolean;
 		onCloseMenu: () => void;
+		onDeleteConfirm: () => void;
+		showDeleteConfirm: boolean;
+		onCancelDelete: () => void;
+		onConfirmDelete: () => void;
+		deleteForm: HTMLFormElement | undefined;
 	}
 
-	let { item, albums, showAlbumWatchedToggle, showAdminMenu, onCloseMenu }: Props = $props();
+	let {
+		item,
+		albums,
+		showAlbumWatchedToggle,
+		showAdminMenu,
+		onCloseMenu,
+		onDeleteConfirm,
+		showDeleteConfirm,
+		onCancelDelete,
+		onConfirmDelete,
+		deleteForm = $bindable()
+	}: Props = $props();
 
 	const wording = $derived(CATEGORY_ACTION_WORDING[item.category]);
 	const collectionLabel = $derived(CATEGORY_LABELS[item.category]);
@@ -57,32 +73,38 @@
 	<AssignAlbumControl itemId={item.id} albumId={item.albumId} {albums} />
 {/if}
 
-{#if showAlbumWatchedToggle && item.albumId}
-	<form method="POST" action="/admin/items?/toggleAlbumWatched" class="mt-2 w-full" use:enhance>
-		<input type="hidden" name="id" value={item.id} />
-		<input type="hidden" name="watched" value={item.albumWatchedAt ? 'false' : 'true'} />
-		<button
-			type="submit"
-			class="btn-secondary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"
-		>
-			{#if item.albumWatchedAt}
-				<EyeSlash size={11} weight="bold" />
-				Mark {wording.notDone}
-			{:else}
-				<Eye size={11} weight="bold" />
-				Mark {wording.done}
-			{/if}
-		</button>
-	</form>
+{#if showAlbumWatchedToggle}
+	<div class="mt-2 min-h-[2rem] w-full">
+		{#if item.albumId}
+			<form method="POST" action="/admin/items?/toggleAlbumWatched" class="w-full" use:enhance>
+				<input type="hidden" name="id" value={item.id} />
+				<input type="hidden" name="watched" value={item.albumWatchedAt ? 'false' : 'true'} />
+				<button
+					type="submit"
+					class="btn-secondary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"
+				>
+					{#if item.albumWatchedAt}
+						<EyeSlash size={11} weight="bold" />
+						Mark {wording.notDone}
+					{:else}
+						<Eye size={11} weight="bold" />
+						Mark {wording.done}
+					{/if}
+				</button>
+			</form>
+		{/if}
+	</div>
 {/if}
 
-{#if displayNotes}
-	<p
-		class="mt-2 line-clamp-2 w-full rounded-[2rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] px-3 py-2 text-center text-[10px] text-[rgb(var(--color-text-secondary))]"
-	>
-		{displayNotes}
-	</p>
-{/if}
+<div class="mt-2 min-h-[3.25rem] w-full">
+	{#if displayNotes}
+		<p
+			class="line-clamp-2 w-full rounded-[2rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] px-3 py-2 text-center text-[10px] text-[rgb(var(--color-text-secondary))]"
+		>
+			{displayNotes}
+		</p>
+	{/if}
+</div>
 
 <div id="item-actions-{item.id}" class="mt-2 w-full space-y-2">
 	{#if showAdminMenu && !editingNotes && !editingCover}
@@ -149,6 +171,18 @@
 				Change cover
 			</button>
 		{/if}
+
+		<button
+			type="button"
+			onclick={() => {
+				onCloseMenu();
+				onDeleteConfirm();
+			}}
+			class="inline-flex w-full items-center justify-center gap-1 rounded-full border border-red-400/80 px-2.5 py-1.5 text-[10px] font-bold text-red-700 transition-colors hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+		>
+			<Trash size={11} weight="bold" />
+			Delete item
+		</button>
 	{/if}
 
 	{#if item.category === 'movie' && editingCover}
@@ -233,3 +267,33 @@
 		</form>
 	{/if}
 </div>
+
+<form
+	bind:this={deleteForm}
+	method="POST"
+	action="/admin/items?/delete"
+	class="hidden"
+	use:enhance={() => {
+		return async ({ result, update }) => {
+			if (result.type === 'failure') {
+				toast.error(String(result.data?.message ?? 'Could not delete item.'));
+			} else {
+				toast.success(`Removed "${item.title}" from the catalog.`);
+			}
+			await update();
+		};
+	}}
+>
+	<input type="hidden" name="id" value={item.id} />
+</form>
+
+<ConfirmDialog
+	open={showDeleteConfirm}
+	title="Delete item?"
+	message={`Remove "${item.title}" from the catalog? This cannot be undone.`}
+	confirmLabel="Delete"
+	cancelLabel="Keep it"
+	variant="danger"
+	onCancel={onCancelDelete}
+	onConfirm={onConfirmDelete}
+/>

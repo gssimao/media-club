@@ -47,7 +47,7 @@
 
 <article
 	id="item-{item.id}"
-	class="group mx-auto flex w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500 {highlighted
+	class="group mx-auto flex h-full w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500 {highlighted
 		? 'scale-105'
 		: ''}"
 >
@@ -63,19 +63,7 @@
 		{/if}
 
 		{#if isAdmin}
-			<MediaCardAdminToolbar
-				{item}
-				{showAdminMenu}
-				onToggleMenu={toggleAdminMenu}
-				onDeleteConfirm={() => (showDeleteConfirm = true)}
-				{showDeleteConfirm}
-				onCancelDelete={() => (showDeleteConfirm = false)}
-				onConfirmDelete={() => {
-					showDeleteConfirm = false;
-					deleteForm?.requestSubmit();
-				}}
-				bind:deleteForm
-			/>
+			<MediaCardAdminToolbar {item} {showAdminMenu} onToggleMenu={toggleAdminMenu} />
 		{/if}
 	</div>
 
@@ -150,28 +138,34 @@
 		</div>
 	</div>
 
-	<div class="mt-2.5 w-full px-1 text-center">
-		<h2 class="line-clamp-2 text-xs leading-snug font-bold text-stone-900 dark:text-amber-50">
-			{item.title}
-		</h2>
-		{#if item.subtitle}
-			<p class="mt-0.5 line-clamp-1 text-[11px] font-medium text-stone-600 dark:text-stone-400">
-				{item.subtitle}
-			</p>
-		{/if}
-		{#if showCollectionLink && collection}
-			<a
-				href="/albums/{collection.category}/{collection.id}"
-				class="mt-1 inline-block max-w-full truncate rounded-full bg-amber-400/15 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase hover:bg-amber-400/25 dark:text-amber-400"
+	<div class="flex min-h-0 w-full flex-1 flex-col">
+		<div class="mt-2.5 w-full shrink-0 px-1 text-center">
+			<h2
+				class="line-clamp-2 min-h-[2.5rem] text-xs leading-snug font-bold text-stone-900 dark:text-amber-50"
 			>
-				In {collection.title}
-			</a>
-		{/if}
-	</div>
+				{item.title}
+			</h2>
+			<p
+				class="mt-0.5 line-clamp-1 min-h-[1.125rem] text-[11px] font-medium text-stone-600 dark:text-stone-400"
+			>
+				{item.subtitle ?? ''}
+			</p>
+			{#if showCollectionLink}
+				<div class="mt-1 flex min-h-[1.375rem] items-center justify-center">
+					{#if collection}
+						<a
+							href="/albums/{collection.category}/{collection.id}"
+							class="inline-block max-w-full truncate rounded-full bg-amber-400/15 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase hover:bg-amber-400/25 dark:text-amber-400"
+						>
+							In {collection.title}
+						</a>
+					{/if}
+				</div>
+			{/if}
+		</div>
 
-	{#if isAdmin || displayTags.length > 0}
-		<div class="mt-2 flex w-full flex-wrap justify-center gap-1 px-1">
-			{#if isAdmin}
+		{#if isAdmin}
+			<div class="mt-2 flex min-h-[1.375rem] w-full shrink-0 flex-wrap justify-center gap-1 px-1">
 				{#each presetTags as tag (tag)}
 					{@const active = displayTags.includes(tag)}
 					<form method="POST" action="/admin/items?/updateTags" use:enhance>
@@ -187,7 +181,9 @@
 						</button>
 					</form>
 				{/each}
-			{:else}
+			</div>
+		{:else if displayTags.length > 0}
+			<div class="mt-2 flex min-h-[1.375rem] w-full shrink-0 flex-wrap justify-center gap-1 px-1">
 				{#each displayTags as tag (tag)}
 					<span
 						class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold tracking-wide text-stone-900 uppercase"
@@ -195,25 +191,41 @@
 						{tag}
 					</span>
 				{/each}
+			</div>
+		{/if}
+
+		<div class="min-h-0 flex-1" aria-hidden="true"></div>
+
+		<div class="w-full shrink-0 {isAdmin ? 'mt-3' : ''}">
+			{#if isAdmin}
+				<MediaCardAdminPanel
+					{item}
+					{albums}
+					{showAlbumWatchedToggle}
+					{showAdminMenu}
+					onCloseMenu={() => (showAdminMenu = false)}
+					onDeleteConfirm={() => (showDeleteConfirm = true)}
+					{showDeleteConfirm}
+					onCancelDelete={() => (showDeleteConfirm = false)}
+					onConfirmDelete={() => {
+						showDeleteConfirm = false;
+						deleteForm?.requestSubmit();
+					}}
+					bind:deleteForm
+				/>
+			{:else}
+				<div class="mt-2 min-h-[3.25rem] w-full">
+					{#if displayNotes}
+						<p
+							class="line-clamp-2 w-full rounded-[2rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] px-3 py-2 text-center text-[10px] text-[rgb(var(--color-text-secondary))]"
+						>
+							{displayNotes}
+						</p>
+					{/if}
+				</div>
 			{/if}
 		</div>
-	{/if}
-
-	{#if isAdmin}
-		<MediaCardAdminPanel
-			{item}
-			{albums}
-			{showAlbumWatchedToggle}
-			{showAdminMenu}
-			onCloseMenu={() => (showAdminMenu = false)}
-		/>
-	{:else if displayNotes}
-		<p
-			class="mt-2 line-clamp-2 w-full rounded-[2rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] px-3 py-2 text-center text-[10px] text-[rgb(var(--color-text-secondary))]"
-		>
-			{displayNotes}
-		</p>
-	{/if}
+	</div>
 </article>
 
 <style>
