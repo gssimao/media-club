@@ -72,4 +72,118 @@ describe('createMetadataSearch', () => {
 		vi.unstubAllGlobals();
 		vi.useRealTimers();
 	});
+
+	it('loadMore appends the next page without resetting when filters are unchanged', async () => {
+		vi.useFakeTimers();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					results: [
+						{ externalId: '1', title: 'First', subtitle: null, year: null, coverUrl: null }
+					],
+					page: 1,
+					hasMore: true
+				})
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					results: [
+						{ externalId: '2', title: 'Second', subtitle: null, year: null, coverUrl: null }
+					],
+					page: 2,
+					hasMore: false
+				})
+			});
+		vi.stubGlobal('fetch', fetchMock);
+
+		const search = createMetadataSearch(() => ({ category: 'movie' }));
+		search.handleInput('star');
+		await vi.advanceTimersByTimeAsync(350);
+		await Promise.resolve();
+
+		expect(search.results).toHaveLength(1);
+		expect(search.page).toBe(1);
+		expect(search.hasMore).toBe(true);
+
+		// Simulate filter effect registration (same as search panels on mount).
+		search.resetPaginationOnFilterChange(true, true);
+
+		await search.loadMore();
+		await Promise.resolve();
+
+		// Simulates $effect re-firing after page increments — must not reset pagination.
+		search.resetPaginationOnFilterChange(true, true);
+
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(String(fetchMock.mock.calls[1][0])).toContain('page=2');
+		expect(search.results).toHaveLength(2);
+		expect(search.results[1]?.title).toBe('Second');
+		expect(search.page).toBe(2);
+		expect(search.hasMore).toBe(false);
+
+		vi.unstubAllGlobals();
+		vi.useRealTimers();
+	});
+
+	it('resetPaginationOnFilterChange refetches page 1 when filters change after load more', async () => {
+		vi.useFakeTimers();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					results: [
+						{ externalId: '1', title: 'First', subtitle: null, year: null, coverUrl: null }
+					],
+					page: 1,
+					hasMore: true
+				})
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					results: [
+						{ externalId: '2', title: 'Second', subtitle: null, year: null, coverUrl: null }
+					],
+					page: 2,
+					hasMore: false
+				})
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					results: [
+						{ externalId: '1', title: 'First', subtitle: null, year: null, coverUrl: null }
+					],
+					page: 1,
+					hasMore: true
+				})
+			});
+		vi.stubGlobal('fetch', fetchMock);
+
+		const search = createMetadataSearch(() => ({ category: 'movie' }));
+		search.handleInput('star');
+		await vi.advanceTimersByTimeAsync(350);
+		await Promise.resolve();
+
+		search.resetPaginationOnFilterChange(true, true);
+		await search.loadMore();
+		await Promise.resolve();
+
+		expect(search.page).toBe(2);
+
+		search.resetPaginationOnFilterChange(false, true);
+		await vi.advanceTimersByTimeAsync(0);
+		await Promise.resolve();
+
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+		expect(search.page).toBe(1);
+		expect(search.results).toHaveLength(1);
+
+		vi.unstubAllGlobals();
+		vi.useRealTimers();
+	});
 });

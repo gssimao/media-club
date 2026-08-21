@@ -33,6 +33,8 @@ export class MetadataSearch {
 
 	private debounceTimer: ReturnType<typeof setTimeout> | undefined;
 	private abortController: AbortController | null = null;
+	/** Tracks last filter toggle values so pagination resets only when filters change. */
+	private lastFilterKey = '';
 
 	constructor(private getOptions: () => MetadataSearchOptions) {
 		$effect(() => {
@@ -49,6 +51,7 @@ export class MetadataSearch {
 		this.hasMore = false;
 		this.loading = false;
 		this.loadingMore = false;
+		this.lastFilterKey = '';
 	};
 
 	private async fetchPage(trimmed: string, targetPage: number, append: boolean) {
@@ -142,9 +145,11 @@ export class MetadataSearch {
 		await this.fetchPage(trimmed, this.page + 1, true);
 	};
 
-	resetPaginationOnFilterChange = (_hideOwned: boolean, _hideOnList: boolean) => {
-		void _hideOwned;
-		void _hideOnList;
+	resetPaginationOnFilterChange = (hideOwned: boolean, hideOnList: boolean) => {
+		const filterKey = `${hideOwned}:${hideOnList}`;
+		if (filterKey === this.lastFilterKey) return;
+		this.lastFilterKey = filterKey;
+
 		if (this.page > 1 && this.query.trim().length >= 2) {
 			void this.runSearch(this.query, true);
 		}
