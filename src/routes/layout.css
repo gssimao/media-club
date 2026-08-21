@@ -100,6 +100,15 @@
 	}
 }
 
+@keyframes disc-pick {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 @layer components {
 	/* Rounded design system — see design-theme.mdc */
 	.btn-primary {
@@ -140,8 +149,47 @@
 		border-color: rgb(var(--color-accent));
 	}
 
-	.pill-nav {
-		@apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold tracking-wide uppercase transition-all;
+	/* Sidebar / PageShell controls — one size for nav links, filters, and action pills */
+	.pill-nav,
+	.control-pill {
+		@apply inline-flex min-h-[2.375rem] items-center gap-1.5 rounded-full px-4 py-2 text-sm leading-none font-bold tracking-wide uppercase transition-all;
+	}
+
+	.control-pill--block {
+		@apply w-full justify-center;
+	}
+
+	.control-pill--accent {
+		@apply bg-amber-400/15 text-amber-700 hover:bg-amber-400/25 dark:text-amber-400;
+	}
+
+	.control-pill--active {
+		@apply bg-amber-400 text-stone-900 shadow-sm;
+	}
+
+	.control-pill--primary {
+		@apply border-2 border-amber-500 bg-amber-400 text-stone-900 hover:bg-amber-500;
+	}
+
+	.control-pill--secondary {
+		@apply border-2;
+		border-color: rgb(var(--color-border));
+		background-color: rgb(var(--color-surface-raised));
+		color: rgb(var(--color-text-secondary));
+	}
+
+	.control-pill--secondary:hover {
+		border-color: rgb(var(--color-accent) / 0.6);
+		background-color: rgb(var(--color-accent-light));
+		color: rgb(var(--color-text));
+	}
+
+	.control-pill--neutral {
+		@apply text-stone-700 hover:bg-stone-900/5 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-100;
+	}
+
+	.input-round--control {
+		@apply min-h-[2.375rem] py-2;
 	}
 
 	.app-main--shell {
@@ -164,6 +212,21 @@
 		transform-box: fill-box;
 		transform-origin: center;
 	}
+
+	/* One-shot spin when picking a filter / option disc */
+	.disc-pick-spin {
+		animation: disc-pick 0.55s cubic-bezier(0.34, 1.3, 0.64, 1);
+		transform-box: fill-box;
+		transform-origin: center;
+	}
+
+	/* Horizontal media-option strip — filter / pick-one popovers */
+	.media-option-popover {
+		@apply rounded-[2rem] border-2 border-amber-400/45 bg-[rgb(var(--color-surface-raised))] px-2 py-2 shadow-lg;
+		box-shadow:
+			0 12px 28px rgb(0 0 0 / 0.18),
+			0 0 0 1px rgb(var(--color-accent) / 0.12);
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -176,6 +239,10 @@
 	.record-spin {
 		animation: none;
 	}
+
+	.disc-pick-spin {
+		animation: none;
+	}
 }
 
 /* In-app motion preference (Settings → Motion fader) — mirrors prefers-reduced-motion */
@@ -186,6 +253,10 @@
 }
 
 [data-motion='reduced'] .record-spin {
+	animation: none;
+}
+
+[data-motion='reduced'] .disc-pick-spin {
 	animation: none;
 }
 

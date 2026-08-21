@@ -1,11 +1,11 @@
 import {
 	BookOpen,
-	Clock,
 	Faders,
 	FilmStrip,
 	Heart,
 	House,
 	SignIn,
+	UserGear,
 	VinylRecord
 } from 'phosphor-svelte';
 import type { SessionUser } from '$lib/types/auth';
@@ -54,7 +54,7 @@ export function buildNavItems(user: SessionUser | null): NavItem[] {
 				{
 					href: '/admin',
 					label: 'Admin',
-					icon: Clock,
+					icon: UserGear,
 					match: (p) => p.startsWith('/admin')
 				}
 			]

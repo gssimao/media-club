@@ -3,12 +3,12 @@
 	import PageShell from '$lib/components/PageShell.svelte';
 	import AlbumEditForm from '$lib/components/AlbumEditForm.svelte';
 	import AlbumSleeve from '$lib/components/AlbumSleeve.svelte';
-	import AlbumRandomPicker from '$lib/components/AlbumRandomPicker.svelte';
+	import AlbumRandomPicker, { type PickableItem } from '$lib/components/AlbumRandomPicker.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import MediaGrid from '$lib/components/MediaGrid.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
 	import { type AlbumAccentColor } from '$lib/theme/album-colors';
-	import { CATEGORY_ACTION_WORDING, CATEGORY_PATHS, type MediaItem } from '$lib/types/media';
+	import { CATEGORY_ACTION_WORDING, CATEGORY_PATHS } from '$lib/types/media';
 	import { PencilSimple, Trash } from 'phosphor-svelte';
 
 	let { data } = $props();
@@ -75,7 +75,7 @@
 		resetDrafts();
 	}
 
-	function handlePick(item: MediaItem) {
+	function handlePick(item: PickableItem) {
 		highlightedId = item.id;
 		requestAnimationFrame(() => {
 			document.getElementById(`item-${item.id}`)?.scrollIntoView({

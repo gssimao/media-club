@@ -5,12 +5,18 @@
 		class?: string;
 		/** Continuously rotate the disc (disabled by prefers-reduced-motion). */
 		spinning?: boolean;
+		style?: string;
 	}
 
-	let { class: className, spinning = false }: Props = $props();
+	let { class: className, spinning = false, style }: Props = $props();
 </script>
 
-<svg viewBox="0 0 100 100" class={cn(spinning && 'record-spin', className)} aria-hidden="true">
+<svg
+	viewBox="0 0 100 100"
+	class={cn(spinning && 'record-spin', className)}
+	{style}
+	aria-hidden="true"
+>
 	<circle cx="50" cy="50" r="49" class="fill-stone-800 dark:fill-stone-950" />
 	{#each [45, 41, 37, 33, 29] as radius (radius)}
 		<circle

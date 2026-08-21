@@ -117,7 +117,10 @@
 		{:else}
 			<div class={gridClass}>
 				{#each filteredItems as item, index (item.id)}
-					<div class="anim-rise min-w-0" style="--rise-delay: {Math.min(index * 40, 400)}ms">
+					<div
+						class="anim-rise flex h-full min-w-0 flex-col"
+						style="--rise-delay: {Math.min(index * 40, 400)}ms"
+					>
 						<MediaCard
 							{item}
 							{isAdmin}

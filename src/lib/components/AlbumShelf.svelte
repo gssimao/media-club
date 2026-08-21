@@ -1,14 +1,17 @@
 <script lang="ts">
 	import type { Album, MediaCategory } from '$lib/types/media';
 	import AlbumCard from './AlbumCard.svelte';
+	import AddCollectionTile from './AddCollectionTile.svelte';
 
 	interface Props {
 		albums: Album[];
 		category: MediaCategory;
 		coverUrls?: Record<string, string | null>;
+		showAddTile?: boolean;
+		onAddCollection?: () => void;
 	}
 
-	let { albums, category, coverUrls = {} }: Props = $props();
+	let { albums, category, coverUrls = {}, showAddTile = false, onAddCollection }: Props = $props();
 
 	const preview = $derived(albums.slice(0, 6));
 </script>
@@ -35,6 +38,11 @@
 						<AlbumCard {album} displayCoverUrl={coverUrls[album.id] ?? null} />
 					</div>
 				{/each}
+				{#if showAddTile && onAddCollection}
+					<div class="anim-rise shrink-0 snap-start" style="--rise-delay: {preview.length * 50}ms">
+						<AddCollectionTile onclick={onAddCollection} />
+					</div>
+				{/if}
 			</div>
 			<!-- Edge fade hints that the shelf keeps scrolling -->
 			<div

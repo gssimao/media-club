@@ -7,7 +7,7 @@
 	import AddFolderDialog from '$lib/components/AddFolderDialog.svelte';
 	import FormatFilter from '$lib/components/FormatFilter.svelte';
 	import { CATEGORY_PATHS, type Album, type MediaCategory, type MediaItem } from '$lib/types/media';
-	import { Heart, Plus } from 'phosphor-svelte';
+	import { FolderPlus, Heart, Plus } from 'phosphor-svelte';
 
 	interface Props {
 		category: MediaCategory;
@@ -51,6 +51,7 @@
 
 	const filteredItems = $derived.by(() => applyFormatFilter(items));
 	const filteredSearchItems = $derived.by(() => applyFormatFilter(allItems));
+	const showShelfAddTile = $derived(isAdmin && albums.length > 0);
 
 	function applyFormatFilter(source: MediaItem[]) {
 		if (category !== 'movie' || selectedFormats.length === 0) {
@@ -89,16 +90,31 @@
 		{/if}
 		{#if isAdmin}
 			<button
+				type="button"
 				onclick={() => (showAddDialog = true)}
-				class="pill-nav bg-amber-400/15 text-amber-700 hover:bg-amber-400/25 dark:text-amber-400"
+				class="pill-nav control-pill--accent"
 			>
 				<Plus size={16} weight="bold" />
 				Add {category === 'movie' ? 'Movie' : category === 'music' ? 'Record' : 'Book'}
 			</button>
+			<button
+				type="button"
+				onclick={() => (showFolderDialog = true)}
+				class="pill-nav control-pill--accent"
+			>
+				<FolderPlus size={16} weight="bold" />
+				Create collection
+			</button>
 		{/if}
 	{/snippet}
 
-	<AlbumShelf {albums} {category} {coverUrls} />
+	<AlbumShelf
+		{albums}
+		{category}
+		{coverUrls}
+		showAddTile={showShelfAddTile}
+		onAddCollection={() => (showFolderDialog = true)}
+	/>
 
 	<MediaGrid
 		items={filteredItems}
@@ -107,7 +123,7 @@
 		{albums}
 		{emptyTitle}
 		emptyDescription={emptyText}
-		showAddFolderButton={isAdmin}
+		showAddFolderButton={isAdmin && albums.length === 0}
 		onAddFolder={() => (showFolderDialog = true)}
 	/>
 </PageShell>
