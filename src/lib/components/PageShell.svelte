@@ -114,8 +114,8 @@
 			position: static;
 			max-width: none;
 			padding-top: 0.35rem;
-			padding-left: 0.25rem;
-			padding-right: 0.25rem;
+			padding-left: 1rem;
+			padding-right: 1rem;
 		}
 
 		.page-shell__title {
@@ -124,6 +124,8 @@
 
 		.page-shell__content {
 			padding-top: 0.25rem;
+			padding-left: 1rem;
+			padding-right: 1rem;
 		}
 	}
 </style>

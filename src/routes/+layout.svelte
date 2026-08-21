@@ -22,7 +22,7 @@
 	id="main-content"
 	class="pb-8 {data.pathname === '/'
 		? 'mx-auto max-w-7xl px-4 pt-2 sm:px-6 lg:px-8'
-		: 'app-main--shell w-full max-w-none pr-4 sm:pr-6 lg:pr-8'}"
+		: 'app-main--shell w-full max-w-none px-4 sm:px-6 lg:px-8'}"
 >
 	{#key data.pathname}
 		<div class="anim-fade">
