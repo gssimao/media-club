@@ -19,9 +19,10 @@
 		category: MediaCategory;
 		isOpen: boolean;
 		onClose: () => void;
+		initialMode?: 'search' | 'manual';
 	}
 
-	let { category, isOpen, onClose }: Props = $props();
+	let { category, isOpen, onClose, initialMode = 'search' }: Props = $props();
 
 	const search = createMetadataSearch(() => ({ category }));
 
@@ -61,7 +62,9 @@
 	let manualCoverUrl = $state('');
 
 	$effect(() => {
-		if (!isOpen) {
+		if (isOpen) {
+			mode = initialMode;
+		} else {
 			mode = 'search';
 			search.resetState();
 			search.query = '';

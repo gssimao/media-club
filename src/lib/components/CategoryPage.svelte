@@ -92,10 +92,10 @@
 			<button
 				type="button"
 				onclick={() => (showAddDialog = true)}
-				class="pill-nav control-pill--accent"
+				class="pill-nav control-pill--primary"
 			>
 				<Plus size={16} weight="bold" />
-				Add {category === 'movie' ? 'Movie' : category === 'music' ? 'Record' : 'Book'}
+				Add media
 			</button>
 			<button
 				type="button"
