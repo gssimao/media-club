@@ -37,21 +37,29 @@
 	.page-shell {
 		display: grid;
 		grid-template-columns: var(--nav-dial-reserve-w) minmax(0, 1fr);
+		align-items: start;
 		gap: 1.25rem 1.75rem;
 		min-height: calc(100vh - var(--nav-dial-reserve-h));
 	}
 
 	.page-shell__control {
 		position: sticky;
-		top: var(--nav-dial-reserve-h);
+		top: calc(var(--nav-dial-reserve-h) + 1.25rem);
+		z-index: 20;
 		align-self: start;
 		display: flex;
 		flex-direction: column;
 		gap: 1.25rem;
-		padding-top: var(--nav-dial-reserve-h);
+		/* Margin clears the fixed dial on first paint; sticky top keeps it below the wheel when scrolling */
+		margin-top: max(12.5rem, calc(var(--nav-dial-reserve-h) + 1.25rem));
+		padding-top: 0;
 		padding-left: var(--nav-dial-inset);
 		padding-right: 0.25rem;
 		max-width: var(--nav-dial-reserve-w);
+		max-height: calc(100vh - var(--nav-dial-reserve-h) - 1rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
 	}
 
 	.page-shell__now-playing {
@@ -99,7 +107,8 @@
 
 	.page-shell__content {
 		min-width: 0;
-		padding-top: 1rem;
+		align-self: start;
+		padding-top: 0;
 		padding-right: 0.25rem;
 	}
 
@@ -113,6 +122,7 @@
 		.page-shell__control {
 			position: static;
 			max-width: none;
+			margin-top: 0;
 			padding-top: 0.35rem;
 			padding-left: 1rem;
 			padding-right: 1rem;
