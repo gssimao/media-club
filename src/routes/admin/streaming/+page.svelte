@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import CoverImage from '$lib/components/CoverImage.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
 	import { FilmStrip, Plus, Television, Trash } from 'phosphor-svelte';
 
@@ -10,6 +11,7 @@
 	let showCreateForm = $state(false);
 	let deleteTarget = $state<{ id: string; title: string } | null>(null);
 	let deleteForm: HTMLFormElement | undefined = $state();
+	let hoveredListId = $state<string | null>(null);
 </script>
 
 <svelte:head>
@@ -87,17 +89,23 @@
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.lists as list (list.id)}
+				{@const coverUrl = data.coverUrls[list.id]}
 				<article class="surface-round relative overflow-hidden p-4">
-					<a href="/admin/streaming/{list.id}" class="block">
+					<a
+						href="/admin/streaming/{list.id}"
+						class="block"
+						onmouseenter={() => (hoveredListId = list.id)}
+						onmouseleave={() => (hoveredListId = null)}
+					>
 						<div
 							class="mb-3 aspect-[3/4] overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 						>
-							{#if data.coverUrls[list.id]}
-								<img
-									src={data.coverUrls[list.id]}
+							{#if coverUrl}
+								<CoverImage
+									src={coverUrl}
 									alt=""
 									class="h-full w-full object-cover"
-									loading="lazy"
+									hovered={hoveredListId === list.id}
 								/>
 							{:else}
 								<div

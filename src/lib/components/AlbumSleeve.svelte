@@ -3,6 +3,7 @@
 	import { getAlbumColorPreset } from '$lib/theme/album-colors';
 	import { cn } from '$lib/utils/cn';
 	import AlbumSleevePattern from './AlbumSleevePattern.svelte';
+	import CoverImage from './CoverImage.svelte';
 	import VinylDisc from './VinylDisc.svelte';
 
 	interface Props {
@@ -14,9 +15,15 @@
 
 	const cover = $derived(displayCoverUrl ?? album.coverUrl);
 	const colorPreset = $derived(getAlbumColorPreset(album.accentColor));
+
+	let sleeveHovered = $state(false);
 </script>
 
-<div class="sleeve-hero group mx-auto w-full max-w-xs">
+<div
+	class="sleeve-hero group mx-auto w-full max-w-xs"
+	onmouseenter={() => (sleeveHovered = true)}
+	onmouseleave={() => (sleeveHovered = false)}
+>
 	<div class="relative">
 		<div class="album-disc" aria-hidden="true">
 			<VinylDisc class="size-full drop-shadow-lg" />
@@ -32,10 +39,11 @@
 				)}
 			>
 				{#if cover}
-					<img
+					<CoverImage
 						src={cover}
 						alt="{album.title} collection cover"
 						class="h-full w-full object-cover"
+						hovered={sleeveHovered}
 					/>
 				{:else}
 					<AlbumSleevePattern seed={album.id} accentColor={album.accentColor} />

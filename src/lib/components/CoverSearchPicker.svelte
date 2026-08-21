@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import CoverImage from '$lib/components/CoverImage.svelte';
 	import SearchLoadMoreButton from '$lib/components/SearchLoadMoreButton.svelte';
 	import type { MediaCategory, SearchResult } from '$lib/types/media';
 	import { createMetadataSearch } from '$lib/utils/metadata-search.svelte';
@@ -13,6 +14,8 @@
 	let { category, placeholder = 'Search for a cover image…', onSelect }: Props = $props();
 
 	const search = createMetadataSearch(() => ({ category }));
+
+	let hoveredId = $state<string | null>(null);
 
 	function handleSelect(result: SearchResult) {
 		if (!result.coverUrl || !onSelect) return;
@@ -33,16 +36,18 @@
 					class="surface-round group flex flex-col overflow-hidden p-2 text-left transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={!result.coverUrl || !onSelect}
 					onclick={() => handleSelect(result)}
+					onmouseenter={() => (hoveredId = result.externalId)}
+					onmouseleave={() => (hoveredId = null)}
 				>
 					<div
 						class="aspect-[2/3] w-full overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 					>
 						{#if result.coverUrl}
-							<img
+							<CoverImage
 								src={result.coverUrl}
 								alt="{result.title} cover"
 								class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-								loading="lazy"
+								hovered={hoveredId === result.externalId}
 							/>
 						{:else}
 							<div

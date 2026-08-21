@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import CoverImage from '$lib/components/CoverImage.svelte';
 	import SearchFilterToggles from '$lib/components/SearchFilterToggles.svelte';
 	import SearchLoadMoreButton from '$lib/components/SearchLoadMoreButton.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
@@ -83,11 +84,10 @@
 						class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 					>
 						{#if result.coverUrl}
-							<img
+							<CoverImage
 								src={result.coverUrl}
 								alt="{result.title} cover"
 								class="h-full w-full object-cover"
-								loading="lazy"
 							/>
 						{/if}
 					</div>

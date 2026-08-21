@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import CoverImage from './CoverImage.svelte';
 	import MediaCardAdminPanel from './MediaCardAdminPanel.svelte';
 	import MediaCardAdminToolbar from './MediaCardAdminToolbar.svelte';
 	import {
@@ -39,6 +40,7 @@
 	let deleteForm: HTMLFormElement | undefined = $state();
 	let showDeleteConfirm = $state(false);
 	let showAdminMenu = $state(false);
+	let cardHovered = $state(false);
 
 	function toggleAdminMenu() {
 		showAdminMenu = !showAdminMenu;
@@ -50,6 +52,8 @@
 	class="group mx-auto flex h-full w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500 {highlighted
 		? 'scale-105'
 		: ''}"
+	onmouseenter={() => (cardHovered = true)}
+	onmouseleave={() => (cardHovered = false)}
 >
 	<div class="mb-1 flex min-h-7 w-full items-center justify-between px-0.5">
 		{#if item.year}
@@ -121,11 +125,11 @@
 				class="aspect-[2/3] w-[58%] overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 			>
 				{#if item.coverUrl}
-					<img
+					<CoverImage
 						src={item.coverUrl}
 						alt="{label} cover"
 						class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-						loading="lazy"
+						hovered={cardHovered}
 					/>
 				{:else}
 					<div
@@ -168,7 +172,15 @@
 			<div class="mt-2 flex min-h-[1.375rem] w-full shrink-0 flex-wrap justify-center gap-1 px-1">
 				{#each presetTags as tag (tag)}
 					{@const active = displayTags.includes(tag)}
-					<form method="POST" action="/admin/items?/updateTags" use:enhance>
+					<form
+						method="POST"
+						action="/admin/items?/updateTags"
+						use:enhance={() => {
+							return async ({ update }) => {
+								await update({ reset: false });
+							};
+						}}
+					>
 						<input type="hidden" name="id" value={item.id} />
 						<input type="hidden" name="tags" value={JSON.stringify(toggleTag(displayTags, tag))} />
 						<button
