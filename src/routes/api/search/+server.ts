@@ -1,7 +1,7 @@
 import { error, isHttpError, json } from '@sveltejs/kit';
 import { searchMusic } from '$lib/server/apis/discogs';
 import { searchBooks } from '$lib/server/apis/openlibrary';
-import { searchMovies } from '$lib/server/apis/tmdb';
+import { searchMovies, searchTv } from '$lib/server/apis/tmdb';
 import { getSecret } from '$lib/server/env';
 import { checkRateLimit, clientIp } from '$lib/server/rate-limit';
 import { attachCatalogStatus, getCatalogStatusForExternalIds } from '$lib/server/search-catalog';
@@ -34,11 +34,14 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	let searchPage;
-	if (category === 'movie') {
+	if (category === 'movie' || category === 'show') {
 		const apiKey = getSecret(event, 'TMDB_API_KEY');
 		if (!apiKey) error(503, 'TMDB_API_KEY is not configured');
 		try {
-			searchPage = await searchMovies(apiKey, query, page);
+			searchPage =
+				category === 'movie'
+					? await searchMovies(apiKey, query, page)
+					: await searchTv(apiKey, query, page);
 		} catch (err) {
 			console.error(err);
 			error(502, 'Search provider failed');

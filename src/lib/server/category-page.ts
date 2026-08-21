@@ -4,7 +4,7 @@ import type { AppDatabase } from '$lib/server/db';
 import type { MediaCategory } from '$lib/types/media';
 
 /**
- * Shared loader for /movies, /music, and /books. Category pages show only
+ * Shared loader for /movies, /shows, /music, and /books. Category pages show only
  * ungrouped owned items (albumId IS NULL) plus a collection shelf preview — items
  * assigned to a collection are browsed through /albums/[category] instead.
  * All owned items are also returned for client-side search across collections.

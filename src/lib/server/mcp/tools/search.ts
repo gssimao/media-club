@@ -4,7 +4,7 @@ import { toolFailure, toolSuccess } from '$lib/server/mcp/response';
 import { checkRateLimit } from '$lib/server/rate-limit';
 import { searchMusic } from '$lib/server/apis/discogs';
 import { searchBooks } from '$lib/server/apis/openlibrary';
-import { searchMovies } from '$lib/server/apis/tmdb';
+import { searchMovies, searchTv } from '$lib/server/apis/tmdb';
 import { categorySchema } from '$lib/server/mcp/schemas';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -14,7 +14,7 @@ export function registerSearchTools(server: McpServer) {
 		'search_media',
 		{
 			description:
-				'Search TMDB (movies), Discogs (music/vinyl), or Open Library (books) for items to add to the catalog.',
+				'Search TMDB (movies and TV shows), Discogs (music/vinyl), or Open Library (books) for items to add to the catalog.',
 			inputSchema: {
 				category: categorySchema.describe('Media category to search'),
 				query: z.string().min(2).describe('Search query (minimum 2 characters)')
@@ -29,10 +29,13 @@ export function registerSearchTools(server: McpServer) {
 			}
 
 			try {
-				if (category === 'movie') {
+				if (category === 'movie' || category === 'show') {
 					const apiKey = getPlatformSecret(ctx.platform, 'TMDB_API_KEY');
 					if (!apiKey) return toolFailure('TMDB_API_KEY is not configured');
-					const page = await searchMovies(apiKey, query);
+					const page =
+						category === 'movie'
+							? await searchMovies(apiKey, query)
+							: await searchTv(apiKey, query);
 					return toolSuccess(page.results);
 				}
 

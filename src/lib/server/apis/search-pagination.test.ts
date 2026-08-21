@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SEARCH_PAGE_SIZE } from '$lib/server/apis/search-types';
 import { searchBooks } from '$lib/server/apis/openlibrary';
 import { searchMusic } from '$lib/server/apis/discogs';
-import { searchMovies } from '$lib/server/apis/tmdb';
+import { searchMovies, searchTv } from '$lib/server/apis/tmdb';
 
 describe('search provider pagination', () => {
 	afterEach(() => {
@@ -50,6 +50,57 @@ describe('search provider pagination', () => {
 
 		expect(page.hasMore).toBe(false);
 		expect(page.results).toHaveLength(1);
+	});
+
+	it('searchTv uses page param and maps name and first_air_date', async () => {
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				page: 1,
+				total_pages: 2,
+				results: [
+					{
+						id: 42,
+						name: 'Breaking Bad',
+						first_air_date: '2008-01-20',
+						poster_path: '/poster.jpg'
+					}
+				]
+			})
+		});
+		vi.stubGlobal('fetch', fetchMock);
+
+		const page = await searchTv('test-key', 'breaking', 1);
+
+		expect(String(fetchMock.mock.calls[0][0])).toContain('/search/tv');
+		expect(String(fetchMock.mock.calls[0][0])).toContain('page=1');
+		expect(page.results).toHaveLength(1);
+		expect(page.results[0]).toMatchObject({
+			externalId: '42',
+			title: 'Breaking Bad',
+			year: 2008,
+			coverUrl: 'https://image.tmdb.org/t/p/w342/poster.jpg'
+		});
+		expect(page.hasMore).toBe(true);
+	});
+
+	it('searchTv sets hasMore false on the last page', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					page: 2,
+					total_pages: 2,
+					results: [{ id: 99, name: 'Finale', poster_path: null }]
+				})
+			})
+		);
+
+		const page = await searchTv('test-key', 'show', 2);
+
+		expect(page.hasMore).toBe(false);
+		expect(page.results[0]?.title).toBe('Finale');
 	});
 
 	it('searchMusic uses Discogs pagination metadata', async () => {

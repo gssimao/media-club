@@ -24,7 +24,7 @@ Single `items` table with discriminated `category` and `list_type`:
 
 | Column        | Purpose                                            |
 | ------------- | -------------------------------------------------- |
-| `category`    | `movie`, `music`, `book`                           |
+| `category`    | `movie`, `show`, `music`, `book`                   |
 | `list_type`   | `owned`, `wishlist`                                |
 | `external_id` | Provider ID (TMDB, Discogs, Open Library work key) |
 | `metadata`    | JSON blob for extra provider fields                |

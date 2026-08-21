@@ -6,7 +6,7 @@ export const albums = sqliteTable(
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		category: text('category', { enum: ['movie', 'music', 'book'] }).notNull(),
+		category: text('category', { enum: ['movie', 'show', 'music', 'book'] }).notNull(),
 		title: text('title').notNull(),
 		description: text('description'),
 		coverUrl: text('cover_url'),
@@ -28,7 +28,7 @@ export const items = sqliteTable(
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		category: text('category', { enum: ['movie', 'music', 'book'] }).notNull(),
+		category: text('category', { enum: ['movie', 'show', 'music', 'book'] }).notNull(),
 		listType: text('list_type', { enum: ['owned', 'wishlist'] }).notNull(),
 		albumId: text('album_id').references(() => albums.id, { onDelete: 'set null' }),
 		externalId: text('external_id').notNull(),

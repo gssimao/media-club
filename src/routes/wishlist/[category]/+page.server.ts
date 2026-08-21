@@ -5,6 +5,7 @@ import type { PageServerLoad } from './$types';
 
 const routeMap: Record<string, MediaCategory> = {
 	movies: 'movie',
+	shows: 'show',
 	music: 'music',
 	books: 'book'
 };

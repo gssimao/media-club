@@ -2,9 +2,9 @@
 
 Media Club proxies all metadata API calls server-side. Keys never reach the browser.
 
-## TMDB (movies)
+## TMDB (movies & TV shows)
 
-Required for movie search.
+Required for movie and TV show search (same API key).
 
 1. Create a free account at [themoviedb.org](https://www.themoviedb.org/)
 2. Go to **Settings → API**

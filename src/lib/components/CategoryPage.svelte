@@ -54,7 +54,7 @@
 	const showShelfAddTile = $derived(isAdmin && albums.length > 0);
 
 	function applyFormatFilter(source: MediaItem[]) {
-		if (category !== 'movie' || selectedFormats.length === 0) {
+		if ((category !== 'movie' && category !== 'show') || selectedFormats.length === 0) {
 			return source;
 		}
 
@@ -85,8 +85,8 @@
 			<Heart size={16} weight="bold" />
 			View wishlist
 		</NavLink>
-		{#if isAdmin && category === 'movie'}
-			<FormatFilter {selectedFormats} onFilterChange={handleFilterChange} />
+		{#if isAdmin && (category === 'movie' || category === 'show')}
+			<FormatFilter {category} {selectedFormats} onFilterChange={handleFilterChange} />
 		{/if}
 		{#if isAdmin}
 			<button

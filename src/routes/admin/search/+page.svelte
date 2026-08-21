@@ -12,13 +12,14 @@
 
 <PageShell
 	title="Add from search"
-	description="Search TMDB, Discogs, or Open Library, then add results to the collection or wishlist."
+	description="Search TMDB (movies and TV), Discogs, or Open Library, then add results to the collection or wishlist."
 >
 	{#snippet controls()}
 		<label class="space-y-2 text-sm">
 			<span class="font-bold text-stone-700 dark:text-stone-300">Category</span>
 			<select bind:value={category} class="input-round input-round--control w-full">
 				<option value="movie">Movies (TMDB)</option>
+				<option value="show">Shows (TMDB)</option>
 				<option value="music">Music (Discogs)</option>
 				<option value="book">Books (Open Library)</option>
 			</select>

@@ -4,7 +4,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-Free, self-hosted catalog for **movies**, **vinyl records**, and **books** — with separate owned lists and wishlists.
+Free, self-hosted catalog for **movies**, **TV shows**, **vinyl records**, and **books** — with separate owned lists and wishlists.
 
 Fork it, run it on your machine, or deploy to Cloudflare or Docker. Public visitors browse the catalog; only the admin can add, edit, or remove items.
 
@@ -14,7 +14,7 @@ Fork it, run it on your machine, or deploy to Cloudflare or Docker. Public visit
 
 | Feature            | Description                                                             |
 | ------------------ | ----------------------------------------------------------------------- |
-| Catalog            | Owned movies, music (vinyl), and books                                  |
+| Catalog            | Owned movies, TV shows, music (vinyl), and books                        |
 | Collections        | Per-category folders for grouping owned media (one collection per item) |
 | Wishlists          | Separate lists per category                                             |
 | API search         | Admin adds items from TMDB / Discogs / Open Library                     |
@@ -57,13 +57,13 @@ Architecture: [docs/architecture.md](docs/architecture.md)
 
 Copy [.env.example](.env.example) to `.env`. Common variables:
 
-| Variable         | Required          | Purpose                                             |
-| ---------------- | ----------------- | --------------------------------------------------- |
-| `ADMIN_PASSWORD` | Yes\*             | Admin login (hashed on first boot)                  |
-| `ADMIN_USERNAME` | No                | Default `admin`                                     |
-| `TMDB_API_KEY`   | For movies search | Free key from [TMDB](https://www.themoviedb.org/)   |
-| `DISCOGS_TOKEN`  | For music search  | Free token from [Discogs](https://www.discogs.com/) |
-| `DEFAULT_ROUTE`  | No                | Redirect `/` (e.g. `/movies`); empty = welcome page |
+| Variable         | Required                  | Purpose                                             |
+| ---------------- | ------------------------- | --------------------------------------------------- |
+| `ADMIN_PASSWORD` | Yes\*                     | Admin login (hashed on first boot)                  |
+| `ADMIN_USERNAME` | No                        | Default `admin`                                     |
+| `TMDB_API_KEY`   | For movies & shows search | Free key from [TMDB](https://www.themoviedb.org/)   |
+| `DISCOGS_TOKEN`  | For music search          | Free token from [Discogs](https://www.discogs.com/) |
+| `DEFAULT_ROUTE`  | No                        | Redirect `/` (e.g. `/movies`); empty = welcome page |
 
 \*Docker Compose refuses to start without `ADMIN_PASSWORD` set.
 

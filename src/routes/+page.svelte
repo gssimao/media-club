@@ -6,6 +6,7 @@
 		Clock,
 		Heart,
 		House,
+		MonitorPlay,
 		Pause,
 		Play,
 		SignIn,
@@ -20,6 +21,7 @@
 
 	const icons = {
 		movie: FilmStrip,
+		show: MonitorPlay,
 		music: VinylRecord,
 		book: BookOpen
 	} as const;
@@ -44,6 +46,7 @@
 	const catalogNav = [
 		{ href: '/', label: 'Home', icon: House },
 		{ href: '/movies', label: 'Movies', icon: FilmStrip },
+		{ href: '/shows', label: 'Shows', icon: MonitorPlay },
 		{ href: '/music', label: 'Music', icon: VinylRecord },
 		{ href: '/books', label: 'Books', icon: BookOpen },
 		{ href: '/wishlist/movies', label: 'Wishlist', icon: Heart },
@@ -214,7 +217,10 @@
 
 <svelte:head>
 	<title>Media Club</title>
-	<meta name="description" content="Self-hosted media catalog for movies, vinyl, and books." />
+	<meta
+		name="description"
+		content="Self-hosted media catalog for movies, TV shows, vinyl, and books."
+	/>
 </svelte:head>
 
 <div class="home-actions">
@@ -261,7 +267,7 @@
 			Media Club
 		</h1>
 		<p class="text-lg font-medium text-stone-700 sm:text-xl dark:text-stone-300">
-			Catalog your movies, vinyl, and books
+			Catalog your movies, TV shows, vinyl, and books
 		</p>
 	</div>
 

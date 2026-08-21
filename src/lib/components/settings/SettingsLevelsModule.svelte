@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BookOpen, FilmStrip, VinylRecord } from 'phosphor-svelte';
+	import { BookOpen, FilmStrip, MonitorPlay, VinylRecord } from 'phosphor-svelte';
 	import type { MediaCategory } from '$lib/types/media';
 
 	interface SummaryRow {
@@ -17,6 +17,7 @@
 
 	const icons = {
 		movie: FilmStrip,
+		show: MonitorPlay,
 		music: VinylRecord,
 		book: BookOpen
 	} as const;

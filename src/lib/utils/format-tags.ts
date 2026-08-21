@@ -2,6 +2,7 @@ import type { MediaCategory, MediaItem } from '$lib/types/media';
 
 export const FORMAT_TAG_PRESETS: Record<MediaCategory, string[]> = {
 	movie: ['DVD', 'Blu-ray', '4K', 'Digital'],
+	show: ['Streaming', 'Digital', 'Blu-ray', 'DVD'],
 	music: ['Vinyl', 'CD', 'Cassette', 'Digital'],
 	book: ['Hardcover', 'Paperback', 'Digital']
 };

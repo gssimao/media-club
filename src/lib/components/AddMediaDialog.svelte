@@ -5,7 +5,12 @@
 	import SearchLoadMoreButton from '$lib/components/SearchLoadMoreButton.svelte';
 	import SearchResultAddButtons from '$lib/components/SearchResultAddButtons.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
-	import { type CatalogStatus, type ListType, type MediaCategory } from '$lib/types/media';
+	import {
+		type CatalogStatus,
+		CATEGORY_SEARCH_PROVIDERS,
+		type ListType,
+		type MediaCategory
+	} from '$lib/types/media';
 	import { createMetadataSearch } from '$lib/utils/metadata-search.svelte';
 	import { effectiveCatalogStatus, filterSearchResults } from '$lib/utils/search-filters';
 	import { Plus, VinylRecord, X, MagnifyingGlass, Pencil } from 'phosphor-svelte';
@@ -80,9 +85,7 @@
 		}
 	}
 
-	const categoryApiLabel = $derived(
-		category === 'movie' ? 'TMDB' : category === 'music' ? 'Discogs' : 'Open Library'
-	);
+	const categoryApiLabel = $derived(CATEGORY_SEARCH_PROVIDERS[category]);
 </script>
 
 {#if isOpen}

@@ -26,6 +26,7 @@ export interface ImportItemsResult {
 
 const GROUP_KEYS: Record<string, { category: MediaCategory; listType: ListType }> = {
 	movies: { category: 'movie', listType: 'owned' },
+	shows: { category: 'show', listType: 'owned' },
 	music: { category: 'music', listType: 'owned' },
 	books: { category: 'book', listType: 'owned' }
 };
@@ -141,7 +142,7 @@ export function parseImportPayload(rawJson: string): ImportItemInput[] {
 
 	if (items.length === 0) {
 		throw new Error(
-			'No items found. Use an "items" array or group keys: movies, music, books, wishlist.'
+			'No items found. Use an "items" array or group keys: movies, shows, music, books, wishlist.'
 		);
 	}
 	if (items.length > MAX_IMPORT_ITEMS) {

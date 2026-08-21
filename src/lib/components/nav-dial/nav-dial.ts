@@ -4,6 +4,7 @@ import {
 	FilmStrip,
 	Heart,
 	House,
+	MonitorPlay,
 	SignIn,
 	UserGear,
 	VinylRecord
@@ -31,6 +32,7 @@ export const SELECTOR_STICKINESS_DEG = 12;
 const catalogItems: NavItem[] = [
 	{ href: '/', label: 'Home', icon: House, match: (p) => p === '/' },
 	{ href: '/movies', label: 'Movies', icon: FilmStrip, match: (p) => p.startsWith('/movies') },
+	{ href: '/shows', label: 'Shows', icon: MonitorPlay, match: (p) => p.startsWith('/shows') },
 	{ href: '/music', label: 'Music', icon: VinylRecord, match: (p) => p.startsWith('/music') },
 	{ href: '/books', label: 'Books', icon: BookOpen, match: (p) => p.startsWith('/books') },
 	{

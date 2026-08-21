@@ -8,7 +8,15 @@
 		type MediaCategory,
 		type SearchResult
 	} from '$lib/types/media';
-	import { BookOpen, Check, FilmStrip, Heart, Plus, VinylRecord } from 'phosphor-svelte';
+	import {
+		BookOpen,
+		Check,
+		FilmStrip,
+		Heart,
+		MonitorPlay,
+		Plus,
+		VinylRecord
+	} from 'phosphor-svelte';
 
 	interface Props {
 		result: SearchResult;
@@ -79,6 +87,8 @@
 				Add
 				{#if category === 'movie'}
 					<FilmStrip size={11} weight="bold" aria-hidden="true" />
+				{:else if category === 'show'}
+					<MonitorPlay size={11} weight="bold" aria-hidden="true" />
 				{:else if category === 'music'}
 					<VinylRecord size={11} weight="bold" aria-hidden="true" />
 				{:else}

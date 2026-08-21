@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const categorySchema = z.enum(['movie', 'music', 'book']);
+export const categorySchema = z.enum(['movie', 'show', 'music', 'book']);
 export const listTypeSchema = z.enum(['owned', 'wishlist']);
 
 export const searchResultFields = {

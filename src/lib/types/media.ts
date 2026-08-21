@@ -1,6 +1,6 @@
 import type { AlbumAccentColor } from '$lib/theme/album-colors';
 
-export type MediaCategory = 'movie' | 'music' | 'book';
+export type MediaCategory = 'movie' | 'show' | 'music' | 'book';
 export type ListType = 'owned' | 'wishlist';
 
 export type { AlbumAccentColor };
@@ -64,14 +64,23 @@ export type SearchPanelContext = 'admin' | 'wishlist' | 'owned-add' | 'streaming
 /** URL path segment for each category (e.g. /movies, /music, /books). */
 export const CATEGORY_PATHS: Record<MediaCategory, string> = {
 	movie: 'movies',
+	show: 'shows',
 	music: 'music',
 	book: 'books'
 };
 
 export const CATEGORY_LABELS: Record<MediaCategory, string> = {
 	movie: 'Movies',
+	show: 'Shows',
 	music: 'Music',
 	book: 'Books'
+};
+
+export const CATEGORY_SEARCH_PROVIDERS: Record<MediaCategory, string> = {
+	movie: 'TMDB',
+	show: 'TMDB',
+	music: 'Discogs',
+	book: 'Open Library'
 };
 
 export interface CategoryActionWording {
@@ -86,12 +95,13 @@ export interface CategoryActionWording {
 /** Category-appropriate consumption wording — movies are watched, records played, books read. */
 export const CATEGORY_ACTION_WORDING: Record<MediaCategory, CategoryActionWording> = {
 	movie: { verb: 'watch', done: 'watched', notDone: 'unwatched' },
+	show: { verb: 'watch', done: 'watched', notDone: 'unwatched' },
 	music: { verb: 'play', done: 'played', notDone: 'unplayed' },
 	book: { verb: 'read', done: 'read', notDone: 'unread' }
 };
 
 export function isMediaCategory(value: string): value is MediaCategory {
-	return value === 'movie' || value === 'music' || value === 'book';
+	return value === 'movie' || value === 'show' || value === 'music' || value === 'book';
 }
 
 export function isListType(value: string): value is ListType {
