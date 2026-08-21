@@ -1,5 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeAlbumAccentColor, sanitizeHttpUrl } from './admin';
+import {
+	isEnhancedFormRequest,
+	finishAdminMutation,
+	sanitizeAlbumAccentColor,
+	sanitizeHttpUrl
+} from './admin';
+
+describe('isEnhancedFormRequest', () => {
+	it('returns true for SvelteKit enhanced form submissions', () => {
+		const request = new Request('http://localhost/admin/items?/updateTags', {
+			method: 'POST',
+			headers: { 'x-sveltekit-action': 'true' }
+		});
+		expect(isEnhancedFormRequest(request)).toBe(true);
+	});
+
+	it('returns false for plain form posts', () => {
+		const request = new Request('http://localhost/admin/items?/updateTags', {
+			method: 'POST'
+		});
+		expect(isEnhancedFormRequest(request)).toBe(false);
+	});
+});
+
+describe('finishAdminMutation', () => {
+	it('does not redirect enhanced form submissions', () => {
+		const request = new Request('http://localhost/admin/items?/add', {
+			method: 'POST',
+			headers: { 'x-sveltekit-action': 'true', referer: 'http://localhost/movies' }
+		});
+
+		expect(() => finishAdminMutation(request)).not.toThrow();
+	});
+});
 
 describe('sanitizeHttpUrl', () => {
 	it('accepts https URLs', () => {

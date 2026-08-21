@@ -16,7 +16,8 @@ export function requireAdmin(locals: App.Locals) {
  * Admin mutations are posted cross-route (e.g. a MediaCard on /movies posts to
  * /admin/items?/delete). Without JavaScript the browser would land on the bare
  * action route, so successful actions redirect back to the same-origin referrer.
- * With `use:enhance` this becomes a soft same-page navigation that refreshes data.
+ * Enhanced (`use:enhance`) submissions should call {@link finishAdminMutation} instead
+ * so the page keeps its scroll position.
  */
 export function backToReferer(request: Request, fallback = '/admin'): never {
 	const referer = request.headers.get('referer');
@@ -33,6 +34,20 @@ export function backToReferer(request: Request, fallback = '/admin'): never {
 		redirect(303, target.pathname + target.search);
 	}
 	redirect(303, fallback);
+}
+
+/** True when the form was submitted via SvelteKit `use:enhance`. */
+export function isEnhancedFormRequest(request: Request): boolean {
+	return request.headers.get('x-sveltekit-action') === 'true';
+}
+
+/**
+ * Completes an admin mutation without scrolling the page: enhanced submissions
+ * return silently; plain form posts still redirect to the referer.
+ */
+export function finishAdminMutation(request: Request, fallback = '/admin'): void {
+	if (isEnhancedFormRequest(request)) return;
+	backToReferer(request, fallback);
 }
 
 /** Accepts only absolute http(s) URLs; anything else becomes null. */

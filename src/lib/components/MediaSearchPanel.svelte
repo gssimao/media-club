@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import CoverImage from '$lib/components/CoverImage.svelte';
 	import SearchFilterToggles from '$lib/components/SearchFilterToggles.svelte';
 	import SearchLoadMoreButton from '$lib/components/SearchLoadMoreButton.svelte';
 	import SearchResultAddButtons from '$lib/components/SearchResultAddButtons.svelte';
@@ -16,10 +17,9 @@
 	interface Props {
 		category: MediaCategory;
 		context?: SearchPanelContext;
-		reloadOnAdd?: boolean;
 	}
 
-	let { category, context = 'admin', reloadOnAdd = false }: Props = $props();
+	let { category, context = 'admin' }: Props = $props();
 
 	const search = createMetadataSearch(() => ({ category }));
 
@@ -84,11 +84,10 @@
 						class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 					>
 						{#if result.coverUrl}
-							<img
+							<CoverImage
 								src={result.coverUrl}
 								alt="{result.title} cover"
 								class="h-full w-full object-cover"
-								loading="lazy"
 							/>
 						{/if}
 					</div>
@@ -113,7 +112,6 @@
 							{result}
 							{category}
 							catalogStatus={status}
-							{reloadOnAdd}
 							onAdded={(listType) => handleAdded(result.externalId, listType)}
 						/>
 					</div>

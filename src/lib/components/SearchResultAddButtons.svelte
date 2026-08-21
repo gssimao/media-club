@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { toast } from '$lib/stores/toast.svelte';
 	import {
 		CATEGORY_LABELS,
@@ -22,34 +23,37 @@
 		result: SearchResult;
 		category: MediaCategory;
 		catalogStatus: CatalogStatus;
-		reloadOnAdd?: boolean;
 		onAdded?: (listType: ListType) => void;
 	}
 
-	let { result, category, catalogStatus, reloadOnAdd = false, onAdded }: Props = $props();
+	let { result, category, catalogStatus, onAdded }: Props = $props();
 
 	const collectionLabel = $derived(CATEGORY_LABELS[category]);
 
 	function enhanceAdd(listType: ListType) {
 		return () => {
 			return async ({
-				result: actionResult,
-				update
+				result: actionResult
 			}: {
 				result: { type: string; data?: { message?: unknown } };
-				update: () => Promise<void>;
 			}) => {
 				if (actionResult.type === 'failure') {
 					toast.error(String(actionResult.data?.message ?? 'Could not add item.'));
-				} else {
-					const destination = listType === 'owned' ? 'the collection' : 'the wishlist';
-					toast.success(`Added "${result.title}" to ${destination}.`);
-					onAdded?.(listType);
-					if (reloadOnAdd) {
-						setTimeout(() => window.location.reload(), 800);
-					}
+					return;
 				}
-				await update();
+
+				if (actionResult.type === 'error') {
+					toast.error('Could not add item.');
+					return;
+				}
+
+				const destination = listType === 'owned' ? 'the collection' : 'the wishlist';
+				toast.success(`Added "${result.title}" to ${destination}.`);
+				onAdded?.(listType);
+
+				// Never call update() — it applies redirect responses and remounts the page,
+				// which closes modals and drops local search state. Refresh data in place instead.
+				await invalidateAll();
 			};
 		};
 	}

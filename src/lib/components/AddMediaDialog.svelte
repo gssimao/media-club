@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import CoverImage from '$lib/components/CoverImage.svelte';
 	import SearchFilterToggles from '$lib/components/SearchFilterToggles.svelte';
 	import SearchLoadMoreButton from '$lib/components/SearchLoadMoreButton.svelte';
 	import SearchResultAddButtons from '$lib/components/SearchResultAddButtons.svelte';
@@ -27,8 +29,8 @@
 	const search = createMetadataSearch(() => ({ category }));
 
 	let mode = $state<'search' | 'manual'>('search');
-	let hideOwned = $state(true);
-	let hideOnList = $state(true);
+	let hideOwned = $state(false);
+	let hideOnList = $state(false);
 	let localStatus = $state<Record<string, Partial<CatalogStatus>>>({});
 
 	const visibleResults = $derived(
@@ -68,8 +70,8 @@
 			mode = 'search';
 			search.resetState();
 			search.query = '';
-			hideOwned = true;
-			hideOnList = true;
+			hideOwned = false;
+			hideOnList = false;
 			localStatus = {};
 			manualTitle = '';
 			manualSubtitle = '';
@@ -151,6 +153,7 @@
 						bind:value={search.query}
 						onInput={search.handleInput}
 						placeholder="Start typing a title…"
+						autofocus
 					/>
 
 					{#if search.query.trim().length >= 2}
@@ -179,11 +182,10 @@
 										class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 									>
 										{#if result.coverUrl}
-											<img
+											<CoverImage
 												src={result.coverUrl}
 												alt="{result.title} cover"
 												class="h-full w-full object-cover"
-												loading="lazy"
 											/>
 										{/if}
 									</div>
@@ -210,7 +212,6 @@
 											{result}
 											{category}
 											catalogStatus={status}
-											reloadOnAdd
 											onAdded={(listType) => handleAdded(result.externalId, listType)}
 										/>
 									</div>
@@ -245,20 +246,21 @@
 					action="/admin/items?/add"
 					class="space-y-4"
 					use:enhance={() => {
-						return async ({ result: actionResult, update }) => {
+						return async ({ result: actionResult }) => {
 							if (actionResult.type === 'failure') {
 								toast.error(String(actionResult.data?.message ?? 'Could not add item.'));
-							} else {
-								toast.success(`Added "${manualTitle}" to the collection.`);
-								manualTitle = '';
-								manualSubtitle = '';
-								manualYear = '';
-								manualCoverUrl = '';
-								setTimeout(() => {
-									window.location.reload();
-								}, 1000);
+								return;
 							}
-							await update();
+							if (actionResult.type === 'error') {
+								toast.error('Could not add item.');
+								return;
+							}
+							toast.success(`Added "${manualTitle}" to the collection.`);
+							manualTitle = '';
+							manualSubtitle = '';
+							manualYear = '';
+							manualCoverUrl = '';
+							await invalidateAll();
 						};
 					}}
 				>

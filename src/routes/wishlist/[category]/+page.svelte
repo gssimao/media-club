@@ -50,7 +50,7 @@
 			<p class="mb-4 text-sm font-medium text-stone-600 dark:text-stone-400">
 				Search metadata APIs and add directly to your wishlist or collection.
 			</p>
-			<MediaSearchPanel category={data.category} context="wishlist" reloadOnAdd />
+			<MediaSearchPanel category={data.category} context="wishlist" />
 		</div>
 	{/if}
 

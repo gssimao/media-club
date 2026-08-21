@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import {
-	backToReferer,
+	finishAdminMutation,
 	MAX_NOTES_LENGTH,
 	MAX_TITLE_LENGTH,
 	requireAdmin,
@@ -65,7 +65,7 @@ export const actions: Actions = {
 			{ notes }
 		);
 
-		backToReferer(request, '/admin/search');
+		finishAdminMutation(request, '/admin/search');
 	},
 
 	delete: async ({ request, locals }) => {
@@ -75,7 +75,7 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await deleteItem(locals.db, id);
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	moveToOwned: async ({ request, locals }) => {
@@ -85,7 +85,7 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await moveToOwned(locals.db, id);
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	updateNotes: async ({ request, locals }) => {
@@ -98,7 +98,7 @@ export const actions: Actions = {
 		if (!id) return fail(400, { message: 'Missing item id.' });
 
 		await updateItemNotes(locals.db, id, notes || null);
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	updateTags: async ({ request, locals }) => {
@@ -119,7 +119,7 @@ export const actions: Actions = {
 		}
 
 		await updateItemTags(locals.db, id, tags);
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	updateCover: async ({ request, locals }) => {
@@ -140,7 +140,7 @@ export const actions: Actions = {
 		}
 
 		await updateItemCover(locals.db, id, coverUrl, metadataPatch);
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	toggleAlbumWatched: async ({ request, locals }) => {
@@ -152,6 +152,6 @@ export const actions: Actions = {
 
 		const watched = watchedRaw === 'true' || watchedRaw === '1';
 		await setAlbumWatched(locals.db, id, watched);
-		backToReferer(request);
+		finishAdminMutation(request);
 	}
 };

@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import {
-	backToReferer,
+	finishAdminMutation,
 	MAX_DESCRIPTION_LENGTH,
 	MAX_TITLE_LENGTH,
 	requireAdmin,
@@ -33,7 +33,7 @@ export const actions: Actions = {
 		}
 
 		await createAlbum(locals.db, { category, title, description });
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	updateAlbum: async ({ request, locals }) => {
@@ -52,7 +52,7 @@ export const actions: Actions = {
 		}
 
 		await updateAlbum(locals.db, id, { title, description, coverUrl, accentColor });
-		backToReferer(request);
+		finishAdminMutation(request);
 	},
 
 	deleteAlbum: async ({ request, locals }) => {
@@ -81,6 +81,6 @@ export const actions: Actions = {
 		const ok = await assignItemToAlbum(locals.db, itemId, albumId);
 		if (!ok) return fail(400, { message: 'Could not assign item to collection.' });
 
-		backToReferer(request);
+		finishAdminMutation(request);
 	}
 };
