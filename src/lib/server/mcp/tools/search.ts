@@ -32,16 +32,19 @@ export function registerSearchTools(server: McpServer) {
 				if (category === 'movie') {
 					const apiKey = getPlatformSecret(ctx.platform, 'TMDB_API_KEY');
 					if (!apiKey) return toolFailure('TMDB_API_KEY is not configured');
-					return toolSuccess(await searchMovies(apiKey, query));
+					const page = await searchMovies(apiKey, query);
+					return toolSuccess(page.results);
 				}
 
 				if (category === 'music') {
 					const token = getPlatformSecret(ctx.platform, 'DISCOGS_TOKEN');
 					if (!token) return toolFailure('DISCOGS_TOKEN is not configured');
-					return toolSuccess(await searchMusic(token, query));
+					const page = await searchMusic(token, query);
+					return toolSuccess(page.results);
 				}
 
-				return toolSuccess(await searchBooks(query));
+				const page = await searchBooks(query);
+				return toolSuccess(page.results);
 			} catch (err) {
 				console.error('[mcp] search_media failed', err);
 				return toolFailure('Search provider failed');

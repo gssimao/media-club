@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import SearchBar from '$lib/components/SearchBar.svelte';
-	import { formatApiErrorMessage } from '$lib/utils/api-error';
-	import { type MediaCategory } from '$lib/types/media';
-	import type { SearchResult } from '$lib/types/media';
-	import { Plus, CheckCircle, VinylRecord, X, MagnifyingGlass, Pencil } from 'phosphor-svelte';
+	import SearchFilterToggles from '$lib/components/SearchFilterToggles.svelte';
+	import SearchLoadMoreButton from '$lib/components/SearchLoadMoreButton.svelte';
+	import SearchResultAddButtons from '$lib/components/SearchResultAddButtons.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
+	import { type CatalogStatus, type ListType, type MediaCategory } from '$lib/types/media';
+	import { createMetadataSearch } from '$lib/utils/metadata-search.svelte';
+	import { effectiveCatalogStatus, filterSearchResults } from '$lib/utils/search-filters';
+	import { Plus, VinylRecord, X, MagnifyingGlass, Pencil } from 'phosphor-svelte';
 
 	interface Props {
 		category: MediaCategory;
@@ -14,12 +18,36 @@
 
 	let { category, isOpen, onClose }: Props = $props();
 
+	const search = createMetadataSearch(() => ({ category }));
+
 	let mode = $state<'search' | 'manual'>('search');
-	let query = $state('');
-	let results = $state<SearchResult[]>([]);
-	let loading = $state(false);
-	let errorMessage = $state('');
-	let addedMessage = $state('');
+	let hideOwned = $state(true);
+	let hideOnList = $state(true);
+	let localStatus = $state<Record<string, Partial<CatalogStatus>>>({});
+
+	const visibleResults = $derived(
+		filterSearchResults(search.results, {
+			hideOwned,
+			hideOnList,
+			context: 'owned-add',
+			localStatus
+		})
+	);
+
+	const hasActiveFilters = $derived(hideOwned || hideOnList);
+	const allFilteredOut = $derived(
+		search.results.length > 0 && visibleResults.length === 0 && hasActiveFilters && !search.loading
+	);
+
+	function handleAdded(externalId: string, listType: ListType) {
+		localStatus = {
+			...localStatus,
+			[externalId]: {
+				...localStatus[externalId],
+				[listType]: true
+			}
+		};
+	}
 
 	// Manual entry fields
 	let manualTitle = $state('');
@@ -27,18 +55,14 @@
 	let manualYear = $state('');
 	let manualCoverUrl = $state('');
 
-	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-	let abortController: AbortController | null = null;
-
 	$effect(() => {
 		if (!isOpen) {
-			// Reset state when dialog closes
 			mode = 'search';
-			query = '';
-			results = [];
-			loading = false;
-			errorMessage = '';
-			addedMessage = '';
+			search.resetState();
+			search.query = '';
+			hideOwned = true;
+			hideOnList = true;
+			localStatus = {};
 			manualTitle = '';
 			manualSubtitle = '';
 			manualYear = '';
@@ -47,54 +71,8 @@
 	});
 
 	$effect(() => {
-		return () => {
-			clearTimeout(debounceTimer);
-			abortController?.abort();
-		};
+		search.resetPaginationOnFilterChange(hideOwned, hideOnList);
 	});
-
-	async function runSearch(value: string) {
-		abortController?.abort();
-
-		const trimmed = value.trim();
-		if (trimmed.length < 2) {
-			results = [];
-			loading = false;
-			return;
-		}
-
-		const controller = new AbortController();
-		abortController = controller;
-		loading = true;
-		errorMessage = '';
-
-		try {
-			const response = await fetch(
-				`/api/search?category=${category}&q=${encodeURIComponent(trimmed)}`,
-				{ signal: controller.signal }
-			);
-
-			if (!response.ok) {
-				const text = await response.text();
-				throw new Error(formatApiErrorMessage(text, `Search failed (${response.status})`));
-			}
-
-			const data = (await response.json()) as { results: SearchResult[] };
-			results = data.results;
-			loading = false;
-		} catch (error) {
-			if (controller.signal.aborted) return;
-			errorMessage = error instanceof Error ? error.message : 'Search failed';
-			results = [];
-			loading = false;
-		}
-	}
-
-	function handleInput(value: string) {
-		query = value;
-		clearTimeout(debounceTimer);
-		debounceTimer = setTimeout(() => runSearch(value), 350);
-	}
 
 	function handleBackdropClick(event: MouseEvent) {
 		if (event.target === event.currentTarget) {
@@ -161,28 +139,19 @@
 				</button>
 			</div>
 
-			{#if addedMessage}
-				<div
-					class="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-				>
-					<CheckCircle size={16} weight="bold" />
-					{addedMessage}
-				</div>
-			{/if}
-
-			{#if errorMessage}
-				<div
-					class="mb-4 rounded-[2rem] border border-red-400 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
-				>
-					{errorMessage}
-				</div>
-			{/if}
-
 			{#if mode === 'search'}
 				<div class="space-y-4">
-					<SearchBar bind:value={query} onInput={handleInput} placeholder="Start typing a title…" />
+					<SearchBar
+						bind:value={search.query}
+						onInput={search.handleInput}
+						placeholder="Start typing a title…"
+					/>
 
-					{#if loading}
+					{#if search.query.trim().length >= 2}
+						<SearchFilterToggles context="owned-add" bind:hideOwned bind:hideOnList />
+					{/if}
+
+					{#if search.loading}
 						<p
 							class="inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400"
 						>
@@ -195,9 +164,10 @@
 						</p>
 					{/if}
 
-					{#if results.length > 0}
+					{#if visibleResults.length > 0}
 						<div class="grid gap-4 sm:grid-cols-2">
-							{#each results as result (result.externalId)}
+							{#each visibleResults as result (result.externalId)}
+								{@const status = effectiveCatalogStatus(result, localStatus)}
 								<article class="surface-round flex gap-4 p-4">
 									<div
 										class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
@@ -230,51 +200,36 @@
 											{/if}
 										</div>
 
-										<form
-											method="POST"
-											action="/admin/items?/add"
-											use:enhance={() => {
-												addedMessage = '';
-												errorMessage = '';
-												return async ({ result: actionResult, update }) => {
-													if (actionResult.type === 'failure') {
-														errorMessage = String(
-															actionResult.data?.message ?? 'Could not add item.'
-														);
-													} else {
-														addedMessage = `Added "${result.title}" to the collection.`;
-														setTimeout(() => {
-															window.location.reload();
-														}, 1000);
-													}
-													await update();
-												};
-											}}
-										>
-											<input type="hidden" name="category" value={category} />
-											<input type="hidden" name="listType" value="owned" />
-											<input type="hidden" name="externalId" value={result.externalId} />
-											<input type="hidden" name="title" value={result.title} />
-											<input type="hidden" name="subtitle" value={result.subtitle ?? ''} />
-											<input type="hidden" name="year" value={result.year ?? ''} />
-											<input type="hidden" name="coverUrl" value={result.coverUrl ?? ''} />
-											<input
-												type="hidden"
-												name="metadata"
-												value={result.metadata ? JSON.stringify(result.metadata) : ''}
-											/>
-											<button type="submit" class="btn-primary px-3 py-1.5 text-xs">
-												<Plus size={12} weight="bold" />
-												Add
-											</button>
-										</form>
+										<SearchResultAddButtons
+											{result}
+											{category}
+											catalogStatus={status}
+											reloadOnAdd
+											onAdded={(listType) => handleAdded(result.externalId, listType)}
+										/>
 									</div>
 								</article>
 							{/each}
 						</div>
-					{:else if query.trim().length >= 2 && !loading}
+
+						<SearchLoadMoreButton
+							hasMore={search.hasMore}
+							loadingMore={search.loadingMore}
+							onLoadMore={search.loadMore}
+						/>
+					{:else if allFilteredOut}
 						<p class="text-sm font-medium text-stone-600 dark:text-stone-400">
-							No results found for "{query}".
+							All results are hidden by your filters. Turn off a filter above to see matches for "{search.query}".
+						</p>
+
+						<SearchLoadMoreButton
+							hasMore={search.hasMore}
+							loadingMore={search.loadingMore}
+							onLoadMore={search.loadMore}
+						/>
+					{:else if search.query.trim().length >= 2 && !search.loading}
+						<p class="text-sm font-medium text-stone-600 dark:text-stone-400">
+							No results found for "{search.query}".
 						</p>
 					{/if}
 				</div>
@@ -284,13 +239,11 @@
 					action="/admin/items?/add"
 					class="space-y-4"
 					use:enhance={() => {
-						addedMessage = '';
-						errorMessage = '';
 						return async ({ result: actionResult, update }) => {
 							if (actionResult.type === 'failure') {
-								errorMessage = String(actionResult.data?.message ?? 'Could not add item.');
+								toast.error(String(actionResult.data?.message ?? 'Could not add item.'));
 							} else {
-								addedMessage = `Added "${manualTitle}" to the collection.`;
+								toast.success(`Added "${manualTitle}" to the collection.`);
 								manualTitle = '';
 								manualSubtitle = '';
 								manualYear = '';

@@ -1,4 +1,5 @@
 import type { SearchResult } from '$lib/types/media';
+import type { SearchPageResult } from '$lib/server/apis/search-types';
 
 const TMDB_API_BASE = 'https://api.themoviedb.org/3';
 const TMDB_POSTER_BASE = 'https://image.tmdb.org/t/p/w342';
@@ -11,7 +12,9 @@ interface TmdbSearchResult {
 }
 
 interface TmdbSearchResponse {
+	page: number;
 	results: TmdbSearchResult[];
+	total_pages: number;
 }
 
 export const TMDB_ATTRIBUTION =
@@ -26,11 +29,16 @@ export function tmdbMovieUrl(tmdbId: number): string {
 	return `https://www.themoviedb.org/movie/${tmdbId}`;
 }
 
-export async function searchMovies(apiKey: string, query: string): Promise<SearchResult[]> {
+export async function searchMovies(
+	apiKey: string,
+	query: string,
+	page = 1
+): Promise<SearchPageResult> {
 	const params = new URLSearchParams({
 		api_key: apiKey,
 		query,
-		include_adult: 'false'
+		include_adult: 'false',
+		page: String(page)
 	});
 
 	const response = await fetch(`${TMDB_API_BASE}/search/movie?${params.toString()}`, {
@@ -42,7 +50,7 @@ export async function searchMovies(apiKey: string, query: string): Promise<Searc
 
 	const data = (await response.json()) as TmdbSearchResponse;
 
-	return data.results.slice(0, 12).map((movie) => {
+	const results: SearchResult[] = data.results.map((movie) => {
 		const year = movie.release_date ? Number.parseInt(movie.release_date.slice(0, 4), 10) : null;
 		return {
 			externalId: String(movie.id),
@@ -53,4 +61,10 @@ export async function searchMovies(apiKey: string, query: string): Promise<Searc
 			metadata: { tmdbId: movie.id, posterPath: movie.poster_path }
 		};
 	});
+
+	return {
+		results,
+		hasMore: data.page < data.total_pages,
+		totalPages: data.total_pages
+	};
 }

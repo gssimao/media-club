@@ -35,6 +35,12 @@ export interface Album {
 	updatedAt: Date;
 }
 
+export interface CatalogStatus {
+	owned: boolean;
+	wishlist: boolean;
+	onStreamingList?: boolean;
+}
+
 export interface SearchResult {
 	externalId: string;
 	title: string;
@@ -42,7 +48,18 @@ export interface SearchResult {
 	year: number | null;
 	coverUrl: string | null;
 	metadata?: Record<string, unknown>;
+	catalogStatus?: CatalogStatus;
 }
+
+export interface SearchApiResponse {
+	results: SearchResult[];
+	page: number;
+	hasMore: boolean;
+	totalPages?: number;
+}
+
+/** Where search is shown — drives filter toggle labels and hide-on-list semantics. */
+export type SearchPanelContext = 'admin' | 'wishlist' | 'owned-add' | 'streaming';
 
 /** URL path segment for each category (e.g. /movies, /music, /books). */
 export const CATEGORY_PATHS: Record<MediaCategory, string> = {
