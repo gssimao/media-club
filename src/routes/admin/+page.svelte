@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ImportJsonDialog from '$lib/components/ImportJsonDialog.svelte';
-	import { Clock, FileArrowUp, Plus } from 'phosphor-svelte';
+	import { FileArrowUp, Plus, Television, UserGear } from 'phosphor-svelte';
 
 	let { data } = $props();
 	let showImportDialog = $state(false);
@@ -19,13 +19,17 @@
 	{#snippet controls()}
 		<button
 			type="button"
-			class="btn-secondary px-5 py-2.5 text-sm"
+			class="control-pill control-pill--secondary"
 			onclick={() => (showImportDialog = true)}
 		>
 			<FileArrowUp size={16} weight="bold" />
 			Import JSON
 		</button>
-		<a href="/admin/search" class="btn-primary px-5 py-2.5 text-sm">
+		<a href="/admin/streaming" class="control-pill control-pill--secondary">
+			<Television size={16} weight="bold" />
+			Streaming lists
+		</a>
+		<a href="/admin/search" class="control-pill control-pill--primary">
 			<Plus size={16} weight="bold" />
 			Add from search
 		</a>
@@ -36,7 +40,7 @@
 			<span
 				class="flex size-10 items-center justify-center rounded-full bg-[rgb(var(--color-accent-light))] dark:bg-stone-900"
 			>
-				<Clock
+				<UserGear
 					size={20}
 					weight="bold"
 					class="text-[rgb(var(--color-text-secondary))] dark:text-stone-400"

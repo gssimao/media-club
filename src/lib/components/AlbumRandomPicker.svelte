@@ -1,22 +1,35 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { CATEGORY_ACTION_WORDING, type MediaCategory, type MediaItem } from '$lib/types/media';
+	import { CATEGORY_ACTION_WORDING, type MediaCategory } from '$lib/types/media';
 	import { DiceSix, X } from 'phosphor-svelte';
 	import { scale } from 'svelte/transition';
 
-	interface Props {
-		unwatchedItems: MediaItem[];
-		category: MediaCategory;
-		isAdmin: boolean;
-		onPick: (item: MediaItem) => void;
+	export interface PickableItem {
+		id: string;
+		title: string;
 	}
 
-	let { unwatchedItems, category, isAdmin, onPick }: Props = $props();
+	interface Props {
+		unwatchedItems: PickableItem[];
+		category: MediaCategory;
+		isAdmin: boolean;
+		onPick: (item: PickableItem) => void;
+		/** Form action for marking an item watched after a random pick. */
+		markWatchedAction?: string;
+	}
+
+	let {
+		unwatchedItems,
+		category,
+		isAdmin,
+		onPick,
+		markWatchedAction = '/admin/items?/toggleAlbumWatched'
+	}: Props = $props();
 
 	const wording = $derived(CATEGORY_ACTION_WORDING[category]);
 
 	let lastRoll = $state<number | null>(null);
-	let pickedItem = $state<MediaItem | null>(null);
+	let pickedItem = $state<PickableItem | null>(null);
 	let showWatchedPrompt = $state(false);
 	let rolling = $state(false);
 
@@ -60,7 +73,7 @@
 		type="button"
 		onclick={pickRandom}
 		disabled={!canPick || rolling}
-		class="pill-nav inline-flex w-full items-center justify-center gap-2 bg-amber-400/15 text-amber-700 hover:bg-amber-400/25 disabled:cursor-not-allowed disabled:opacity-50 dark:text-amber-300"
+		class="pill-nav control-pill--block control-pill--accent disabled:cursor-not-allowed disabled:opacity-50"
 	>
 		<span class="dice-icon" class:is-rolling={rolling}>
 			<DiceSix size={16} weight="bold" />
@@ -116,7 +129,7 @@
 			<div class="flex flex-col gap-2">
 				<form
 					method="POST"
-					action="/admin/items?/toggleAlbumWatched"
+					action={markWatchedAction}
 					use:enhance={() => {
 						return async ({ update }) => {
 							dismissPrompt();

@@ -72,9 +72,58 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
+export const streamingLists = sqliteTable('streaming_lists', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	title: text('title').notNull(),
+	description: text('description'),
+	coverUrl: text('cover_url'),
+	sortOrder: integer('sort_order').notNull().default(0),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date())
+});
+
+export const streamingListItems = sqliteTable(
+	'streaming_list_items',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		listId: text('list_id')
+			.notNull()
+			.references(() => streamingLists.id, { onDelete: 'cascade' }),
+		externalId: text('external_id').notNull(),
+		title: text('title').notNull(),
+		subtitle: text('subtitle'),
+		year: integer('year'),
+		coverUrl: text('cover_url'),
+		metadata: text('metadata'),
+		watchedAt: integer('watched_at', { mode: 'timestamp' }),
+		createdAt: integer('created_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date()),
+		updatedAt: integer('updated_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date())
+	},
+	(table) => [
+		uniqueIndex('streaming_list_items_list_external_idx').on(table.listId, table.externalId),
+		index('streaming_list_items_list_id_idx').on(table.listId)
+	]
+);
+
 export type Album = typeof albums.$inferSelect;
 export type NewAlbum = typeof albums.$inferInsert;
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type AdminUser = typeof adminUser.$inferSelect;
 export type Session = typeof session.$inferSelect;
+export type StreamingList = typeof streamingLists.$inferSelect;
+export type NewStreamingList = typeof streamingLists.$inferInsert;
+export type StreamingListItem = typeof streamingListItems.$inferSelect;
+export type NewStreamingListItem = typeof streamingListItems.$inferInsert;
