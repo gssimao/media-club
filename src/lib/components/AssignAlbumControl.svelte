@@ -16,12 +16,12 @@
 <form
 	method="POST"
 	action="/admin/albums?/assignToAlbum"
-	class="mt-1.5 w-full"
+	class="w-full"
 	use:enhance={() => {
 		submitting = true;
 		return async ({ update }) => {
 			submitting = false;
-			await update();
+			await update({ reset: false });
 		};
 	}}
 >
