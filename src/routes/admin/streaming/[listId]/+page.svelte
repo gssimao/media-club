@@ -1,10 +1,12 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
+	import AddStreamingDialog from '$lib/components/AddStreamingDialog.svelte';
 	import AlbumRandomPicker from '$lib/components/AlbumRandomPicker.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
 	import StreamingListItemCard from '$lib/components/StreamingListItemCard.svelte';
 	import StreamingSearchPanel from '$lib/components/StreamingSearchPanel.svelte';
 	import type { StreamingListItemView } from '$lib/server/streaming-lists';
+	import { MagnifyingGlass, Pencil } from 'phosphor-svelte';
 
 	let { data } = $props();
 
@@ -15,6 +17,7 @@
 
 	let highlightedId = $state<string | null>(null);
 	let showSearch = $state(false);
+	let showManualDialog = $state(false);
 
 	function handlePick(item: { id: string; title: string }) {
 		highlightedId = item.id;
@@ -46,10 +49,19 @@
 
 		<button
 			type="button"
-			class="control-pill control-pill--primary"
+			class="pill-nav control-pill--primary"
 			onclick={() => (showSearch = !showSearch)}
 		>
+			<MagnifyingGlass size={16} weight="bold" />
 			{showSearch ? 'Hide search' : 'Add from search'}
+		</button>
+		<button
+			type="button"
+			class="pill-nav control-pill--secondary"
+			onclick={() => (showManualDialog = true)}
+		>
+			<Pencil size={16} weight="bold" />
+			Manual entry
 		</button>
 	{/snippet}
 
@@ -62,7 +74,8 @@
 	{#if data.items.length === 0}
 		<div class="surface-round p-8 text-center">
 			<p class="text-sm font-medium text-stone-600 dark:text-stone-400">
-				This streaming list is empty. Search TMDB to add movies for random picks.
+				This streaming list is empty. Search TMDB or use manual entry to add movies for random
+				picks.
 			</p>
 		</div>
 	{:else}
@@ -103,3 +116,9 @@
 		{/if}
 	{/if}
 </PageShell>
+
+<AddStreamingDialog
+	listId={data.list.id}
+	isOpen={showManualDialog}
+	onClose={() => (showManualDialog = false)}
+/>
