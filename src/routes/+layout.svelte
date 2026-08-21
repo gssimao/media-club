@@ -1,10 +1,22 @@
 <script lang="ts">
 	import './layout.css';
+	import AlbumDetailLoading from '$lib/components/AlbumDetailLoading.svelte';
+	import AlbumLibraryLoading from '$lib/components/AlbumLibraryLoading.svelte';
+	import CatalogPageLoading from '$lib/components/CatalogPageLoading.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
 	import ToastHost from '$lib/components/ToastHost.svelte';
 	import VinylDisc from '$lib/components/VinylDisc.svelte';
+	import { getCatalogSkeletonConfig } from '$lib/utils/catalog-nav';
+	import { navigating } from '$app/state';
 
 	let { data, children } = $props();
+
+	const skeletonConfig = $derived.by(() => {
+		if (!navigating?.to) return null;
+		// Same-page form actions (e.g. add from a modal) must not swap in the loading shell.
+		if (navigating.from?.url.pathname === navigating.to.url.pathname) return null;
+		return getCatalogSkeletonConfig(navigating.to.url.pathname);
+	});
 </script>
 
 <a
@@ -24,11 +36,19 @@
 		? 'mx-auto max-w-7xl px-4 pt-2 sm:px-6 lg:px-8'
 		: 'app-main--shell w-full max-w-none px-4 sm:px-6 lg:px-8'}"
 >
-	{#key data.pathname}
-		<div class="anim-fade">
-			{@render children()}
-		</div>
-	{/key}
+	{#if skeletonConfig?.variant === 'album-detail'}
+		<AlbumDetailLoading />
+	{:else if skeletonConfig?.variant === 'album-library'}
+		<AlbumLibraryLoading />
+	{:else if skeletonConfig}
+		<CatalogPageLoading title={skeletonConfig.title} showShelf={skeletonConfig.showShelf} />
+	{:else}
+		{#key data.pathname}
+			<div class="anim-fade">
+				{@render children()}
+			</div>
+		{/key}
+	{/if}
 </main>
 
 <ToastHost />

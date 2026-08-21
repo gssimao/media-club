@@ -80,6 +80,26 @@
 	}
 }
 
+@keyframes skeleton-pulse {
+	0%,
+	100% {
+		opacity: 0.45;
+	}
+	50% {
+		opacity: 0.85;
+	}
+}
+
+@keyframes skeleton-shimmer {
+	0%,
+	100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
 @keyframes mc-rise {
 	from {
 		opacity: 0;
@@ -227,6 +247,24 @@
 			0 12px 28px rgb(0 0 0 / 0.18),
 			0 0 0 1px rgb(var(--color-accent) / 0.12);
 	}
+
+	/* Loading placeholders — pulse matches vinyl/warm surfaces */
+	.skeleton {
+		display: block;
+		background: rgb(var(--color-surface-raised));
+		animation: skeleton-pulse 1.35s ease-in-out infinite;
+	}
+
+	.skeleton-disc {
+		background: linear-gradient(
+			135deg,
+			rgb(var(--color-surface-raised)) 0%,
+			rgb(var(--color-accent-light) / 0.35) 50%,
+			rgb(var(--color-surface-raised)) 100%
+		);
+		background-size: 200% 200%;
+		animation: skeleton-shimmer 1.6s ease-in-out infinite;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -243,6 +281,11 @@
 	.disc-pick-spin {
 		animation: none;
 	}
+
+	.skeleton,
+	.skeleton-disc {
+		animation: none;
+	}
 }
 
 /* In-app motion preference (Settings → Motion fader) — mirrors prefers-reduced-motion */
@@ -257,6 +300,11 @@
 }
 
 [data-motion='reduced'] .disc-pick-spin {
+	animation: none;
+}
+
+[data-motion='reduced'] .skeleton,
+[data-motion='reduced'] .skeleton-disc {
 	animation: none;
 }
 

@@ -4,6 +4,7 @@
 	import { settings } from '$lib/stores/settings.svelte';
 	import EmptyState from './EmptyState.svelte';
 	import MediaCard from './MediaCard.svelte';
+	import MediaGridSkeleton from './MediaGridSkeleton.svelte';
 	import SearchBar from './SearchBar.svelte';
 	import { FolderPlus } from 'phosphor-svelte';
 
@@ -21,6 +22,8 @@
 		showSearch?: boolean;
 		showAddFolderButton?: boolean;
 		onAddFolder?: () => void;
+		/** Show placeholder discs while route data is loading. */
+		loading?: boolean;
 	}
 
 	let {
@@ -35,7 +38,8 @@
 		sectionTitle,
 		showSearch = true,
 		showAddFolderButton = false,
-		onAddFolder
+		onAddFolder,
+		loading = false
 	}: Props = $props();
 
 	let query = $state('');
@@ -70,70 +74,71 @@
 </script>
 
 <div class="media-grid">
-	{#if showSearch}
-		<div class="media-grid__search">
-			<SearchBar bind:value={query} onInput={(value) => (query = value)} />
-		</div>
-	{/if}
-
-	<div class="media-grid__body space-y-6">
-		<div class="flex items-center justify-between">
-			<p class="text-sm font-bold tracking-wide text-stone-600 uppercase dark:text-stone-400">
-				{#if sectionTitle}
-					{sectionTitle}
-					<span class="font-medium text-[rgb(var(--color-text-tertiary))] normal-case">
-						· {filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
-					</span>
-				{:else}
-					{filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
-				{/if}
-			</p>
-			{#if showAddFolderButton && onAddFolder}
-				<span class="add-album-wrap group/tip relative">
-					<button
-						onclick={onAddFolder}
-						aria-describedby="add-album-tip"
-						class="flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-2 text-xs font-bold tracking-wide text-amber-700 uppercase transition-all hover:bg-amber-400/20 dark:text-amber-400"
-					>
-						<FolderPlus size={14} weight="bold" />
-						Add Collection
-					</button>
-					<span id="add-album-tip" role="tooltip" class="add-album-tip">
-						Collections group related items together within a category.
-					</span>
-				</span>
-			{/if}
-		</div>
-
-		{#if filteredItems.length === 0}
-			{#if isSearching}
-				<EmptyState
-					title="No matches"
-					description={`Nothing in your catalog matches “${query.trim()}”, including items inside collections.`}
-				/>
-			{:else}
-				<EmptyState title={emptyTitle} description={emptyDescription} />
-			{/if}
-		{:else}
-			<div class={gridClass}>
-				{#each filteredItems as item, index (item.id)}
-					<div
-						class="anim-rise flex h-full min-w-0 flex-col"
-						style="--rise-delay: {Math.min(index * 40, 400)}ms"
-					>
-						<MediaCard
-							{item}
-							{isAdmin}
-							{albums}
-							highlighted={highlightedId === item.id}
-							{showAlbumWatchedToggle}
-							showCollectionLink={isSearching}
-						/>
-					</div>
-				{/each}
+	{#if loading}
+		<MediaGridSkeleton {isAdmin} {showSearch} showSectionHeader={true} />
+	{:else}
+		{#if showSearch}
+			<div class="media-grid__search">
+				<SearchBar bind:value={query} onInput={(value) => (query = value)} />
 			</div>
 		{/if}
-	</div>
+
+		<div class="media-grid__body space-y-6">
+			<div class="flex items-center justify-between">
+				<p class="text-sm font-bold tracking-wide text-stone-600 uppercase dark:text-stone-400">
+					{#if sectionTitle}
+						{sectionTitle}
+						<span class="font-medium text-[rgb(var(--color-text-tertiary))] normal-case">
+							· {filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
+						</span>
+					{:else}
+						{filteredItems.length === 1 ? '1 item' : `${filteredItems.length} items`}
+					{/if}
+				</p>
+				{#if showAddFolderButton && onAddFolder}
+					<span class="add-album-wrap group/tip relative">
+						<button
+							onclick={onAddFolder}
+							aria-describedby="add-album-tip"
+							class="flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-2 text-xs font-bold tracking-wide text-amber-700 uppercase transition-all hover:bg-amber-400/20 dark:text-amber-400"
+						>
+							<FolderPlus size={14} weight="bold" />
+							Add Collection
+						</button>
+						<span id="add-album-tip" role="tooltip" class="add-album-tip">
+							Collections group related items together within a category.
+						</span>
+					</span>
+				{/if}
+			</div>
+
+			{#if filteredItems.length === 0}
+				{#if isSearching}
+					<EmptyState
+						title="No matches"
+						description={`Nothing in your catalog matches “${query.trim()}”, including items inside collections.`}
+					/>
+				{:else}
+					<EmptyState title={emptyTitle} description={emptyDescription} />
+				{/if}
+			{:else}
+				<div class={gridClass}>
+					{#each filteredItems as item (item.id)}
+						<div class="flex h-full min-w-0 flex-col">
+							<MediaCard
+								{item}
+								{isAdmin}
+								{albums}
+								highlighted={highlightedId === item.id}
+								{showAlbumWatchedToggle}
+								showCollectionLink={isSearching}
+							/>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <style>
