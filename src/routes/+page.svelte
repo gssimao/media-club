@@ -3,13 +3,13 @@
 		BookOpen,
 		Faders,
 		FilmStrip,
-		Clock,
 		Heart,
 		House,
 		MonitorPlay,
 		Pause,
 		Play,
 		SignIn,
+		UserGear,
 		VinylRecord
 	} from 'phosphor-svelte';
 	import HeaderActions from '$lib/components/HeaderActions.svelte';
@@ -55,7 +55,7 @@
 
 	const cdNavButtons = $derived.by((): CdNavButton[] => {
 		const items = data.user
-			? [...catalogNav, { href: '/admin', label: 'Admin', icon: Clock }]
+			? [...catalogNav, { href: '/admin', label: 'Admin', icon: UserGear }]
 			: [...catalogNav, { href: '/login', label: 'Log in', icon: SignIn }];
 		const count = items.length;
 
