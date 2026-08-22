@@ -85,11 +85,19 @@
 	.fader-row {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+
+	@media (min-width: 480px) {
+		.fader-row {
+			gap: 0.75rem;
+		}
 	}
 
 	.fader-end {
-		font-size: 0.6rem;
+		flex-shrink: 0;
+		font-size: 0.55rem;
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
@@ -97,9 +105,16 @@
 		white-space: nowrap;
 	}
 
+	@media (min-width: 480px) {
+		.fader-end {
+			font-size: 0.6rem;
+		}
+	}
+
 	.fader {
 		appearance: none;
-		flex: 1;
+		flex: 1 1 0;
+		min-width: 0;
 		height: 2.25rem;
 		background: transparent;
 		cursor: pointer;

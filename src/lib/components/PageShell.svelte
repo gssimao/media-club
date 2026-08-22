@@ -107,6 +107,7 @@
 
 	.page-shell__content {
 		min-width: 0;
+		max-width: 100%;
 		align-self: start;
 		padding-top: 0;
 		padding-right: 0.25rem;

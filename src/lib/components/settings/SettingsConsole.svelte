@@ -29,6 +29,8 @@
 
 <style>
 	.console {
+		width: 100%;
+		min-width: 0;
 		max-width: 56rem;
 		padding: 1.25rem 1.25rem 1.75rem;
 		background:
@@ -44,9 +46,10 @@
 
 	.console-head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 1rem;
+		gap: 0.65rem 1rem;
 		padding: 0.25rem 0.5rem 1rem;
 	}
 
@@ -102,6 +105,7 @@
 	}
 
 	.console-grid :global(.module) {
+		min-width: 0;
 		border-radius: 1.75rem;
 		border: 1px solid rgb(var(--color-border));
 		background: rgb(var(--color-bg) / 0.55);

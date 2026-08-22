@@ -56,13 +56,29 @@
 	.meters {
 		display: flex;
 		align-items: flex-end;
-		justify-content: center;
-		gap: 2.25rem;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
 		padding: 0.5rem 0 0.25rem;
+	}
+
+	@media (min-width: 480px) {
+		.meters {
+			justify-content: center;
+			gap: 1.25rem;
+		}
+	}
+
+	@media (min-width: 640px) {
+		.meters {
+			gap: 2.25rem;
+		}
 	}
 
 	.meter {
 		display: flex;
+		flex: 1 1 0;
+		min-width: 0;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.35rem;
@@ -115,10 +131,18 @@
 	}
 
 	.meter-count {
-		font-size: 0.6rem;
+		font-size: 0.55rem;
 		font-weight: 600;
+		line-height: 1.25;
+		text-align: center;
 		color: rgb(var(--color-text-tertiary));
-		white-space: nowrap;
+	}
+
+	@media (min-width: 480px) {
+		.meter-count {
+			font-size: 0.6rem;
+			white-space: nowrap;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
