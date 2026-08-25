@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
 	addGenre,
+	buildGenreCatalog,
 	collectUniqueGenres,
 	dedupeGenres,
 	getDisplayGenres,
+	isTmdbGenreName,
 	itemMatchesGenreFilter,
 	mapGenreIdsToNames,
 	mergeTmdbGenres,
 	normalizeGenreName,
 	parseGenresFromMetadata,
-	removeGenre
+	removeGenre,
+	toggleGenreSelection
 } from './movie-genres';
 
 describe('parseGenresFromMetadata', () => {
@@ -89,5 +92,34 @@ describe('mergeTmdbGenres', () => {
 describe('normalizeGenreName', () => {
 	it('rejects empty strings', () => {
 		expect(normalizeGenreName('   ')).toBeNull();
+	});
+});
+
+describe('isTmdbGenreName', () => {
+	it('recognizes official TMDB genre names case-insensitively', () => {
+		expect(isTmdbGenreName('Action')).toBe(true);
+		expect(isTmdbGenreName('science fiction')).toBe(true);
+		expect(isTmdbGenreName('Kaiju')).toBe(false);
+	});
+});
+
+describe('buildGenreCatalog', () => {
+	it('splits custom, catalog TMDB, and classic TMDB genres', () => {
+		const catalog = buildGenreCatalog([
+			{ metadata: { genres: ['Action', 'Kaiju'] } },
+			{ metadata: { genres: ['Drama'] } }
+		]);
+
+		expect(catalog.customGenres).toEqual(['Kaiju']);
+		expect(catalog.catalogTmdbGenres).toEqual(['Action', 'Drama']);
+		expect(catalog.classicTmdbGenres).not.toContain('Action');
+		expect(catalog.classicTmdbGenres).toContain('Comedy');
+	});
+});
+
+describe('toggleGenreSelection', () => {
+	it('adds and removes genres from a draft selection', () => {
+		expect(toggleGenreSelection(['Action'], 'Drama')).toEqual(['Action', 'Drama']);
+		expect(toggleGenreSelection(['Action', 'Drama'], 'action')).toEqual(['Drama']);
 	});
 });

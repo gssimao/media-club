@@ -19,6 +19,7 @@
 		highlighted?: boolean;
 		showAlbumWatchedToggle?: boolean;
 		showCollectionLink?: boolean;
+		genreCatalogItems?: MediaItem[];
 	}
 
 	let {
@@ -27,7 +28,8 @@
 		albums = [],
 		highlighted = false,
 		showAlbumWatchedToggle = false,
-		showCollectionLink = false
+		showCollectionLink = false,
+		genreCatalogItems = []
 	}: Props = $props();
 
 	const label = $derived(item.year ? `${item.title} (${item.year})` : item.title);
@@ -217,7 +219,12 @@
 			</div>
 		{/if}
 
-		<GenreEditor {item} action="/admin/items?/updateGenres" {isAdmin} />
+		<GenreEditor
+			{item}
+			action="/admin/items?/updateGenres"
+			{isAdmin}
+			catalogItems={genreCatalogItems}
+		/>
 
 		<div class="min-h-0 flex-1" aria-hidden="true"></div>
 

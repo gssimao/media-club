@@ -1,8 +1,8 @@
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
-import { albums, items } from '$lib/server/db/schema';
+import { albums, items, streamingListItems } from '$lib/server/db/schema';
 import { isFormatLikeNote } from '$lib/utils/format-tags';
-import { dedupeGenres } from '$lib/utils/movie-genres';
+import { dedupeGenres, isTmdbGenreName, removeGenre } from '$lib/utils/movie-genres';
 import type { ListType, MediaCategory, SearchResult } from '$lib/types/media';
 
 function parseMetadata(value: string | null): Record<string, unknown> | null {
@@ -308,6 +308,79 @@ export async function updateItemGenres(db: AppDatabase, id: string, genres: stri
 		.update(items)
 		.set({ metadata: JSON.stringify(metadata), updatedAt: new Date() })
 		.where(eq(items.id, id));
+}
+
+function parseGenresFromRow(metadataJson: string | null): string[] {
+	if (!metadataJson) return [];
+	try {
+		const metadata = JSON.parse(metadataJson) as Record<string, unknown>;
+		const genres = metadata.genres;
+		if (!Array.isArray(genres)) return [];
+		return genres.filter((genre): genre is string => typeof genre === 'string');
+	} catch {
+		return [];
+	}
+}
+
+/** Removes a custom genre from every movie item and streaming list entry. */
+export async function removeCustomGenreFromAll(
+	db: AppDatabase,
+	genreName: string
+): Promise<{ updatedItems: number; updatedStreamingItems: number }> {
+	const normalized = genreName.trim();
+	if (!normalized || isTmdbGenreName(normalized)) {
+		return { updatedItems: 0, updatedStreamingItems: 0 };
+	}
+
+	let updatedItems = 0;
+	const movieRows = await db.select().from(items).where(eq(items.category, 'movie'));
+
+	for (const row of movieRows) {
+		const genres = parseGenresFromRow(row.metadata);
+		if (!genres.some((genre) => genre.toLowerCase() === normalized.toLowerCase())) continue;
+
+		let metadata: Record<string, unknown> = {};
+		if (row.metadata) {
+			try {
+				metadata = JSON.parse(row.metadata) as Record<string, unknown>;
+			} catch {
+				metadata = {};
+			}
+		}
+
+		metadata.genres = dedupeGenres(removeGenre(genres, normalized));
+		await db
+			.update(items)
+			.set({ metadata: JSON.stringify(metadata), updatedAt: new Date() })
+			.where(eq(items.id, row.id));
+		updatedItems += 1;
+	}
+
+	let updatedStreamingItems = 0;
+	const streamingRows = await db.select().from(streamingListItems);
+
+	for (const row of streamingRows) {
+		const genres = parseGenresFromRow(row.metadata);
+		if (!genres.some((genre) => genre.toLowerCase() === normalized.toLowerCase())) continue;
+
+		let metadata: Record<string, unknown> = {};
+		if (row.metadata) {
+			try {
+				metadata = JSON.parse(row.metadata) as Record<string, unknown>;
+			} catch {
+				metadata = {};
+			}
+		}
+
+		metadata.genres = dedupeGenres(removeGenre(genres, normalized));
+		await db
+			.update(streamingListItems)
+			.set({ metadata: JSON.stringify(metadata), updatedAt: new Date() })
+			.where(eq(streamingListItems.id, row.id));
+		updatedStreamingItems += 1;
+	}
+
+	return { updatedItems, updatedStreamingItems };
 }
 
 export async function deleteItem(db: AppDatabase, id: string) {

@@ -10,13 +10,14 @@ import {
 	addItem,
 	deleteItem,
 	moveToOwned,
+	removeCustomGenreFromAll,
 	setAlbumWatched,
 	updateItemNotes,
 	updateItemTags,
 	updateItemGenres,
 	updateItemCover
 } from '$lib/server/items';
-import { dedupeGenres, normalizeGenreName } from '$lib/utils/movie-genres';
+import { dedupeGenres, isTmdbGenreName, normalizeGenreName } from '$lib/utils/movie-genres';
 import { isListType, isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
 
@@ -147,6 +148,26 @@ export const actions: Actions = {
 		}
 
 		await updateItemGenres(locals.db, id, genres);
+		finishAdminMutation(request);
+	},
+
+	deleteCustomGenre: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const genre = normalizeGenreName(String(form.get('genre') ?? ''));
+		if (!genre) return fail(400, { message: 'Missing genre name.' });
+		if (isTmdbGenreName(genre)) {
+			return fail(400, { message: 'TMDB genres cannot be deleted from your vocabulary.' });
+		}
+
+		const { updatedItems, updatedStreamingItems } = await removeCustomGenreFromAll(
+			locals.db,
+			genre
+		);
+		if (updatedItems === 0 && updatedStreamingItems === 0) {
+			return fail(404, { message: `Custom genre "${genre}" is not used in your catalog.` });
+		}
+
 		finishAdminMutation(request);
 	},
 

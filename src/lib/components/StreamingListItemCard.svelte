@@ -13,9 +13,15 @@
 		item: StreamingListItemView;
 		watchProviders?: MovieWatchProviders | null;
 		isAdmin?: boolean;
+		genreCatalogItems?: { metadata: Record<string, unknown> | null }[];
 	}
 
-	let { item, watchProviders = undefined, isAdmin = false }: Props = $props();
+	let {
+		item,
+		watchProviders = undefined,
+		isAdmin = false,
+		genreCatalogItems = []
+	}: Props = $props();
 
 	let showMenu = $state(false);
 	let showWishlistConfirm = $state(false);
@@ -99,10 +105,11 @@
 
 		<div class="flex min-h-0 w-full flex-1 flex-col {isAdmin ? '' : 'mt-1.5'}">
 			<GenreEditor
-				item={{ id: item.id, metadata: item.metadata }}
+				item={{ id: item.id, metadata: item.metadata, title: item.title }}
 				action="?/updateGenres"
 				{isAdmin}
 				variant="sky"
+				catalogItems={genreCatalogItems}
 			/>
 		</div>
 	</div>

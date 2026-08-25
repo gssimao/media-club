@@ -96,3 +96,65 @@ export function mergeTmdbGenres(
 	}
 	return dedupeGenres([...existing, ...tmdbGenres]);
 }
+
+/** Official TMDB movie genre names (English). */
+export const TMDB_MOVIE_GENRE_NAMES = [
+	'Action',
+	'Adventure',
+	'Animation',
+	'Comedy',
+	'Crime',
+	'Documentary',
+	'Drama',
+	'Family',
+	'Fantasy',
+	'History',
+	'Horror',
+	'Music',
+	'Mystery',
+	'Romance',
+	'Science Fiction',
+	'TV Movie',
+	'Thriller',
+	'War',
+	'Western'
+] as const;
+
+const TMDB_GENRE_LOOKUP = new Set(TMDB_MOVIE_GENRE_NAMES.map((genre) => genre.toLowerCase()));
+
+export function isTmdbGenreName(name: string): boolean {
+	return TMDB_GENRE_LOOKUP.has(name.trim().toLowerCase());
+}
+
+export interface GenreCatalog {
+	customGenres: string[];
+	catalogTmdbGenres: string[];
+	classicTmdbGenres: string[];
+}
+
+/** Split catalog genres into custom, in-use TMDB, and unused TMDB picks. */
+export function buildGenreCatalog(
+	catalogItems: { metadata: Record<string, unknown> | null }[]
+): GenreCatalog {
+	const allGenres = collectUniqueGenres(catalogItems);
+	const customGenres = allGenres.filter((genre) => !isTmdbGenreName(genre));
+	const catalogTmdbGenres = allGenres.filter((genre) => isTmdbGenreName(genre));
+	const catalogTmdbKeys = new Set(catalogTmdbGenres.map((genre) => genre.toLowerCase()));
+	const classicTmdbGenres = TMDB_MOVIE_GENRE_NAMES.filter(
+		(genre) => !catalogTmdbKeys.has(genre.toLowerCase())
+	);
+
+	return { customGenres, catalogTmdbGenres, classicTmdbGenres: [...classicTmdbGenres] };
+}
+
+export function genreIsSelected(current: string[], genre: string): boolean {
+	const key = genre.toLowerCase();
+	return current.some((value) => value.toLowerCase() === key);
+}
+
+export function toggleGenreSelection(current: string[], genre: string): string[] {
+	if (genreIsSelected(current, genre)) {
+		return removeGenre(current, genre);
+	}
+	return addGenre(current, genre);
+}

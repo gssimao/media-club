@@ -151,6 +151,7 @@
 	<MediaGrid
 		items={filteredItems}
 		searchItems={filteredSearchItems}
+		genreCatalogItems={category === 'movie' ? allItems : []}
 		{category}
 		{isAdmin}
 		{albums}

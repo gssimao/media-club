@@ -124,6 +124,7 @@
 							{item}
 							watchProviders={data.watchProvidersByExternalId[item.externalId]}
 							isAdmin={data.isAdmin}
+							genreCatalogItems={data.items}
 						/>
 					</div>
 				{/each}
@@ -145,6 +146,7 @@
 							{item}
 							watchProviders={data.watchProvidersByExternalId[item.externalId]}
 							isAdmin={data.isAdmin}
+							genreCatalogItems={data.items}
 						/>
 					</div>
 				{/each}

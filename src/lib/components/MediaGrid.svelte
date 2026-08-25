@@ -16,6 +16,8 @@
 		category?: MediaCategory;
 		/** When set, search runs against this pool (e.g. all owned items including collections). */
 		searchItems?: MediaItem[];
+		/** Full movie pool for genre picker catalog sections. */
+		genreCatalogItems?: MediaItem[];
 		emptyTitle: string;
 		emptyDescription: string;
 		highlightedId?: string | null;
@@ -34,6 +36,7 @@
 		albums = [],
 		category,
 		searchItems,
+		genreCatalogItems = [],
 		emptyTitle,
 		emptyDescription,
 		highlightedId = null,
@@ -136,6 +139,7 @@
 									highlighted={highlightedId === item.id}
 									{showAlbumWatchedToggle}
 									showCollectionLink={isSearching}
+									{genreCatalogItems}
 								/>
 							{:else}
 								<MediaCard
