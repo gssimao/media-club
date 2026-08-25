@@ -109,7 +109,7 @@
 		display: none;
 		position: fixed;
 		top: var(--nav-dial-inset);
-		left: var(--nav-dial-inset);
+		left: 0;
 	}
 
 	.site-header--mobile {
@@ -124,14 +124,14 @@
 		pointer-events: auto;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 		gap: var(--nav-dial-stack-gap);
+		width: var(--nav-dial-reserve-w);
 	}
 
 	.header-actions-slot {
 		display: flex;
-		align-self: flex-end;
-		margin-right: 0.15rem;
+		justify-content: center;
 		min-height: var(--nav-dial-actions-h);
 	}
 

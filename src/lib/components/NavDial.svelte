@@ -199,9 +199,13 @@
 <style>
 	.nav-dial-panel {
 		--dial-r: var(--nav-dial-r);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		overflow: visible;
 		width: var(--nav-dial-size);
 		height: var(--nav-dial-size);
+		margin-inline: auto;
 	}
 
 	.nav-dial {

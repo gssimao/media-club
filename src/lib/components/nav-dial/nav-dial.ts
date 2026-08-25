@@ -20,7 +20,8 @@ export type NavItem = {
 };
 
 export const SELECTOR = 0;
-export const NODE_R_RATIO = 0.88;
+/** Icon orbit as a fraction of `--nav-dial-r`; sits between middle (0.68) and outer (0.88) grooves. */
+export const NODE_R_RATIO = 0.7;
 export const grooveRadii = [0.88, 0.68, 0.48] as const;
 export const tickAngles = [0, 45, 90, 135, 180, 225, 270, 315] as const;
 export const CENTER_BOOST_THRESHOLD = 0.45;
