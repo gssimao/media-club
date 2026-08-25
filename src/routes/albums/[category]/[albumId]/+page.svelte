@@ -195,6 +195,7 @@
 
 	<MediaGrid
 		items={unwatchedItems}
+		category={data.category}
 		isAdmin={data.isAdmin}
 		albums={[data.album]}
 		sectionTitle="To {wording.verb}"
@@ -210,6 +211,7 @@
 		<div class="mt-12">
 			<MediaGrid
 				items={watchedItems}
+				category={data.category}
 				isAdmin={data.isAdmin}
 				albums={[data.album]}
 				sectionTitle="Already {wording.done}"

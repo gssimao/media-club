@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Fuse from 'fuse.js';
-	import type { Album, MediaItem } from '$lib/types/media';
+	import type { Album, MediaItem, MediaCategory } from '$lib/types/media';
 	import { settings } from '$lib/stores/settings.svelte';
 	import EmptyState from './EmptyState.svelte';
 	import MediaCard from './MediaCard.svelte';
+	import MovieCard from './MovieCard.svelte';
 	import MediaGridSkeleton from './MediaGridSkeleton.svelte';
 	import SearchBar from './SearchBar.svelte';
 	import { FolderPlus } from 'phosphor-svelte';
@@ -12,6 +13,7 @@
 		items: MediaItem[];
 		isAdmin: boolean;
 		albums?: Album[];
+		category?: MediaCategory;
 		/** When set, search runs against this pool (e.g. all owned items including collections). */
 		searchItems?: MediaItem[];
 		emptyTitle: string;
@@ -30,6 +32,7 @@
 		items,
 		isAdmin,
 		albums = [],
+		category,
 		searchItems,
 		emptyTitle,
 		emptyDescription,
@@ -125,14 +128,25 @@
 				<div class={gridClass}>
 					{#each filteredItems as item (item.id)}
 						<div class="flex h-full min-w-0 flex-col">
-							<MediaCard
-								{item}
-								{isAdmin}
-								{albums}
-								highlighted={highlightedId === item.id}
-								{showAlbumWatchedToggle}
-								showCollectionLink={isSearching}
-							/>
+							{#if category === 'movie'}
+								<MovieCard
+									{item}
+									{isAdmin}
+									{albums}
+									highlighted={highlightedId === item.id}
+									{showAlbumWatchedToggle}
+									showCollectionLink={isSearching}
+								/>
+							{:else}
+								<MediaCard
+									{item}
+									{isAdmin}
+									{albums}
+									highlighted={highlightedId === item.id}
+									{showAlbumWatchedToggle}
+									showCollectionLink={isSearching}
+								/>
+							{/if}
 						</div>
 					{/each}
 				</div>

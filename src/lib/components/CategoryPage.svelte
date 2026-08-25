@@ -6,7 +6,14 @@
 	import AddMediaDialog from '$lib/components/AddMediaDialog.svelte';
 	import AddFolderDialog from '$lib/components/AddFolderDialog.svelte';
 	import FormatFilter from '$lib/components/FormatFilter.svelte';
+	import GenreFilter from '$lib/components/GenreFilter.svelte';
+	import SuperchargedRandomPicker from '$lib/components/SuperchargedRandomPicker.svelte';
 	import { CATEGORY_PATHS, type Album, type MediaCategory, type MediaItem } from '$lib/types/media';
+	import {
+		collectUniqueGenres,
+		getDisplayGenres,
+		itemMatchesGenreFilter
+	} from '$lib/utils/movie-genres';
 	import { FolderPlus, Heart, Plus } from 'phosphor-svelte';
 
 	interface Props {
@@ -40,6 +47,9 @@
 	let showAddDialog = $state(false);
 	let showFolderDialog = $state(false);
 	let selectedFormats = $state<string[]>([]);
+	let selectedGenres = $state<string[]>([]);
+
+	const genreOptions = $derived(category === 'movie' ? collectUniqueGenres(allItems) : []);
 
 	const allGrouped = $derived(albums.length > 0 && items.length === 0);
 	const emptyTitle = $derived(allGrouped ? `All ${noun} are in collections` : `No ${noun} yet`);
@@ -54,23 +64,35 @@
 	const showShelfAddTile = $derived(isAdmin && albums.length > 0);
 
 	function applyFormatFilter(source: MediaItem[]) {
-		if ((category !== 'movie' && category !== 'show') || selectedFormats.length === 0) {
-			return source;
+		let filtered = source;
+
+		if ((category === 'movie' || category === 'show') && selectedFormats.length > 0) {
+			filtered = filtered.filter((item) => {
+				const metadata = item.metadata as Record<string, unknown> | null;
+				if (!metadata || !metadata.tags) return false;
+
+				const tags = metadata.tags as string[];
+				return selectedFormats.some((format) =>
+					tags.some((tag) => tag === format || tag.includes(format) || format.includes(tag))
+				);
+			});
 		}
 
-		return source.filter((item) => {
-			const metadata = item.metadata as Record<string, unknown> | null;
-			if (!metadata || !metadata.tags) return false;
-
-			const tags = metadata.tags as string[];
-			return selectedFormats.some((format) =>
-				tags.some((tag) => tag === format || tag.includes(format) || format.includes(tag))
+		if (category === 'movie' && selectedGenres.length > 0) {
+			filtered = filtered.filter((item) =>
+				itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres)
 			);
-		});
+		}
+
+		return filtered;
 	}
 
 	function handleFilterChange(formats: string[]) {
 		selectedFormats = formats;
+	}
+
+	function handleGenreFilterChange(genres: string[]) {
+		selectedGenres = genres;
 	}
 </script>
 
@@ -87,6 +109,16 @@
 		</NavLink>
 		{#if isAdmin && (category === 'movie' || category === 'show')}
 			<FormatFilter {category} {selectedFormats} onFilterChange={handleFilterChange} />
+		{/if}
+		{#if isAdmin && category === 'movie' && genreOptions.length > 0}
+			<GenreFilter
+				options={genreOptions}
+				bind:selectedGenres
+				onFilterChange={handleGenreFilterChange}
+			/>
+		{/if}
+		{#if category === 'movie'}
+			<SuperchargedRandomPicker items={allItems} {albums} {genreOptions} />
 		{/if}
 		{#if isAdmin}
 			<button
@@ -119,6 +151,7 @@
 	<MediaGrid
 		items={filteredItems}
 		searchItems={filteredSearchItems}
+		{category}
 		{isAdmin}
 		{albums}
 		{emptyTitle}

@@ -79,6 +79,9 @@
 		<div class="grid gap-4 sm:grid-cols-2">
 			{#each visibleResults as result (result.externalId)}
 				{@const status = effectiveCatalogStatus(result, localStatus)}
+				{@const searchGenres = Array.isArray(result.metadata?.genres)
+					? (result.metadata.genres as string[])
+					: []}
 				<article class="surface-round flex gap-4 p-4">
 					<div
 						class="h-28 w-20 shrink-0 overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
@@ -100,6 +103,17 @@
 								<p class="mt-1 text-xs font-bold text-amber-700 dark:text-amber-400">
 									{result.year}
 								</p>
+							{/if}
+							{#if searchGenres.length > 0}
+								<div class="mt-1.5 flex flex-wrap gap-1">
+									{#each searchGenres as genre (genre)}
+										<span
+											class="rounded-full bg-sky-500/15 px-2 py-0.5 text-[9px] font-bold tracking-wide text-sky-800 uppercase dark:text-sky-300"
+										>
+											{genre}
+										</span>
+									{/each}
+								</div>
 							{/if}
 							{#if status.owned}
 								<p class="mt-1 text-[10px] font-bold text-stone-500 dark:text-stone-400">

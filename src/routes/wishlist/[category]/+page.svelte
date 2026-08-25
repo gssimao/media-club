@@ -56,6 +56,7 @@
 
 	<MediaGrid
 		items={data.items}
+		category={data.category}
 		isAdmin={data.isAdmin}
 		emptyTitle="Wishlist is empty"
 		emptyDescription="Save things to buy here. Admins can move items into the collection later."
