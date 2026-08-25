@@ -2,6 +2,7 @@ import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { albums, items } from '$lib/server/db/schema';
 import { isFormatLikeNote } from '$lib/utils/format-tags';
+import { dedupeGenres } from '$lib/utils/movie-genres';
 import type { ListType, MediaCategory, SearchResult } from '$lib/types/media';
 
 function parseMetadata(value: string | null): Record<string, unknown> | null {
@@ -30,6 +31,16 @@ export function mapItem(row: typeof items.$inferSelect) {
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt
 	};
+}
+
+export async function listAllItemsByCategory(db: AppDatabase, category: MediaCategory) {
+	const rows = await db
+		.select()
+		.from(items)
+		.where(eq(items.category, category))
+		.orderBy(desc(items.createdAt));
+
+	return rows.map(mapItem);
 }
 
 export async function listItems(db: AppDatabase, category: MediaCategory, listType: ListType) {
@@ -274,6 +285,28 @@ export async function updateItemTags(db: AppDatabase, id: string, tags: string[]
 	await db
 		.update(items)
 		.set({ metadata: JSON.stringify(metadata), notes, updatedAt: new Date() })
+		.where(eq(items.id, id));
+}
+
+export async function updateItemGenres(db: AppDatabase, id: string, genres: string[]) {
+	const rows = await db.select().from(items).where(eq(items.id, id)).limit(1);
+	const item = rows[0];
+	if (!item) return;
+
+	let metadata: Record<string, unknown> = {};
+	if (item.metadata) {
+		try {
+			metadata = JSON.parse(item.metadata) as Record<string, unknown>;
+		} catch {
+			metadata = {};
+		}
+	}
+
+	metadata.genres = dedupeGenres(genres);
+
+	await db
+		.update(items)
+		.set({ metadata: JSON.stringify(metadata), updatedAt: new Date() })
 		.where(eq(items.id, id));
 }
 

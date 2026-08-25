@@ -157,6 +157,32 @@ export async function getStreamingListItemById(db: AppDatabase, id: string) {
 	return row ? mapStreamingListItem(row) : null;
 }
 
+export async function updateStreamingItemGenres(db: AppDatabase, id: string, genres: string[]) {
+	const rows = await db
+		.select()
+		.from(streamingListItems)
+		.where(eq(streamingListItems.id, id))
+		.limit(1);
+	const item = rows[0];
+	if (!item) return;
+
+	let metadata: Record<string, unknown> = {};
+	if (item.metadata) {
+		try {
+			metadata = JSON.parse(item.metadata) as Record<string, unknown>;
+		} catch {
+			metadata = {};
+		}
+	}
+
+	metadata.genres = genres;
+
+	await db
+		.update(streamingListItems)
+		.set({ metadata: JSON.stringify(metadata), updatedAt: new Date() })
+		.where(eq(streamingListItems.id, id));
+}
+
 export async function deleteStreamingListItem(db: AppDatabase, id: string) {
 	await db.delete(streamingListItems).where(eq(streamingListItems.id, id));
 }

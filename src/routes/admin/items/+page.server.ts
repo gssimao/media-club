@@ -13,8 +13,10 @@ import {
 	setAlbumWatched,
 	updateItemNotes,
 	updateItemTags,
+	updateItemGenres,
 	updateItemCover
 } from '$lib/server/items';
+import { dedupeGenres, normalizeGenreName } from '$lib/utils/movie-genres';
 import { isListType, isMediaCategory } from '$lib/types/media';
 import type { Actions } from './$types';
 
@@ -119,6 +121,32 @@ export const actions: Actions = {
 		}
 
 		await updateItemTags(locals.db, id, tags);
+		finishAdminMutation(request);
+	},
+
+	updateGenres: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		const genresRaw = String(form.get('genres') ?? '[]');
+		if (!id) return fail(400, { message: 'Missing item id.' });
+
+		let genres: string[] = [];
+		try {
+			const parsed = JSON.parse(genresRaw) as unknown;
+			if (Array.isArray(parsed)) {
+				genres = dedupeGenres(parsed.filter((g): g is string => typeof g === 'string'));
+			}
+		} catch {
+			return fail(400, { message: 'Invalid genres payload.' });
+		}
+
+		const newGenre = normalizeGenreName(String(form.get('newGenre') ?? ''));
+		if (newGenre) {
+			genres = dedupeGenres([...genres, newGenre]);
+		}
+
+		await updateItemGenres(locals.db, id, genres);
 		finishAdminMutation(request);
 	},
 
