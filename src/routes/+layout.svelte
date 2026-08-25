@@ -19,6 +19,98 @@
 	});
 </script>
 
+<svelte:head>
+	<style>
+		body::before {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: -1;
+			background:
+				radial-gradient(
+					ellipse 100% 60% at 50% -10%,
+					rgba(255, 253, 246, 0.95),
+					rgba(250, 246, 237, 0.6) 40%,
+					transparent 75%
+				),
+				radial-gradient(
+					ellipse 120% 50% at 50% 110%,
+					rgba(214, 200, 174, 0.4),
+					rgba(244, 238, 226, 0.2) 45%,
+					transparent 70%
+				),
+				radial-gradient(circle at -20% 50%, rgba(252, 185, 0, 0.08), transparent 50%),
+				radial-gradient(circle at 120% 50%, rgba(252, 185, 0, 0.08), transparent 50%), #f4eee2;
+			transition: background 0.3s ease;
+		}
+
+		body::after {
+			content: '';
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			height: 45vh;
+			z-index: -1;
+			background: linear-gradient(
+				to top,
+				rgba(93, 78, 58, 0.15) 0%,
+				rgba(121, 104, 79, 0.08) 25%,
+				transparent 100%
+			);
+			pointer-events: none;
+			transition: background 0.3s ease;
+		}
+
+		[data-theme='dark'] body::before {
+			background:
+				radial-gradient(
+					ellipse 90% 65% at 50% -15%,
+					rgba(68, 60, 50, 0.8),
+					rgba(48, 45, 42, 0.5) 35%,
+					transparent 70%
+				),
+				radial-gradient(
+					ellipse 110% 45% at 50% 115%,
+					rgba(120, 100, 60, 0.25),
+					rgba(80, 70, 40, 0.15) 50%,
+					transparent 75%
+				),
+				radial-gradient(
+					circle at -15% 35%,
+					rgba(252, 185, 0, 0.12),
+					rgba(252, 185, 0, 0.05) 35%,
+					transparent 55%
+				),
+				radial-gradient(
+					circle at 115% 65%,
+					rgba(252, 185, 0, 0.12),
+					rgba(252, 185, 0, 0.05) 35%,
+					transparent 55%
+				),
+				radial-gradient(
+					ellipse 70% 85% at 50% 50%,
+					rgba(38, 35, 32, 1),
+					rgba(28, 25, 23, 0.95) 60%,
+					transparent 85%
+				),
+				#1c1917;
+		}
+
+		[data-theme='dark'] body::after {
+			background: linear-gradient(
+				to top,
+				rgba(15, 13, 11, 0.8) 0%,
+				rgba(20, 18, 16, 0.5) 30%,
+				transparent 100%
+			);
+		}
+	</style>
+</svelte:head>
+
 <a
 	href="#main-content"
 	class="btn-primary sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-1/2 focus:z-[100] focus:-translate-x-1/2 focus:px-5 focus:py-2"
