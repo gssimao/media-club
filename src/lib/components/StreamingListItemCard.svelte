@@ -2,15 +2,20 @@
 	import { enhance } from '$app/forms';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 	import CoverImage from './CoverImage.svelte';
+	import GenreEditor from './GenreEditor.svelte';
+	import StreamingProviders from './StreamingProviders.svelte';
 	import { DotsThree, FilmStrip, Heart, Trash } from 'phosphor-svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 	import type { StreamingListItemView } from '$lib/server/streaming-lists';
+	import type { MovieWatchProviders } from '$lib/types/tmdb';
 
 	interface Props {
 		item: StreamingListItemView;
+		watchProviders?: MovieWatchProviders | null;
+		isAdmin?: boolean;
 	}
 
-	let { item }: Props = $props();
+	let { item, watchProviders = undefined, isAdmin = false }: Props = $props();
 
 	let showMenu = $state(false);
 	let showWishlistConfirm = $state(false);
@@ -30,11 +35,11 @@
 
 <article
 	id="streaming-item-{item.id}"
-	class="group mx-auto flex w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500"
+	class="group mx-auto flex h-full w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500"
 	onmouseenter={() => (cardHovered = true)}
 	onmouseleave={() => (cardHovered = false)}
 >
-	<div class="mb-1 flex min-h-7 w-full items-center justify-between px-0.5">
+	<div class="mb-1 flex min-h-7 w-full shrink-0 items-center justify-between px-0.5">
 		{#if item.year}
 			<span
 				class="text-xs font-black tracking-widest text-amber-700 tabular-nums dark:text-amber-400"
@@ -47,7 +52,7 @@
 
 		<button
 			type="button"
-			class="inline-flex size-7 items-center justify-center rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] text-[rgb(var(--color-text-secondary))] shadow-sm transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400 {showMenu
+			class="inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] text-[rgb(var(--color-text-secondary))] shadow-sm transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400 {showMenu
 				? 'border-amber-500 text-amber-700 dark:text-amber-400'
 				: ''}"
 			aria-label="Options for {item.title}"
@@ -60,7 +65,7 @@
 	</div>
 
 	<div
-		class="media-disc relative aspect-square w-full max-w-[13rem] overflow-hidden rounded-full border-2 border-dashed border-sky-500/70 bg-[rgb(var(--color-surface-raised))] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:max-w-[15rem] dark:border-sky-400/60"
+		class="media-disc relative aspect-square w-full max-w-[13rem] shrink-0 overflow-hidden rounded-full border-2 border-dashed border-sky-500/70 bg-[rgb(var(--color-surface-raised))] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:max-w-[15rem] dark:border-sky-400/60"
 	>
 		{#if item.coverUrl}
 			<CoverImage
@@ -83,14 +88,27 @@
 		</span>
 	</div>
 
-	<h3
-		class="mt-2 line-clamp-2 w-full px-1 text-center text-xs leading-snug font-bold text-[rgb(var(--color-text))]"
-	>
-		{label}
-	</h3>
+	<div class="flex min-h-0 w-full flex-1 flex-col">
+		<h3
+			class="mt-2 line-clamp-2 min-h-[2.5rem] w-full shrink-0 px-1 text-center text-xs leading-snug font-bold text-[rgb(var(--color-text))]"
+		>
+			{label}
+		</h3>
+
+		<StreamingProviders providers={watchProviders} />
+
+		<div class="flex min-h-0 w-full flex-1 flex-col {isAdmin ? '' : 'mt-1.5'}">
+			<GenreEditor
+				item={{ id: item.id, metadata: item.metadata }}
+				action="?/updateGenres"
+				{isAdmin}
+				variant="sky"
+			/>
+		</div>
+	</div>
 
 	{#if showMenu}
-		<div id="streaming-actions-{item.id}" class="mt-2 w-full space-y-2">
+		<div id="streaming-actions-{item.id}" class="mt-2 w-full shrink-0 space-y-2">
 			<button
 				type="button"
 				class="btn-secondary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"

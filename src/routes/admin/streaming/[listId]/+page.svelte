@@ -2,18 +2,36 @@
 	import PageShell from '$lib/components/PageShell.svelte';
 	import AddStreamingDialog from '$lib/components/AddStreamingDialog.svelte';
 	import AlbumRandomPicker from '$lib/components/AlbumRandomPicker.svelte';
+	import GenreFilter from '$lib/components/GenreFilter.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
 	import StreamingListItemCard from '$lib/components/StreamingListItemCard.svelte';
 	import StreamingSearchPanel from '$lib/components/StreamingSearchPanel.svelte';
+	import { TMDB_ATTRIBUTION } from '$lib/types/tmdb';
 	import type { StreamingListItemView } from '$lib/server/streaming-lists';
+	import {
+		collectUniqueGenres,
+		itemMatchesGenreFilter,
+		getDisplayGenres
+	} from '$lib/utils/movie-genres';
 	import { MagnifyingGlass, Pencil } from 'phosphor-svelte';
 
 	let { data } = $props();
 
+	let selectedGenres = $state<string[]>([]);
+
+	const genreOptions = $derived(collectUniqueGenres(data.items));
+
+	function filterByGenre(items: StreamingListItemView[]) {
+		if (selectedGenres.length === 0) return items;
+		return items.filter((item) => itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres));
+	}
+
 	const unwatchedItems = $derived(
-		data.items.filter((item: StreamingListItemView) => !item.watchedAt)
+		filterByGenre(data.items.filter((item: StreamingListItemView) => !item.watchedAt))
 	);
-	const watchedItems = $derived(data.items.filter((item: StreamingListItemView) => item.watchedAt));
+	const watchedItems = $derived(
+		filterByGenre(data.items.filter((item: StreamingListItemView) => item.watchedAt))
+	);
 
 	let highlightedId = $state<string | null>(null);
 	let showSearch = $state(false);
@@ -46,6 +64,14 @@
 			onPick={handlePick}
 			markWatchedAction="?/toggleWatched"
 		/>
+
+		{#if genreOptions.length > 0}
+			<GenreFilter
+				options={genreOptions}
+				bind:selectedGenres
+				onFilterChange={(genres) => (selectedGenres = genres)}
+			/>
+		{/if}
 
 		<button
 			type="button"
@@ -90,11 +116,15 @@
 			>
 				{#each unwatchedItems as item (item.id)}
 					<div
-						class={highlightedId === item.id
+						class="flex h-full min-w-0 flex-col {highlightedId === item.id
 							? 'rounded-[2rem] ring-4 ring-amber-400/60 ring-offset-2 ring-offset-[rgb(var(--color-bg))]'
-							: ''}
+							: ''}"
 					>
-						<StreamingListItemCard {item} />
+						<StreamingListItemCard
+							{item}
+							watchProviders={data.watchProvidersByExternalId[item.externalId]}
+							isAdmin={data.isAdmin}
+						/>
 					</div>
 				{/each}
 			</div>
@@ -110,10 +140,22 @@
 				class="grid grid-cols-2 gap-x-3 gap-y-8 opacity-75 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
 			>
 				{#each watchedItems as item (item.id)}
-					<StreamingListItemCard {item} />
+					<div class="flex h-full min-w-0 flex-col">
+						<StreamingListItemCard
+							{item}
+							watchProviders={data.watchProvidersByExternalId[item.externalId]}
+							isAdmin={data.isAdmin}
+						/>
+					</div>
 				{/each}
 			</div>
 		{/if}
+	{/if}
+
+	{#if data.items.length > 0}
+		<p class="mt-8 text-center text-[10px] text-stone-500 dark:text-stone-400">
+			{TMDB_ATTRIBUTION}
+		</p>
 	{/if}
 </PageShell>
 
