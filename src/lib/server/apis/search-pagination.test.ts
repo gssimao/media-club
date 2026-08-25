@@ -2,32 +2,52 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SEARCH_PAGE_SIZE } from '$lib/server/apis/search-types';
 import { searchBooks } from '$lib/server/apis/openlibrary';
 import { searchMusic } from '$lib/server/apis/discogs';
-import { searchMovies, searchTv } from '$lib/server/apis/tmdb';
+import { resetMovieGenreCache, searchMovies, searchTv } from '$lib/server/apis/tmdb';
+
+function mockTmdbFetch(moviePayload: unknown) {
+	return vi.fn().mockImplementation((url: string | URL) => {
+		const href = String(url);
+		if (href.includes('/genre/movie/list')) {
+			return Promise.resolve({
+				ok: true,
+				json: async () => ({
+					genres: [
+						{ id: 28, name: 'Action' },
+						{ id: 878, name: 'Science Fiction' }
+					]
+				})
+			});
+		}
+		return Promise.resolve({
+			ok: true,
+			json: async () => moviePayload
+		});
+	});
+}
 
 describe('search provider pagination', () => {
 	afterEach(() => {
 		vi.unstubAllGlobals();
+		resetMovieGenreCache();
 	});
 
 	it('searchMovies uses page param and computes hasMore from total_pages', async () => {
-		const fetchMock = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				page: 2,
-				total_pages: 5,
-				results: Array.from({ length: SEARCH_PAGE_SIZE }, (_, index) => ({
-					id: index + 1,
-					title: `Movie ${index + 1}`,
-					poster_path: null
-				}))
-			})
+		const fetchMock = mockTmdbFetch({
+			page: 2,
+			total_pages: 5,
+			results: Array.from({ length: SEARCH_PAGE_SIZE }, (_, index) => ({
+				id: index + 1,
+				title: `Movie ${index + 1}`,
+				poster_path: null
+			}))
 		});
 		vi.stubGlobal('fetch', fetchMock);
 
 		const page = await searchMovies('test-key', 'star', 2);
 
-		expect(fetchMock).toHaveBeenCalledOnce();
+		expect(fetchMock).toHaveBeenCalledTimes(2);
 		expect(String(fetchMock.mock.calls[0][0])).toContain('page=2');
+		expect(String(fetchMock.mock.calls[1][0])).toContain('/genre/movie/list');
 		expect(page.results).toHaveLength(SEARCH_PAGE_SIZE);
 		expect(page.hasMore).toBe(true);
 		expect(page.totalPages).toBe(5);
@@ -36,13 +56,10 @@ describe('search provider pagination', () => {
 	it('searchMovies sets hasMore false on the last page', async () => {
 		vi.stubGlobal(
 			'fetch',
-			vi.fn().mockResolvedValue({
-				ok: true,
-				json: async () => ({
-					page: 3,
-					total_pages: 3,
-					results: [{ id: 99, title: 'Last', poster_path: null }]
-				})
+			mockTmdbFetch({
+				page: 3,
+				total_pages: 3,
+				results: [{ id: 99, title: 'Last', poster_path: null }]
 			})
 		);
 
@@ -50,6 +67,24 @@ describe('search provider pagination', () => {
 
 		expect(page.hasMore).toBe(false);
 		expect(page.results).toHaveLength(1);
+	});
+
+	it('searchMovies maps genre_ids to genre names in metadata', async () => {
+		vi.stubGlobal(
+			'fetch',
+			mockTmdbFetch({
+				page: 1,
+				total_pages: 1,
+				results: [{ id: 27205, title: 'Inception', poster_path: null, genre_ids: [28, 878] }]
+			})
+		);
+
+		const page = await searchMovies('test-key', 'inception', 1);
+
+		expect(page.results[0]?.metadata).toMatchObject({
+			tmdbId: 27205,
+			genres: ['Action', 'Science Fiction']
+		});
 	});
 
 	it('searchTv uses page param and maps name and first_air_date', async () => {
