@@ -35,6 +35,9 @@
 
 <style>
 	.page-shell {
+		/* Sidebar clears the fixed dial; content sits in the right column with modest breathing room */
+		--page-shell-control-offset: var(--nav-dial-reserve-h);
+		--page-shell-content-offset: 1.25rem;
 		display: grid;
 		grid-template-columns: var(--nav-dial-reserve-w) minmax(0, 1fr);
 		align-items: start;
@@ -51,15 +54,13 @@
 		flex-direction: column;
 		gap: 1.25rem;
 		/* Margin clears the fixed dial on first paint; sticky top keeps it below the wheel when scrolling */
-		margin-top: max(12.5rem, calc(var(--nav-dial-reserve-h) + 1.25rem));
+		margin-top: var(--page-shell-control-offset);
 		padding-top: 0;
 		padding-left: var(--nav-dial-inset);
 		padding-right: 0.25rem;
 		max-width: var(--nav-dial-reserve-w);
-		max-height: calc(100vh - var(--nav-dial-reserve-h) - 1rem);
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		scrollbar-width: thin;
+		/* overflow: visible — MediaFilterPopover strips extend past this column */
+		overflow: visible;
 	}
 
 	.page-shell__now-playing {
@@ -103,18 +104,21 @@
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 0.65rem;
+		overflow: visible;
 	}
 
 	.page-shell__content {
 		min-width: 0;
 		max-width: 100%;
 		align-self: start;
-		padding-top: 0;
+		padding-top: var(--page-shell-content-offset);
 		padding-right: 0.25rem;
 	}
 
 	@media (max-width: 767px) {
 		.page-shell {
+			--page-shell-control-offset: 0;
+			--page-shell-content-offset: 0.25rem;
 			grid-template-columns: minmax(0, 1fr);
 			gap: 1rem;
 			min-height: auto;
@@ -134,7 +138,6 @@
 		}
 
 		.page-shell__content {
-			padding-top: 0.25rem;
 			padding-left: 1rem;
 			padding-right: 1rem;
 		}
