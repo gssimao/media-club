@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
 	import SettingsAppearanceModule from '$lib/components/settings/SettingsAppearanceModule.svelte';
+	import SettingsCatalogModule from '$lib/components/settings/SettingsCatalogModule.svelte';
 	import SettingsConsole from '$lib/components/settings/SettingsConsole.svelte';
 	import SettingsFadersModule from '$lib/components/settings/SettingsFadersModule.svelte';
 	import SettingsLevelsModule from '$lib/components/settings/SettingsLevelsModule.svelte';
@@ -22,5 +23,6 @@
 		<SettingsTurntableModule />
 		<SettingsFadersModule />
 		<SettingsLevelsModule summary={data.summary} />
+		<SettingsCatalogModule isAdmin={data.isAdmin} movieCount={data.movieCount} />
 	</SettingsConsole>
 </PageShell>
