@@ -10,20 +10,25 @@
 	import type { StreamingListItemView } from '$lib/server/streaming-lists';
 	import {
 		collectUniqueGenres,
+		DEFAULT_GENRE_FILTER_MODE,
 		itemMatchesGenreFilter,
-		getDisplayGenres
+		getDisplayGenres,
+		type GenreFilterMode
 	} from '$lib/utils/movie-genres';
 	import { MagnifyingGlass, Pencil } from 'phosphor-svelte';
 
 	let { data } = $props();
 
 	let selectedGenres = $state<string[]>([]);
+	let genreFilterMode = $state<GenreFilterMode>(DEFAULT_GENRE_FILTER_MODE);
 
 	const genreOptions = $derived(collectUniqueGenres(data.items));
 
 	function filterByGenre(items: StreamingListItemView[]) {
 		if (selectedGenres.length === 0) return items;
-		return items.filter((item) => itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres));
+		return items.filter((item) =>
+			itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres, genreFilterMode)
+		);
 	}
 
 	const unwatchedItems = $derived(
@@ -69,7 +74,11 @@
 			<GenreFilter
 				options={genreOptions}
 				bind:selectedGenres
-				onFilterChange={(genres) => (selectedGenres = genres)}
+				bind:genreFilterMode
+				onFilterChange={(genres, mode) => {
+					selectedGenres = genres;
+					genreFilterMode = mode;
+				}}
 			/>
 		{/if}
 

@@ -51,6 +51,16 @@ describe('itemMatchesGenreFilter', () => {
 		expect(itemMatchesGenreFilter(['Action'], ['Horror'])).toBe(false);
 		expect(itemMatchesGenreFilter(['Action'], [])).toBe(true);
 	});
+
+	it('matches when all selected genres are present in all mode', () => {
+		expect(itemMatchesGenreFilter(['Action', 'Drama'], ['Action', 'Drama'], 'all')).toBe(true);
+		expect(itemMatchesGenreFilter(['Action', 'Drama'], ['Action', 'Comedy'], 'all')).toBe(false);
+		expect(itemMatchesGenreFilter(['Action'], ['Action', 'Drama'], 'all')).toBe(false);
+	});
+
+	it('treats genre names case-insensitively in all mode', () => {
+		expect(itemMatchesGenreFilter(['Action', 'Drama'], ['action', 'drama'], 'all')).toBe(true);
+	});
 });
 
 describe('collectUniqueGenres', () => {

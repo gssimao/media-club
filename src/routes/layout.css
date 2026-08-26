@@ -39,12 +39,76 @@
 	body {
 		margin: 0;
 		min-height: 100vh;
-		position: relative;
 		color: rgb(var(--color-text));
 		font-family: var(--font-sans);
+		background-color: rgb(var(--color-bg));
+		background-image:
+			linear-gradient(
+				to top,
+				rgba(93, 78, 58, 0.18) 0%,
+				rgba(121, 104, 79, 0.1) 14%,
+				transparent 45vh
+			),
+			radial-gradient(
+				ellipse 100% 60% at 50% -10%,
+				rgba(255, 253, 246, 0.95),
+				rgba(250, 246, 237, 0.55) 40%,
+				transparent 75%
+			),
+			radial-gradient(
+				ellipse 120% 50% at 50% 110%,
+				rgba(214, 200, 174, 0.45),
+				rgba(244, 238, 226, 0.2) 45%,
+				transparent 70%
+			),
+			radial-gradient(circle at -20% 50%, rgba(252, 185, 0, 0.12), transparent 50%),
+			radial-gradient(circle at 120% 50%, rgba(252, 185, 0, 0.12), transparent 50%);
+		background-attachment: fixed;
 		transition:
 			background-color 0.3s ease,
+			background-image 0.3s ease,
 			color 0.3s ease;
+	}
+
+	[data-theme='dark'] body {
+		background-color: rgb(var(--color-bg));
+		background-image:
+			linear-gradient(
+				to top,
+				rgba(15, 13, 11, 0.85) 0%,
+				rgba(20, 18, 16, 0.55) 18%,
+				transparent 45vh
+			),
+			radial-gradient(
+				ellipse 90% 65% at 50% -15%,
+				rgba(68, 60, 50, 0.85),
+				rgba(48, 45, 42, 0.5) 35%,
+				transparent 70%
+			),
+			radial-gradient(
+				ellipse 110% 45% at 50% 115%,
+				rgba(120, 100, 60, 0.3),
+				rgba(80, 70, 40, 0.15) 50%,
+				transparent 75%
+			),
+			radial-gradient(
+				circle at -15% 35%,
+				rgba(252, 185, 0, 0.14),
+				rgba(252, 185, 0, 0.05) 35%,
+				transparent 55%
+			),
+			radial-gradient(
+				circle at 115% 65%,
+				rgba(252, 185, 0, 0.14),
+				rgba(252, 185, 0, 0.05) 35%,
+				transparent 55%
+			),
+			radial-gradient(
+				ellipse 70% 85% at 50% 50%,
+				rgba(38, 35, 32, 1),
+				rgba(28, 25, 23, 0.95) 60%,
+				transparent 85%
+			);
 	}
 
 	a {
@@ -120,6 +184,37 @@
 	}
 }
 
+@keyframes mc-fade-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes mc-slide-up-bottom {
+	from {
+		opacity: 0;
+		transform: translateY(100%);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes mc-slide-down-bottom {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(100%);
+	}
+}
+
 @keyframes disc-pick {
 	from {
 		transform: rotate(0deg);
@@ -130,95 +225,6 @@
 }
 
 @layer components {
-	/* Studio atmosphere - needs to be in components layer to avoid being purged */
-	body::before {
-		content: '' !important;
-		position: fixed !important;
-		top: 0 !important;
-		left: 0 !important;
-		right: 0 !important;
-		bottom: 0 !important;
-		z-index: -1 !important;
-		background:
-			radial-gradient(
-				ellipse 100% 60% at 50% -10%,
-				rgba(255, 253, 246, 0.95),
-				rgba(250, 246, 237, 0.6) 40%,
-				transparent 75%
-			),
-			radial-gradient(
-				ellipse 120% 50% at 50% 110%,
-				rgba(214, 200, 174, 0.4),
-				rgba(244, 238, 226, 0.2) 45%,
-				transparent 70%
-			),
-			radial-gradient(circle at -20% 50%, rgba(252, 185, 0, 0.08), transparent 50%),
-			radial-gradient(circle at 120% 50%, rgba(252, 185, 0, 0.08), transparent 50%), #f4eee2 !important;
-		transition: background 0.3s ease !important;
-	}
-
-	body::after {
-		content: '' !important;
-		position: fixed !important;
-		bottom: 0 !important;
-		left: 0 !important;
-		right: 0 !important;
-		height: 45vh !important;
-		z-index: -1 !important;
-		background: linear-gradient(
-			to top,
-			rgba(93, 78, 58, 0.15) 0%,
-			rgba(121, 104, 79, 0.08) 25%,
-			transparent 100%
-		) !important;
-		pointer-events: none !important;
-		transition: background 0.3s ease !important;
-	}
-
-	[data-theme='dark'] body::before {
-		background:
-			radial-gradient(
-				ellipse 90% 65% at 50% -15%,
-				rgba(68, 60, 50, 0.8),
-				rgba(48, 45, 42, 0.5) 35%,
-				transparent 70%
-			),
-			radial-gradient(
-				ellipse 110% 45% at 50% 115%,
-				rgba(120, 100, 60, 0.25),
-				rgba(80, 70, 40, 0.15) 50%,
-				transparent 75%
-			),
-			radial-gradient(
-				circle at -15% 35%,
-				rgba(252, 185, 0, 0.12),
-				rgba(252, 185, 0, 0.05) 35%,
-				transparent 55%
-			),
-			radial-gradient(
-				circle at 115% 65%,
-				rgba(252, 185, 0, 0.12),
-				rgba(252, 185, 0, 0.05) 35%,
-				transparent 55%
-			),
-			radial-gradient(
-				ellipse 70% 85% at 50% 50%,
-				rgba(38, 35, 32, 1),
-				rgba(28, 25, 23, 0.95) 60%,
-				transparent 85%
-			),
-			#1c1917 !important;
-	}
-
-	[data-theme='dark'] body::after {
-		background: linear-gradient(
-			to top,
-			rgba(15, 13, 11, 0.8) 0%,
-			rgba(20, 18, 16, 0.5) 30%,
-			transparent 100%
-		) !important;
-	}
-
 	/* Rounded design system — see design-theme.mdc */
 	.btn-primary {
 		@apply inline-flex items-center gap-2 rounded-full border-2 border-amber-500 bg-amber-400 px-8 py-4 text-base font-black tracking-wide text-stone-900 uppercase transition-all hover:bg-amber-500;
@@ -336,6 +342,48 @@
 		box-shadow:
 			0 12px 28px rgb(0 0 0 / 0.18),
 			0 0 0 1px rgb(var(--color-accent) / 0.12);
+		max-width: calc(100vw - 2rem);
+		width: max-content;
+	}
+
+	.media-option-popover__scroll {
+		position: relative;
+		max-width: 100%;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+		scrollbar-color: rgb(var(--color-accent) / 0.45) transparent;
+	}
+
+	.media-option-popover__scroll::-webkit-scrollbar {
+		height: 4px;
+	}
+
+	.media-option-popover__scroll::-webkit-scrollbar-thumb {
+		border-radius: 9999px;
+		background: rgb(var(--color-accent) / 0.45);
+	}
+
+	.media-option-popover__scroll-hint {
+		pointer-events: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 1.75rem;
+		border-radius: 9999px;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+		background: linear-gradient(
+			to left,
+			rgb(var(--color-surface-raised)) 0%,
+			rgb(var(--color-surface-raised) / 0) 100%
+		);
+	}
+
+	.media-option-popover__scroll.is-overflowing .media-option-popover__scroll-hint {
+		opacity: 1;
 	}
 
 	/* Loading placeholders — pulse matches vinyl/warm surfaces */

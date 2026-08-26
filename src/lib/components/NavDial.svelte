@@ -1,14 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { tick } from 'svelte';
 	import NavDialFace from './nav-dial/NavDialFace.svelte';
 	import {
 		buildNavItems,
 		centerDragBoost,
+		dialHasOpenedBefore,
 		DIAL_SNAP_MS,
+		getSavedDialRotation,
 		itemAnglesForCount,
+		markDialOpened,
 		nearestItemIndex,
 		nearestItemIndexWithHysteresis,
 		pointerAngle,
+		saveDialRotation,
+		shouldRestoreDialRotation,
 		snapRotationToIndex,
 		unwrapAngleDelta
 	} from './nav-dial/nav-dial';
@@ -23,6 +29,10 @@
 
 	let { user, pathname, instanceId = 'main', onNavigate }: Props = $props();
 
+	const restoringRotation = shouldRestoreDialRotation(instanceId);
+	const savedRotation = getSavedDialRotation(instanceId);
+	const initialItemAngles = itemAnglesForCount(buildNavItems(user).length);
+
 	const navItems = $derived(buildNavItems(user));
 	const activeIndex = $derived(
 		Math.max(
@@ -32,14 +42,20 @@
 	);
 
 	let dialRoot = $state<HTMLElement | null>(null);
-	let rotation = $state(0);
+	let rotation = $state(restoringRotation && savedRotation !== null ? savedRotation : 0);
+	let skipDialTransition = $state(restoringRotation);
+	let suppressInitialPathSnap = restoringRotation;
 	let dragging = $state(false);
 	let dragMoved = $state(false);
 	let animating = $state(false);
 	let targetNavIndex = $state<number | null>(null);
 	let pendingHref = $state<string | null>(null);
 	let pathAtNavigationStart = '';
-	let stickyPreviewIndex = $state(0);
+	let stickyPreviewIndex = $state(
+		restoringRotation && savedRotation !== null
+			? nearestItemIndex(initialItemAngles, savedRotation)
+			: 0
+	);
 	let lastPointerAngle = 0;
 	let rotationAtDragStart = 0;
 	let totalDragDelta = 0;
@@ -83,7 +99,29 @@
 			return;
 		}
 
+		if (suppressInitialPathSnap) {
+			suppressInitialPathSnap = false;
+			return;
+		}
+
 		if (!dragging && !animating) snapToPath(path);
+	});
+
+	$effect(() => {
+		saveDialRotation(instanceId, rotation);
+	});
+
+	$effect(() => {
+		if (!dialHasOpenedBefore(instanceId)) markDialOpened(instanceId);
+	});
+
+	$effect(() => {
+		if (!skipDialTransition) return;
+		void tick().then(() => {
+			requestAnimationFrame(() => {
+				skipDialTransition = false;
+			});
+		});
 	});
 
 	$effect(() => {
@@ -190,6 +228,7 @@
 			{previewIndex}
 			{dragging}
 			{animating}
+			skipTransition={skipDialTransition}
 			{onNodeClick}
 			{onCenterClick}
 		/>

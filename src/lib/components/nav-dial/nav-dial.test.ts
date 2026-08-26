@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
 	angularDistance,
+	dialHasOpenedBefore,
+	getSavedDialRotation,
 	itemAnglesForCount,
+	markDialOpened,
 	nearestItemIndex,
 	nearestItemIndexWithHysteresis,
 	normalizeAngle,
+	saveDialRotation,
+	shouldRestoreDialRotation,
 	snapRotationToIndex,
 	unwrapAngleDelta
 } from './nav-dial';
@@ -81,5 +86,23 @@ describe('snapRotationToIndex', () => {
 		expect(rotation).toBeGreaterThan(-180);
 		expect(rotation).toBeLessThanOrEqual(180);
 		expect(nearestItemIndex(angles, rotation)).toBe(7);
+	});
+});
+
+describe('dial rotation persistence', () => {
+	const instanceId = `test-${Date.now()}-${Math.random()}`;
+
+	it('restores rotation only after the dial has opened once', () => {
+		expect(dialHasOpenedBefore(instanceId)).toBe(false);
+		expect(getSavedDialRotation(instanceId)).toBeNull();
+		expect(shouldRestoreDialRotation(instanceId)).toBe(false);
+
+		markDialOpened(instanceId);
+		expect(dialHasOpenedBefore(instanceId)).toBe(true);
+		expect(shouldRestoreDialRotation(instanceId)).toBe(false);
+
+		saveDialRotation(instanceId, 135);
+		expect(getSavedDialRotation(instanceId)).toBe(135);
+		expect(shouldRestoreDialRotation(instanceId)).toBe(true);
 	});
 });

@@ -172,3 +172,43 @@ export function centerDragBoost(
 	const t = 1 - dist / threshold;
 	return 1 + (CENTER_BOOST_MAX - 1) * t;
 }
+
+type DialRotationEntry = {
+	rotation: number | null;
+	hasOpened: boolean;
+};
+
+/** Per-instance dial rotation survives mobile overlay unmount/remount. */
+const dialRotationByInstance = new Map<string, DialRotationEntry>();
+
+function dialRotationEntry(instanceId: string): DialRotationEntry {
+	let entry = dialRotationByInstance.get(instanceId);
+	if (!entry) {
+		entry = { rotation: null, hasOpened: false };
+		dialRotationByInstance.set(instanceId, entry);
+	}
+	return entry;
+}
+
+export function getSavedDialRotation(instanceId: string): number | null {
+	return dialRotationEntry(instanceId).rotation;
+}
+
+export function dialHasOpenedBefore(instanceId: string): boolean {
+	return dialRotationEntry(instanceId).hasOpened;
+}
+
+export function saveDialRotation(instanceId: string, rotation: number): void {
+	const entry = dialRotationEntry(instanceId);
+	entry.rotation = rotation;
+}
+
+export function markDialOpened(instanceId: string): void {
+	dialRotationEntry(instanceId).hasOpened = true;
+}
+
+/** True when remounting should restore rotation and skip the intro snap animation. */
+export function shouldRestoreDialRotation(instanceId: string): boolean {
+	const entry = dialRotationEntry(instanceId);
+	return entry.hasOpened && entry.rotation !== null;
+}

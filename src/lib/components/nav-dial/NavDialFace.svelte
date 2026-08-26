@@ -10,6 +10,7 @@
 		previewIndex: number;
 		dragging: boolean;
 		animating: boolean;
+		skipTransition?: boolean;
 		onNodeClick: (event: MouseEvent, index: number) => void;
 		onCenterClick: () => void;
 	}
@@ -23,6 +24,7 @@
 		previewIndex,
 		dragging,
 		animating,
+		skipTransition = false,
 		onNodeClick,
 		onCenterClick
 	}: Props = $props();
@@ -81,7 +83,11 @@
 	<span class="selector-line"></span>
 </div>
 
-<div class="dial-rotator" style="transform: rotate({rotation}deg)">
+<div
+	class="dial-rotator"
+	class:no-transition={skipTransition}
+	style="transform: rotate({rotation}deg)"
+>
 	{#each navItems as item, i (item.href)}
 		{@const Icon = item.icon}
 		{@const angle = itemAngles[i]}
@@ -196,6 +202,12 @@
 		z-index: 2;
 		transform-origin: var(--dial-r) var(--dial-r);
 		transition: transform var(--dial-snap-duration) var(--dial-snap-easing);
+	}
+
+	.dial-rotator.no-transition,
+	.dial-rotator.no-transition .dial-node-inner,
+	.dial-rotator.no-transition ~ .dial-center .dial-center-disc {
+		transition: none;
 	}
 
 	:global(.nav-dial.is-dragging) .dial-rotator,

@@ -50,10 +50,22 @@ export function addGenre(current: string[], raw: string): string[] {
 	return dedupeGenres([...current, normalized]);
 }
 
-export function itemMatchesGenreFilter(itemGenres: string[], selectedGenres: string[]): boolean {
+export type GenreFilterMode = 'all' | 'any';
+
+export const DEFAULT_GENRE_FILTER_MODE: GenreFilterMode = 'any';
+
+export function itemMatchesGenreFilter(
+	itemGenres: string[],
+	selectedGenres: string[],
+	mode: GenreFilterMode = DEFAULT_GENRE_FILTER_MODE
+): boolean {
 	if (selectedGenres.length === 0) return true;
 	const normalizedItem = itemGenres.map((g) => g.toLowerCase());
-	return selectedGenres.some((selected) => normalizedItem.includes(selected.toLowerCase()));
+	const matches = (selected: string) => normalizedItem.includes(selected.toLowerCase());
+	if (mode === 'all') {
+		return selectedGenres.every(matches);
+	}
+	return selectedGenres.some(matches);
 }
 
 export function collectUniqueGenres(

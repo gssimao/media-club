@@ -11,8 +11,10 @@
 	import { CATEGORY_PATHS, type Album, type MediaCategory, type MediaItem } from '$lib/types/media';
 	import {
 		collectUniqueGenres,
+		DEFAULT_GENRE_FILTER_MODE,
 		getDisplayGenres,
-		itemMatchesGenreFilter
+		itemMatchesGenreFilter,
+		type GenreFilterMode
 	} from '$lib/utils/movie-genres';
 	import { FolderPlus, Heart, Plus } from 'phosphor-svelte';
 
@@ -48,6 +50,7 @@
 	let showFolderDialog = $state(false);
 	let selectedFormats = $state<string[]>([]);
 	let selectedGenres = $state<string[]>([]);
+	let genreFilterMode = $state<GenreFilterMode>(DEFAULT_GENRE_FILTER_MODE);
 
 	const genreOptions = $derived(category === 'movie' ? collectUniqueGenres(allItems) : []);
 
@@ -80,7 +83,7 @@
 
 		if (category === 'movie' && selectedGenres.length > 0) {
 			filtered = filtered.filter((item) =>
-				itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres)
+				itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres, genreFilterMode)
 			);
 		}
 
@@ -91,8 +94,9 @@
 		selectedFormats = formats;
 	}
 
-	function handleGenreFilterChange(genres: string[]) {
+	function handleGenreFilterChange(genres: string[], mode: GenreFilterMode) {
 		selectedGenres = genres;
+		genreFilterMode = mode;
 	}
 </script>
 
@@ -114,6 +118,7 @@
 			<GenreFilter
 				options={genreOptions}
 				bind:selectedGenres
+				bind:genreFilterMode
 				onFilterChange={handleGenreFilterChange}
 			/>
 		{/if}
