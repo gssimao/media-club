@@ -39,7 +39,7 @@ npx wrangler secret put TMDB_API_KEY
 npx wrangler secret put DISCOGS_TOKEN
 ```
 
-Optional — redirect `/` away from the welcome page (not a secret):
+Optional: redirect `/` away from the welcome page (not a secret):
 
 ```bash
 npx wrangler secret put DEFAULT_ROUTE

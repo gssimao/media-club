@@ -14,7 +14,7 @@
 <div class="page-shell">
 	<aside class="page-shell__control" aria-label="Page control center">
 		<div class="page-shell__now-playing">
-			<p class="page-shell__kicker">Now playing <span aria-hidden="true">—</span></p>
+			<p class="page-shell__kicker">Now playing:</p>
 			<h1 class="page-shell__title">{title}</h1>
 			{#if description}
 				<p class="page-shell__description">{description}</p>

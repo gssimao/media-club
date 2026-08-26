@@ -74,7 +74,7 @@
 						{loadingPhrase}
 					</h2>
 					<p class="text-sm font-medium text-[rgb(var(--color-text-secondary))]">
-						One moment — your movie is coming up.
+						One moment, your movie is coming up.
 					</p>
 				</div>
 			{:else if item}

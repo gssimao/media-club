@@ -49,7 +49,7 @@
 		{/each}
 	</div>
 
-	<p class="hint">Live signal from the collection — not a knob, just bragging rights.</p>
+	<p class="hint">Live signal from the collection (not a knob, just bragging rights).</p>
 </section>
 
 <style>

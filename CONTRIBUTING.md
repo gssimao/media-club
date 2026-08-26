@@ -45,7 +45,7 @@ npm test
 ## Pull requests
 
 1. Fork the repo and create a feature branch from `main`
-2. Keep changes focused — one feature or fix per PR
+2. Keep changes focused: one feature or fix per PR
 3. Update docs if you change setup, env vars, or architecture
 4. Describe how you tested (local dev, Docker, or Cloudflare if relevant)
 
@@ -57,15 +57,15 @@ Please include:
 - Node.js version (`node -v`)
 - Steps to reproduce
 - Expected vs actual behavior
-- Relevant logs (**redact secrets** — never paste API keys or passwords)
+- Relevant logs (**redact secrets**: never paste API keys or passwords)
 
 ## Project goals
 
 Media Club should stay:
 
-- **Simple** — title lists, not a full media server
-- **Easy to self-host** — minimal moving parts, clear docs
-- **Safe by default** — public read, authenticated write
+- **Simple**: title lists, not a full media server
+- **Easy to self-host**: minimal moving parts, clear docs
+- **Safe by default**: public read, authenticated write
 
 Avoid scope creep into streaming, file storage, or multi-user accounts unless discussed in an issue first.
 

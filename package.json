@@ -1,6 +1,6 @@
 {
 	"name": "media-club",
-	"description": "Self-hosted catalog for movies, vinyl, and books — browse publicly, admin-only writes.",
+	"description": "Self-hosted catalog for movies, vinyl, and books. Browse publicly, admin-only writes.",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",

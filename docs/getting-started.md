@@ -12,8 +12,8 @@ This guide walks you from a fresh clone (or fork) to a running Media Club instan
 
 Optional for production:
 
-- **Docker** — see [setup-docker.md](setup-docker.md)
-- **Cloudflare account** — see [setup-cloudflare.md](setup-cloudflare.md)
+- **Docker**: see [setup-docker.md](setup-docker.md)
+- **Cloudflare account**: see [setup-cloudflare.md](setup-cloudflare.md)
 
 ## 1. Get the code
 
@@ -48,8 +48,8 @@ ADMIN_PASSWORD=changeme   # change before any real deployment
 
 Load API keys when you want admin search to work (see [api-keys.md](api-keys.md)):
 
-- `TMDB_API_KEY` — movies
-- `DISCOGS_TOKEN` — vinyl / music
+- `TMDB_API_KEY`: movies
+- `DISCOGS_TOKEN`: vinyl / music
 - Books use Open Library and need **no key**
 
 Browse-only mode works without API keys; you just cannot search for new titles in admin until keys are set.
@@ -64,9 +64,9 @@ npm run db:seed
 
 What this does:
 
-- **`npm install`** — installs dependencies and sets up git hooks (lint + typecheck on commit)
-- **`db:migrate`** — creates `./data/media-club.db` and applies schema migrations
-- **`db:seed`** — creates the admin user (if missing) and a few demo catalog items
+- **`npm install`**: installs dependencies and sets up git hooks (lint + typecheck on commit)
+- **`db:migrate`**: creates `./data/media-club.db` and applies schema migrations
+- **`db:seed`**: creates the admin user (if missing) and a few demo catalog items
 
 ## 4. Run the dev server
 
@@ -107,7 +107,7 @@ Always set a strong `ADMIN_PASSWORD` before deploying.
 | `Cannot find module` after pull    | Dependencies out of date                                 | `npm install`                                                                 |
 | Login fails                        | Wrong password or admin already seeded with old password | Reset DB: `rm -f data/media-club.db && npm run db:migrate && npm run db:seed` |
 | Movie/music search empty           | Missing API keys                                         | Add keys to `.env` and restart the dev server                                 |
-| Port 5173 in use                   | Another Vite app running                                 | Vite picks the next free port — read the terminal URL                         |
+| Port 5173 in use                   | Another Vite app running                                 | Vite picks the next free port; read the terminal URL                          |
 | `ADMIN_PASSWORD` required (Docker) | Compose enforces a real password                         | Set `ADMIN_PASSWORD` in `.env` next to `docker-compose.yml`                   |
 
 ## Development commands

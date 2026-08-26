@@ -72,7 +72,7 @@ const MOCK_ITEMS: MockItem[] = [
 		year: 1999,
 		coverUrl: 'https://image.tmdb.org/t/p/w342/pB8BM7pd15eBHgkQ5P/mk3m65IVh.jpg',
 		metadata: { tmdbId: 550, tags: ['Blu-ray'] },
-		notes: 'Ungrouped — lives on the main Movies shelf.'
+		notes: 'Ungrouped, lives on the main Movies shelf.'
 	},
 	// —— Movies (owned) ——
 	{
@@ -464,7 +464,7 @@ const MOCK_ALBUMS: MockAlbum[] = [
 	{
 		category: 'movie',
 		title: 'Sci-Fi Marathon',
-		description: 'Space, time, and existential dread — pick one tonight.',
+		description: 'Space, time, and existential dread: pick one tonight.',
 		sortOrder: 0,
 		itemExternalIds: ['78', '348', '62', '157336', '329865', '438631', '27205', '603'],
 		watchedExternalIds: ['348', '329865']

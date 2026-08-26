@@ -11,7 +11,7 @@ export const IMPORT_JSON_EXAMPLE = `{
   "music": [
     {
       "externalId": "12345",
-      "title": "Artist — Album Title",
+      "title": "Artist: Album Title",
       "year": 1973
     }
   ],

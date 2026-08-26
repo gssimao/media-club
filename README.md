@@ -4,7 +4,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-Free, self-hosted catalog for **movies**, **TV shows**, **vinyl records**, and **books** — with separate owned lists and wishlists.
+Free, self-hosted catalog for **movies**, **TV shows**, **vinyl records**, and **books**, with separate owned lists and wishlists.
 
 Fork it, run it on your machine, or deploy to Cloudflare or Docker. Public visitors browse the catalog; only the admin can add, edit, or remove items.
 
@@ -41,7 +41,7 @@ Open [http://localhost:5173](http://localhost:5173). Default admin login (change
 - Username: `admin`
 - Password: `changeme`
 
-**Full walkthrough:** [docs/getting-started.md](docs/getting-started.md) — fork setup, env vars, troubleshooting, and first steps.
+**Full walkthrough:** [docs/getting-started.md](docs/getting-started.md) (fork setup, env vars, troubleshooting, and first steps).
 
 ## Deployment
 
@@ -97,4 +97,4 @@ Bug reports, docs improvements, and pull requests are welcome. See [CONTRIBUTING
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

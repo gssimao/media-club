@@ -19,7 +19,7 @@
 
 <PageShell
 	title="Streaming lists"
-	description="Separate movie queues for random picks — not part of your owned collection. Reachable only from Admin."
+	description="Separate movie queues for random picks, not part of your owned collection. Reachable only from Admin."
 >
 	{#snippet controls()}
 		<NavLink href="/admin" variant="accent">← Back to admin</NavLink>

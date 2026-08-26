@@ -56,7 +56,7 @@
 			rel="noopener noreferrer"
 			class="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] transition-colors hover:border-sky-500"
 			title="{provider.name} on TMDB"
-			aria-label="{provider.name} — view on TMDB"
+			aria-label="{provider.name}, view on TMDB"
 		>
 			{#if provider.logoUrl}
 				<img
@@ -178,7 +178,7 @@
 								rel="noopener noreferrer"
 								class="inline-flex size-10 items-center justify-center overflow-hidden rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] transition-colors hover:border-sky-500"
 								title="{provider.name} on TMDB"
-								aria-label="{provider.name} — view on TMDB"
+								aria-label="{provider.name}, view on TMDB"
 							>
 								{#if provider.logoUrl}
 									<img

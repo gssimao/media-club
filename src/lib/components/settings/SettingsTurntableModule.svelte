@@ -30,7 +30,7 @@
 				type="button"
 				class="knob"
 				onclick={cycleRpm}
-				aria-label="Disc speed {settings.discRpm} RPM — activate to cycle"
+				aria-label="Disc speed {settings.discRpm} RPM, activate to cycle"
 			>
 				<span class="knob-face" style:transform="rotate({knobAngle}deg)">
 					<span class="knob-needle" aria-hidden="true"></span>

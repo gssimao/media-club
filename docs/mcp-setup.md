@@ -116,16 +116,16 @@ Open the inspector UI and connect to `http://localhost:5173/mcp` with the Bearer
 | Parameter    | Default | Meaning                          |
 | ------------ | ------- | -------------------------------- |
 | `ungrouped`  | `true`  | Only items not in a collection   |
-| `albumId`    | —       | Items in a specific collection   |
+| `albumId`    | (none)  | Items in a specific collection   |
 | `includeAll` | `false` | All items, grouped and ungrouped |
 
 ## Recommended workflow
 
-1. **Search first** — `search_media` with category + query
-2. **Confirm with user** — pick the correct match from results
-3. **Add** — `add_media_item` or `add_to_wishlist` with fields from the search result
-4. **Organize** — `create_album` then `assign_to_album`
-5. **Annotate** — `update_media_notes` for condition, edition, etc.
+1. **Search first**: `search_media` with category + query
+2. **Confirm with user**: pick the correct match from results
+3. **Add**: `add_media_item` or `add_to_wishlist` with fields from the search result
+4. **Organize**: `create_album` then `assign_to_album`
+5. **Annotate**: `update_media_notes` for condition, edition, etc.
 
 ## Example prompts
 
@@ -137,9 +137,9 @@ Open the inspector UI and connect to `http://localhost:5173/mcp` with the Bearer
 
 ## Terminology
 
-- **Owned** — items you have (`listType: owned`)
-- **Wishlist** — items you want (`listType: wishlist`)
-- **Collection** — user-defined grouping within a category (Marvel movies, 90s jazz, etc.)
+- **Owned**: items you have (`listType: owned`)
+- **Wishlist**: items you want (`listType: wishlist`)
+- **Collection**: user-defined grouping within a category (Marvel movies, 90s jazz, etc.)
 
 ## Security notes
 

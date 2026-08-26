@@ -105,7 +105,7 @@ export function parseImportPayload(rawJson: string): ImportItemInput[] {
 	try {
 		data = JSON.parse(trimmed) as unknown;
 	} catch {
-		throw new Error('Invalid JSON — check commas, quotes, and brackets.');
+		throw new Error('Invalid JSON: check commas, quotes, and brackets.');
 	}
 
 	if (!data || typeof data !== 'object' || Array.isArray(data)) {
