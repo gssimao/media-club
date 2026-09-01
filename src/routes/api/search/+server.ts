@@ -28,6 +28,7 @@ export const GET: RequestHandler = async (event) => {
 	const query = event.url.searchParams.get('q')?.trim() ?? '';
 	const page = parsePageParam(event.url.searchParams.get('page'));
 	const streamingListId = event.url.searchParams.get('streamingListId')?.trim() || undefined;
+	const showTracker = event.url.searchParams.get('showTracker') === '1';
 
 	if (!isMediaCategory(category) || query.length < 2) {
 		return json({ results: [], page: 1, hasMore: false });
@@ -75,7 +76,7 @@ export const GET: RequestHandler = async (event) => {
 		event.locals.db,
 		category,
 		results.map((result) => result.externalId),
-		streamingListId ? { streamingListId } : undefined
+		streamingListId ? { streamingListId } : showTracker ? { showTracker: true } : undefined
 	);
 
 	return json({

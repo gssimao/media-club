@@ -27,6 +27,10 @@ export function getCatalogSkeletonConfig(
 		};
 	}
 
+	if (segments[0] === 'shows' && segments[1] === 'watching') {
+		return { title: 'Show tracker', showShelf: false, variant: 'wishlist' };
+	}
+
 	if (segments[0] === 'wishlist' && segments.length === 2) {
 		return { title: 'Wishlist', showShelf: false, variant: 'wishlist' };
 	}

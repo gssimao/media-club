@@ -2,6 +2,7 @@
 	import GenrePickerDialog from './GenrePickerDialog.svelte';
 	import { getDisplayGenres } from '$lib/utils/movie-genres';
 	import type { MediaItem } from '$lib/types/media';
+	import type { TmdbGenreCategory } from '$lib/utils/movie-genres';
 	import { Tag } from 'phosphor-svelte';
 
 	interface Props {
@@ -11,6 +12,7 @@
 		/** Sky tint for streaming cards; amber for catalog movies. */
 		variant?: 'sky' | 'amber';
 		catalogItems?: { metadata: Record<string, unknown> | null }[];
+		category?: TmdbGenreCategory;
 		deleteCustomGenreAction?: string;
 	}
 
@@ -20,6 +22,7 @@
 		isAdmin,
 		variant = 'amber',
 		catalogItems = [],
+		category = 'movie',
 		deleteCustomGenreAction
 	}: Props = $props();
 
@@ -102,6 +105,7 @@
 		{action}
 		{variant}
 		{catalogItems}
+		{category}
 		{deleteCustomGenreAction}
 		onClose={() => (showPicker = false)}
 	/>

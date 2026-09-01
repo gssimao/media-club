@@ -9,7 +9,8 @@
 		isTmdbGenreName,
 		MAX_GENRE_LENGTH,
 		normalizeGenreName,
-		toggleGenreSelection
+		toggleGenreSelection,
+		type TmdbGenreCategory
 	} from '$lib/utils/movie-genres';
 	import type { MediaItem } from '$lib/types/media';
 	import { Plus, Tag, Trash, X } from 'phosphor-svelte';
@@ -21,6 +22,7 @@
 		deleteCustomGenreAction?: string;
 		variant?: 'sky' | 'amber';
 		catalogItems?: { metadata: Record<string, unknown> | null }[];
+		category?: TmdbGenreCategory;
 		onClose: () => void;
 	}
 
@@ -30,6 +32,7 @@
 		deleteCustomGenreAction = '/admin/items?/deleteCustomGenre',
 		variant = 'amber',
 		catalogItems = [],
+		category = 'movie',
 		onClose
 	}: Props = $props();
 
@@ -39,10 +42,10 @@
 	let genreToDelete = $state<string | null>(null);
 	let deleteForm: HTMLFormElement | undefined = $state();
 
-	const catalog = $derived(buildGenreCatalog(catalogItems));
+	const catalog = $derived(buildGenreCatalog(catalogItems, category));
 	const customGenres = $derived(
 		dedupeGenres([...catalog.customGenres, ...pendingCustomGenres]).filter(
-			(genre) => !isTmdbGenreName(genre)
+			(genre) => !isTmdbGenreName(genre, category)
 		)
 	);
 

@@ -109,21 +109,31 @@ describe('isTmdbGenreName', () => {
 	it('recognizes official TMDB genre names case-insensitively', () => {
 		expect(isTmdbGenreName('Action')).toBe(true);
 		expect(isTmdbGenreName('science fiction')).toBe(true);
+		expect(isTmdbGenreName('Sci-Fi & Fantasy', 'show')).toBe(true);
+		expect(isTmdbGenreName('Sci-Fi & Fantasy', 'movie')).toBe(false);
 		expect(isTmdbGenreName('Kaiju')).toBe(false);
 	});
 });
 
 describe('buildGenreCatalog', () => {
-	it('splits custom, catalog TMDB, and classic TMDB genres', () => {
-		const catalog = buildGenreCatalog([
-			{ metadata: { genres: ['Action', 'Kaiju'] } },
-			{ metadata: { genres: ['Drama'] } }
-		]);
+	it('splits custom, catalog TMDB, and classic TMDB genres for movies', () => {
+		const catalog = buildGenreCatalog(
+			[{ metadata: { genres: ['Action', 'Kaiju'] } }, { metadata: { genres: ['Drama'] } }],
+			'movie'
+		);
 
 		expect(catalog.customGenres).toEqual(['Kaiju']);
 		expect(catalog.catalogTmdbGenres).toEqual(['Action', 'Drama']);
 		expect(catalog.classicTmdbGenres).not.toContain('Action');
 		expect(catalog.classicTmdbGenres).toContain('Comedy');
+	});
+
+	it('uses TV classic genres for show catalogs', () => {
+		const catalog = buildGenreCatalog([{ metadata: { genres: ['Drama'] } }], 'show');
+
+		expect(catalog.catalogTmdbGenres).toEqual(['Drama']);
+		expect(catalog.classicTmdbGenres).toContain('Sci-Fi & Fantasy');
+		expect(catalog.classicTmdbGenres).not.toContain('Science Fiction');
 	});
 });
 

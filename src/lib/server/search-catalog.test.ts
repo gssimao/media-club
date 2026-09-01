@@ -7,6 +7,7 @@ import * as schema from '$lib/server/db/schema';
 import type { AppDatabase } from '$lib/server/db';
 import { addItem } from '$lib/server/items';
 import { addStreamingListItem, createStreamingList } from '$lib/server/streaming-lists';
+import { addShowTrackerItem } from '$lib/server/show-tracker';
 import { attachCatalogStatus, getCatalogStatusForExternalIds } from '$lib/server/search-catalog';
 
 describe('search catalog status', () => {
@@ -63,6 +64,27 @@ describe('search catalog status', () => {
 
 		expect(status['550']?.onStreamingList).toBe(true);
 		expect(status['551']?.onStreamingList).toBe(false);
+	});
+
+	it('includes onShowTracker when show tracker lookup is requested', async () => {
+		await addShowTrackerItem(
+			db,
+			{
+				externalId: '1399',
+				title: 'Game of Thrones',
+				subtitle: null,
+				year: 2011,
+				coverUrl: null
+			},
+			'watching'
+		);
+
+		const status = await getCatalogStatusForExternalIds(db, 'show', ['1399', '1400'], {
+			showTracker: true
+		});
+
+		expect(status['1399']?.onShowTracker).toBe(true);
+		expect(status['1400']?.onShowTracker).toBe(false);
 	});
 
 	it('attaches catalog status to search results', () => {

@@ -131,7 +131,7 @@
 				<div class={gridClass}>
 					{#each filteredItems as item (item.id)}
 						<div class="flex h-full min-w-0 flex-col">
-							{#if category === 'movie'}
+							{#if category === 'movie' || category === 'show'}
 								<MovieCard
 									{item}
 									{isAdmin}

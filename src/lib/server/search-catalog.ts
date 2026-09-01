@@ -1,6 +1,6 @@
 import { and, eq, inArray } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
-import { items, streamingListItems } from '$lib/server/db/schema';
+import { items, showTrackerItems, streamingListItems } from '$lib/server/db/schema';
 import type { CatalogStatus, MediaCategory } from '$lib/types/media';
 
 const EMPTY_STATUS: CatalogStatus = { owned: false, wishlist: false };
@@ -9,13 +9,13 @@ export async function getCatalogStatusForExternalIds(
 	db: AppDatabase,
 	category: MediaCategory,
 	externalIds: string[],
-	options?: { streamingListId?: string }
+	options?: { streamingListId?: string; showTracker?: boolean }
 ): Promise<Record<string, CatalogStatus>> {
 	if (externalIds.length === 0) return {};
 
 	const uniqueIds = [...new Set(externalIds)];
 
-	const [ownedRows, wishlistRows, streamingRows] = await Promise.all([
+	const [ownedRows, wishlistRows, streamingRows, trackerRows] = await Promise.all([
 		db
 			.select({ externalId: items.externalId })
 			.from(items)
@@ -46,19 +46,27 @@ export async function getCatalogStatusForExternalIds(
 							inArray(streamingListItems.externalId, uniqueIds)
 						)
 					)
+			: Promise.resolve([]),
+		options?.showTracker
+			? db
+					.select({ externalId: showTrackerItems.externalId })
+					.from(showTrackerItems)
+					.where(inArray(showTrackerItems.externalId, uniqueIds))
 			: Promise.resolve([])
 	]);
 
 	const ownedSet = new Set(ownedRows.map((row) => row.externalId));
 	const wishlistSet = new Set(wishlistRows.map((row) => row.externalId));
 	const streamingSet = new Set(streamingRows.map((row) => row.externalId));
+	const trackerSet = new Set(trackerRows.map((row) => row.externalId));
 
 	const result: Record<string, CatalogStatus> = {};
 	for (const externalId of uniqueIds) {
 		result[externalId] = {
 			owned: ownedSet.has(externalId),
 			wishlist: wishlistSet.has(externalId),
-			...(options?.streamingListId ? { onStreamingList: streamingSet.has(externalId) } : {})
+			...(options?.streamingListId ? { onStreamingList: streamingSet.has(externalId) } : {}),
+			...(options?.showTracker ? { onShowTracker: trackerSet.has(externalId) } : {})
 		};
 	}
 

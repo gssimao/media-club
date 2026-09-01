@@ -12,6 +12,11 @@ export function getSearchFilterLabels(context: SearchPanelContext): {
 				hideOwned: 'Hide items in my collection',
 				hideOnList: 'Hide items already on this list'
 			};
+		case 'show-tracker':
+			return {
+				hideOwned: 'Hide items in my collection',
+				hideOnList: 'Hide items already on tracker'
+			};
 		case 'wishlist':
 			return {
 				hideOwned: 'Hide items in my collection',
@@ -29,6 +34,8 @@ export function isOnContextList(status: CatalogStatus, context: SearchPanelConte
 	switch (context) {
 		case 'streaming':
 			return status.onStreamingList === true;
+		case 'show-tracker':
+			return status.onShowTracker === true;
 		case 'wishlist':
 			return status.wishlist;
 		default:
@@ -54,7 +61,8 @@ export function mergeCatalogStatus(
 	return {
 		owned: local?.owned ?? base?.owned ?? false,
 		wishlist: local?.wishlist ?? base?.wishlist ?? false,
-		onStreamingList: local?.onStreamingList ?? base?.onStreamingList
+		onStreamingList: local?.onStreamingList ?? base?.onStreamingList,
+		onShowTracker: local?.onShowTracker ?? base?.onShowTracker
 	};
 }
 
@@ -87,7 +95,7 @@ export function filterSearchResults(
 export function buildSearchUrl(
 	category: string,
 	query: string,
-	options?: { streamingListId?: string; page?: number }
+	options?: { streamingListId?: string; showTracker?: boolean; page?: number }
 ): string {
 	const params = new URLSearchParams({
 		category,
@@ -95,6 +103,9 @@ export function buildSearchUrl(
 	});
 	if (options?.streamingListId) {
 		params.set('streamingListId', options.streamingListId);
+	}
+	if (options?.showTracker) {
+		params.set('showTracker', '1');
 	}
 	if (options?.page && options.page > 1) {
 		params.set('page', String(options.page));

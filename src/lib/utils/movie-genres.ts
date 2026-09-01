@@ -132,10 +132,45 @@ export const TMDB_MOVIE_GENRE_NAMES = [
 	'Western'
 ] as const;
 
-const TMDB_GENRE_LOOKUP = new Set(TMDB_MOVIE_GENRE_NAMES.map((genre) => genre.toLowerCase()));
+/** Official TMDB TV genre names (English). */
+export const TMDB_TV_GENRE_NAMES = [
+	'Action & Adventure',
+	'Animation',
+	'Comedy',
+	'Crime',
+	'Documentary',
+	'Drama',
+	'Family',
+	'Kids',
+	'Mystery',
+	'News',
+	'Reality',
+	'Sci-Fi & Fantasy',
+	'Soap',
+	'Talk',
+	'War & Politics',
+	'Western'
+] as const;
 
-export function isTmdbGenreName(name: string): boolean {
-	return TMDB_GENRE_LOOKUP.has(name.trim().toLowerCase());
+export type TmdbGenreCategory = 'movie' | 'show';
+
+const TMDB_MOVIE_GENRE_LOOKUP = new Set(TMDB_MOVIE_GENRE_NAMES.map((genre) => genre.toLowerCase()));
+const TMDB_TV_GENRE_LOOKUP = new Set(TMDB_TV_GENRE_NAMES.map((genre) => genre.toLowerCase()));
+const TMDB_GENRE_LOOKUP = new Set([...TMDB_MOVIE_GENRE_LOOKUP, ...TMDB_TV_GENRE_LOOKUP]);
+
+export function getClassicTmdbGenreNames(category: TmdbGenreCategory): readonly string[] {
+	return category === 'show' ? TMDB_TV_GENRE_NAMES : TMDB_MOVIE_GENRE_NAMES;
+}
+
+export function isTmdbGenreName(name: string, category?: TmdbGenreCategory): boolean {
+	const key = name.trim().toLowerCase();
+	if (category === 'movie') return TMDB_MOVIE_GENRE_LOOKUP.has(key);
+	if (category === 'show') return TMDB_TV_GENRE_LOOKUP.has(key);
+	return TMDB_GENRE_LOOKUP.has(key);
+}
+
+export function categorySupportsGenres(category: string): category is TmdbGenreCategory {
+	return category === 'movie' || category === 'show';
 }
 
 export interface GenreCatalog {
@@ -146,13 +181,14 @@ export interface GenreCatalog {
 
 /** Split catalog genres into custom, in-use TMDB, and unused TMDB picks. */
 export function buildGenreCatalog(
-	catalogItems: { metadata: Record<string, unknown> | null }[]
+	catalogItems: { metadata: Record<string, unknown> | null }[],
+	category: TmdbGenreCategory = 'movie'
 ): GenreCatalog {
 	const allGenres = collectUniqueGenres(catalogItems);
-	const customGenres = allGenres.filter((genre) => !isTmdbGenreName(genre));
-	const catalogTmdbGenres = allGenres.filter((genre) => isTmdbGenreName(genre));
+	const customGenres = allGenres.filter((genre) => !isTmdbGenreName(genre, category));
+	const catalogTmdbGenres = allGenres.filter((genre) => isTmdbGenreName(genre, category));
 	const catalogTmdbKeys = new Set(catalogTmdbGenres.map((genre) => genre.toLowerCase()));
-	const classicTmdbGenres = TMDB_MOVIE_GENRE_NAMES.filter(
+	const classicTmdbGenres = getClassicTmdbGenreNames(category).filter(
 		(genre) => !catalogTmdbKeys.has(genre.toLowerCase())
 	);
 

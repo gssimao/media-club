@@ -2,6 +2,7 @@ import type { AlbumAccentColor } from '$lib/theme/album-colors';
 
 export type MediaCategory = 'movie' | 'show' | 'music' | 'book';
 export type ListType = 'owned' | 'wishlist';
+export type ShowTrackStatus = 'watching' | 'upcoming';
 
 export type { AlbumAccentColor };
 
@@ -39,6 +40,7 @@ export interface CatalogStatus {
 	owned: boolean;
 	wishlist: boolean;
 	onStreamingList?: boolean;
+	onShowTracker?: boolean;
 }
 
 export interface SearchResult {
@@ -59,7 +61,7 @@ export interface SearchApiResponse {
 }
 
 /** Where search is shown — drives filter toggle labels and hide-on-list semantics. */
-export type SearchPanelContext = 'admin' | 'wishlist' | 'owned-add' | 'streaming';
+export type SearchPanelContext = 'admin' | 'wishlist' | 'owned-add' | 'streaming' | 'show-tracker';
 
 /** URL path segment for each category (e.g. /movies, /music, /books). */
 export const CATEGORY_PATHS: Record<MediaCategory, string> = {

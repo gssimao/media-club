@@ -1,4 +1,4 @@
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, isNull, or } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { albums, items, streamingListItems } from '$lib/server/db/schema';
 import { isFormatLikeNote } from '$lib/utils/format-tags';
@@ -322,7 +322,7 @@ function parseGenresFromRow(metadataJson: string | null): string[] {
 	}
 }
 
-/** Removes a custom genre from every movie item and streaming list entry. */
+/** Removes a custom genre from every movie/show item and streaming list entry. */
 export async function removeCustomGenreFromAll(
 	db: AppDatabase,
 	genreName: string
@@ -333,9 +333,12 @@ export async function removeCustomGenreFromAll(
 	}
 
 	let updatedItems = 0;
-	const movieRows = await db.select().from(items).where(eq(items.category, 'movie'));
+	const genreItemRows = await db
+		.select()
+		.from(items)
+		.where(or(eq(items.category, 'movie'), eq(items.category, 'show')));
 
-	for (const row of movieRows) {
+	for (const row of genreItemRows) {
 		const genres = parseGenresFromRow(row.metadata);
 		if (!genres.some((genre) => genre.toLowerCase() === normalized.toLowerCase())) continue;
 

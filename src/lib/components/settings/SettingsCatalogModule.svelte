@@ -8,10 +8,10 @@
 
 	interface Props {
 		isAdmin: boolean;
-		movieCount: number;
+		tmdbCatalogCount: number;
 	}
 
-	let { isAdmin, movieCount }: Props = $props();
+	let { isAdmin, tmdbCatalogCount }: Props = $props();
 
 	let dialogOpen = $state(false);
 	let syncing = $state(false);
@@ -54,14 +54,14 @@
 					TMDB genres
 				</p>
 				<p class="catalog-text">
-					Pull fresh genre tags from TMDB for every movie in your catalog ({movieCount} total). Movies
-					without a TMDB ID are skipped.
+					Pull fresh genre tags from TMDB for every movie and show in your catalog ({tmdbCatalogCount}
+					total). Items without a TMDB ID are skipped.
 				</p>
 			</div>
 			<button
 				type="button"
 				class="control-pill control-pill--secondary sync-btn"
-				disabled={movieCount === 0 || syncing}
+				disabled={tmdbCatalogCount === 0 || syncing}
 				onclick={openDialog}
 			>
 				Sync TMDB genres
@@ -105,8 +105,8 @@
 						Sync TMDB genres?
 					</h2>
 					<p class="mt-2 text-sm leading-snug font-medium text-[rgb(var(--color-text-secondary))]">
-						This will update genres on every movie in your catalog (owned and wishlist). Movies
-						without a TMDB ID are skipped.
+						This will update genres on every movie and show in your catalog (owned and wishlist).
+						Items without a TMDB ID are skipped.
 					</p>
 				</div>
 				<button
@@ -187,7 +187,7 @@
 				const updated = data.updated ?? 0;
 				const skipped = data.skipped ?? 0;
 				const failed = data.failed ?? 0;
-				let message = `Updated genres on ${updated} movie${updated === 1 ? '' : 's'}`;
+				let message = `Updated genres on ${updated} item${updated === 1 ? '' : 's'}`;
 				if (skipped > 0) {
 					message += `, skipped ${skipped}`;
 				}

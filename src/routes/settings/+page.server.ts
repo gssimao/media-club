@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { requireAdmin } from '$lib/server/admin';
 import { getItemCounts } from '$lib/server/items';
 import { requireSecret } from '$lib/server/env';
-import { syncTmdbGenresForMovies } from '$lib/server/sync-tmdb-genres';
+import { syncTmdbGenres } from '$lib/server/sync-tmdb-genres';
 import { CATEGORY_LABELS, type MediaCategory } from '$lib/types/media';
 import type { TmdbGenreSyncMode } from '$lib/utils/movie-genres';
 import type { Actions, PageServerLoad } from './$types';
@@ -20,7 +20,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		summary,
 		isAdmin: Boolean(locals.user),
-		movieCount: (counts['movie:owned'] ?? 0) + (counts['movie:wishlist'] ?? 0)
+		tmdbCatalogCount:
+			(counts['movie:owned'] ?? 0) +
+			(counts['movie:wishlist'] ?? 0) +
+			(counts['show:owned'] ?? 0) +
+			(counts['show:wishlist'] ?? 0)
 	};
 };
 
@@ -47,7 +51,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			return await syncTmdbGenresForMovies(event.locals.db, apiKey, mode);
+			return await syncTmdbGenres(event.locals.db, apiKey, mode);
 		} catch (error) {
 			return fail(500, {
 				message: error instanceof Error ? error.message : 'Could not sync TMDB genres.'

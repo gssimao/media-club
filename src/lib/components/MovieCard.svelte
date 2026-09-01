@@ -43,9 +43,18 @@
 	const hasDVD = $derived(displayTags.some((tag) => tag === 'DVD'));
 	const hasBluray = $derived(displayTags.some((tag) => tag === 'Blu-ray'));
 	const has4K = $derived(displayTags.some((tag) => tag === '4K'));
+	const hasStreaming = $derived(displayTags.some((tag) => tag === 'Streaming'));
+	const hasDigital = $derived(displayTags.some((tag) => tag === 'Digital'));
 
-	// Show only the highest quality format (4K > Blu-ray > DVD)
+	// Highest-priority format strip: movies (4K > Blu-ray > DVD), shows (Streaming > Digital > Blu-ray > DVD)
 	const topFormat = $derived.by(() => {
+		if (item.category === 'show') {
+			if (hasStreaming) return 'Streaming';
+			if (hasDigital) return 'Digital';
+			if (hasBluray) return 'Blu-ray';
+			if (hasDVD) return 'DVD';
+			return null;
+		}
 		if (has4K) return '4K';
 		if (hasBluray) return 'Blu-ray';
 		if (hasDVD) return 'DVD';
@@ -109,6 +118,18 @@
 						class="bg-gradient-to-r from-black to-stone-900 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
 					>
 						4K Ultra HD
+					</div>
+				{:else if topFormat === 'Streaming'}
+					<div
+						class="bg-gradient-to-r from-violet-600 to-violet-500 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+					>
+						Streaming
+					</div>
+				{:else if topFormat === 'Digital'}
+					<div
+						class="bg-gradient-to-r from-stone-700 to-stone-600 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+					>
+						Digital
 					</div>
 				{:else if topFormat === 'Blu-ray'}
 					<div
@@ -223,6 +244,7 @@
 			{item}
 			action="/admin/items?/updateGenres"
 			{isAdmin}
+			category={item.category === 'show' ? 'show' : 'movie'}
 			catalogItems={genreCatalogItems}
 		/>
 

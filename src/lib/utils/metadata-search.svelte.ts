@@ -6,6 +6,7 @@ import { appendUniqueSearchResults, buildSearchUrl } from '$lib/utils/search-fil
 export interface MetadataSearchOptions {
 	category: MediaCategory;
 	streamingListId?: string;
+	showTracker?: boolean;
 }
 
 /** Normalize API payloads so callers always get a consistent paginated shape. */
@@ -59,7 +60,7 @@ export class MetadataSearch {
 
 		const controller = new AbortController();
 		this.abortController = controller;
-		const { category, streamingListId } = this.getOptions();
+		const { category, streamingListId, showTracker } = this.getOptions();
 
 		if (append) {
 			this.loadingMore = true;
@@ -71,6 +72,7 @@ export class MetadataSearch {
 			const response = await fetch(
 				buildSearchUrl(category, trimmed, {
 					streamingListId,
+					showTracker,
 					page: targetPage
 				}),
 				{ signal: controller.signal }

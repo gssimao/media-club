@@ -23,6 +23,6 @@
 		<SettingsTurntableModule />
 		<SettingsFadersModule />
 		<SettingsLevelsModule summary={data.summary} />
-		<SettingsCatalogModule isAdmin={data.isAdmin} movieCount={data.movieCount} />
+		<SettingsCatalogModule isAdmin={data.isAdmin} tmdbCatalogCount={data.tmdbCatalogCount} />
 	</SettingsConsole>
 </PageShell>

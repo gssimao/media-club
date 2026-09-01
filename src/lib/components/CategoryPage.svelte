@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import AlbumShelf from '$lib/components/AlbumShelf.svelte';
 	import MediaGrid from '$lib/components/MediaGrid.svelte';
@@ -11,6 +12,7 @@
 	import { CATEGORY_PATHS, type Album, type MediaCategory, type MediaItem } from '$lib/types/media';
 	import {
 		collectUniqueGenres,
+		categorySupportsGenres,
 		DEFAULT_GENRE_FILTER_MODE,
 		getDisplayGenres,
 		itemMatchesGenreFilter,
@@ -31,6 +33,8 @@
 		noun: string;
 		/** Empty-state help text shown when the catalog has no items at all. */
 		emptyDescription: string;
+		/** Optional sidebar controls rendered after wishlist link (category-specific). */
+		extraControls?: Snippet;
 	}
 
 	let {
@@ -43,7 +47,8 @@
 		coverUrls,
 		isAdmin,
 		noun,
-		emptyDescription
+		emptyDescription,
+		extraControls
 	}: Props = $props();
 
 	let showAddDialog = $state(false);
@@ -52,7 +57,8 @@
 	let selectedGenres = $state<string[]>([]);
 	let genreFilterMode = $state<GenreFilterMode>(DEFAULT_GENRE_FILTER_MODE);
 
-	const genreOptions = $derived(category === 'movie' ? collectUniqueGenres(allItems) : []);
+	const supportsGenres = $derived(categorySupportsGenres(category));
+	const genreOptions = $derived(supportsGenres ? collectUniqueGenres(allItems) : []);
 
 	const allGrouped = $derived(albums.length > 0 && items.length === 0);
 	const emptyTitle = $derived(allGrouped ? `All ${noun} are in collections` : `No ${noun} yet`);
@@ -81,7 +87,7 @@
 			});
 		}
 
-		if (category === 'movie' && selectedGenres.length > 0) {
+		if (supportsGenres && selectedGenres.length > 0) {
 			filtered = filtered.filter((item) =>
 				itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres, genreFilterMode)
 			);
@@ -111,10 +117,13 @@
 			<Heart size={16} weight="bold" />
 			View wishlist
 		</NavLink>
+		{#if extraControls}
+			{@render extraControls()}
+		{/if}
 		{#if isAdmin && (category === 'movie' || category === 'show')}
 			<FormatFilter {category} {selectedFormats} onFilterChange={handleFilterChange} />
 		{/if}
-		{#if isAdmin && category === 'movie' && genreOptions.length > 0}
+		{#if isAdmin && supportsGenres && genreOptions.length > 0}
 			<GenreFilter
 				options={genreOptions}
 				bind:selectedGenres
@@ -156,7 +165,7 @@
 	<MediaGrid
 		items={filteredItems}
 		searchItems={filteredSearchItems}
-		genreCatalogItems={category === 'movie' ? allItems : []}
+		genreCatalogItems={supportsGenres ? allItems : []}
 		{category}
 		{isAdmin}
 		{albums}

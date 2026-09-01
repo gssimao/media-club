@@ -8,7 +8,7 @@ const TMDB_POSTER_BASE = 'https://image.tmdb.org/t/p/w342';
 const TMDB_PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w45';
 const DEFAULT_WATCH_REGION = 'US';
 const WATCH_PROVIDER_BATCH_CONCURRENCY = 5;
-const MOVIE_GENRES_BATCH_CONCURRENCY = 5;
+const TMDB_GENRES_BATCH_CONCURRENCY = 5;
 
 interface TmdbMovieSearchResult {
 	id: number;
@@ -23,10 +23,12 @@ interface TmdbGenreListResponse {
 }
 
 let cachedMovieGenreMap: Record<number, string> | null = null;
+let cachedTvGenreMap: Record<number, string> | null = null;
 
-/** Resets the in-memory TMDB genre list cache (for tests). */
+/** Resets the in-memory TMDB genre list caches (for tests). */
 export function resetMovieGenreCache(): void {
 	cachedMovieGenreMap = null;
+	cachedTvGenreMap = null;
 }
 
 export async function getMovieGenreMap(apiKey: string): Promise<Record<number, string>> {
@@ -45,6 +47,22 @@ export async function getMovieGenreMap(apiKey: string): Promise<Record<number, s
 	return cachedMovieGenreMap;
 }
 
+export async function getTvGenreMap(apiKey: string): Promise<Record<number, string>> {
+	if (cachedTvGenreMap) return cachedTvGenreMap;
+
+	const params = new URLSearchParams({ api_key: apiKey });
+	const response = await fetch(`${TMDB_API_BASE}/genre/tv/list?${params.toString()}`, {
+		signal: AbortSignal.timeout(10_000)
+	});
+	if (!response.ok) {
+		throw new Error(`TMDB TV genre list failed (${response.status})`);
+	}
+
+	const data = (await response.json()) as TmdbGenreListResponse;
+	cachedTvGenreMap = Object.fromEntries(data.genres.map((genre) => [genre.id, genre.name]));
+	return cachedTvGenreMap;
+}
+
 interface TmdbMovieDetailsResponse {
 	id: number;
 	genres: { id: number; name: string }[];
@@ -55,6 +73,12 @@ interface TmdbTvSearchResult {
 	name: string;
 	first_air_date?: string;
 	poster_path: string | null;
+	genre_ids?: number[];
+}
+
+interface TmdbTvDetailsResponse {
+	id: number;
+	genres: { id: number; name: string }[];
 }
 
 interface TmdbMovieSearchResponse {
@@ -193,12 +217,58 @@ export async function getMovieGenresBatch(
 	const uniqueIds = [...new Set(tmdbIds.filter(isTmdbMovieId))];
 	const results: Record<string, string[] | null> = {};
 
-	for (let index = 0; index < uniqueIds.length; index += MOVIE_GENRES_BATCH_CONCURRENCY) {
-		const chunk = uniqueIds.slice(index, index + MOVIE_GENRES_BATCH_CONCURRENCY);
+	for (let index = 0; index < uniqueIds.length; index += TMDB_GENRES_BATCH_CONCURRENCY) {
+		const chunk = uniqueIds.slice(index, index + TMDB_GENRES_BATCH_CONCURRENCY);
 		const settled = await Promise.allSettled(
 			chunk.map(async (id) => {
 				try {
 					const genres = await getMovieGenres(apiKey, id);
+					return { id, genres };
+				} catch {
+					return { id, genres: null };
+				}
+			})
+		);
+
+		for (const result of settled) {
+			if (result.status === 'fulfilled') {
+				results[result.value.id] = result.value.genres;
+			}
+		}
+	}
+
+	return results;
+}
+
+export async function getTvGenres(
+	apiKey: string,
+	tmdbId: string | number
+): Promise<string[] | null> {
+	const params = new URLSearchParams({ api_key: apiKey });
+	const response = await fetch(`${TMDB_API_BASE}/tv/${tmdbId}?${params.toString()}`, {
+		signal: AbortSignal.timeout(10_000)
+	});
+	if (!response.ok) {
+		throw new Error(`TMDB TV details failed (${response.status})`);
+	}
+
+	const data = (await response.json()) as TmdbTvDetailsResponse;
+	return dedupeGenres(data.genres.map((genre) => genre.name));
+}
+
+export async function getTvGenresBatch(
+	apiKey: string,
+	tmdbIds: string[]
+): Promise<Record<string, string[] | null>> {
+	const uniqueIds = [...new Set(tmdbIds.filter(isTmdbMovieId))];
+	const results: Record<string, string[] | null> = {};
+
+	for (let index = 0; index < uniqueIds.length; index += TMDB_GENRES_BATCH_CONCURRENCY) {
+		const chunk = uniqueIds.slice(index, index + TMDB_GENRES_BATCH_CONCURRENCY);
+		const settled = await Promise.allSettled(
+			chunk.map(async (id) => {
+				try {
+					const genres = await getTvGenres(apiKey, id);
 					return { id, genres };
 				} catch {
 					return { id, genres: null };
@@ -312,15 +382,27 @@ export async function searchTv(apiKey: string, query: string, page = 1): Promise
 
 	const data = (await response.json()) as TmdbTvSearchResponse;
 
+	let genreMap: Record<number, string> = {};
+	try {
+		genreMap = await getTvGenreMap(apiKey);
+	} catch (err) {
+		console.error('Failed to load TMDB TV genre list', err);
+	}
+
 	const results: SearchResult[] = data.results.map((show) => {
 		const year = show.first_air_date ? Number.parseInt(show.first_air_date.slice(0, 4), 10) : null;
+		const genres = mapGenreIdsToNames(show.genre_ids ?? [], genreMap);
 		return {
 			externalId: String(show.id),
 			title: show.name,
 			subtitle: null,
 			year: Number.isNaN(year) ? null : year,
 			coverUrl: tmdbPosterUrl(show.poster_path),
-			metadata: { tmdbId: show.id, posterPath: show.poster_path }
+			metadata: {
+				tmdbId: show.id,
+				posterPath: show.poster_path,
+				...(genres.length > 0 ? { genres } : {})
+			}
 		};
 	});
 

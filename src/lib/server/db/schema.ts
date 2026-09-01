@@ -123,7 +123,33 @@ export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type AdminUser = typeof adminUser.$inferSelect;
 export type Session = typeof session.$inferSelect;
+export const showTrackerItems = sqliteTable(
+	'show_tracker_items',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		externalId: text('external_id').notNull(),
+		title: text('title').notNull(),
+		subtitle: text('subtitle'),
+		year: integer('year'),
+		coverUrl: text('cover_url'),
+		metadata: text('metadata'),
+		notes: text('notes'),
+		trackStatus: text('track_status', { enum: ['watching', 'upcoming'] }).notNull(),
+		createdAt: integer('created_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date()),
+		updatedAt: integer('updated_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date())
+	},
+	(table) => [uniqueIndex('show_tracker_items_external_idx').on(table.externalId)]
+);
+
 export type StreamingList = typeof streamingLists.$inferSelect;
 export type NewStreamingList = typeof streamingLists.$inferInsert;
 export type StreamingListItem = typeof streamingListItems.$inferSelect;
 export type NewStreamingListItem = typeof streamingListItems.$inferInsert;
+export type ShowTrackerItem = typeof showTrackerItems.$inferSelect;
+export type NewShowTrackerItem = typeof showTrackerItems.$inferInsert;
