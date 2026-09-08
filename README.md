@@ -1,6 +1,6 @@
 # Media Club
 
-![Tests](https://img.shields.io/badge/tests-63%20passing-success)
+![Tests](https://img.shields.io/badge/tests-151%20passing-success)
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 

@@ -56,20 +56,31 @@ npx wrangler secret put ADMIN_USERNAME
 
 ## 3. Remote migrations
 
-Add your Cloudflare credentials to `.env` for Drizzle remote migrations:
+Set your D1 database id in `.env` (same value injected at deploy time):
 
 ```env
-CLOUDFLARE_ACCOUNT_ID=your-account-id
 CLOUDFLARE_DATABASE_ID=your-d1-database-id
-CLOUDFLARE_D1_TOKEN=your-api-token
 ```
 
-Create an API token at **My Profile → API Tokens** with **D1 Edit** permissions.
+Log in to Wrangler if you have not already:
 
-Apply migrations:
+```bash
+npx wrangler login
+```
+
+Apply migrations to production D1:
 
 ```bash
 npm run db:migrate:remote
+```
+
+This runs `wrangler d1 migrations apply` against the database id in `.env`. Run it after pulling schema changes and before or with deploy (`npm run deploy:migrate`).
+
+Optional: Drizzle Studio against remote D1 still uses HTTP API tokens in `.env`:
+
+```env
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_D1_TOKEN=your-api-token
 ```
 
 For local Cloudflare preview (`npm run preview`), migrations are applied to local D1 automatically. Preview uses D1; `npm run dev` uses the SQLite file at `./data/media-club.db`.
