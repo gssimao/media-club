@@ -22,15 +22,4 @@
 		<div class="skeleton mx-auto h-4 w-[85%] rounded-full"></div>
 		<div class="skeleton mx-auto mt-1.5 h-3 w-[60%] rounded-full"></div>
 	</div>
-
-	{#if isAdmin}
-		<div class="mt-2 flex min-h-[1.375rem] w-full shrink-0 justify-center gap-1 px-1">
-			{#each [0, 1, 2, 3] as tagIndex (tagIndex)}
-				<span class="skeleton h-5 w-10 rounded-full"></span>
-			{/each}
-		</div>
-		<div class="mt-3 w-full shrink-0 px-1">
-			<div class="skeleton h-8 w-full rounded-full"></div>
-		</div>
-	{/if}
 </article>

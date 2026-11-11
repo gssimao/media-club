@@ -1,5 +1,6 @@
 <script lang="ts">
 	import VinylDisc from '$lib/components/VinylDisc.svelte';
+	import { modal } from '$lib/utils/modal';
 	import type { Component } from 'svelte';
 
 	export interface MediaOption {
@@ -171,6 +172,12 @@
 			role="listbox"
 			aria-label="{label} options"
 			aria-multiselectable={multiple}
+			{@attach modal({
+				onEscape: () => (isOpen = false),
+				portal: false,
+				lockScroll: false,
+				trapFocus: false
+			})}
 		>
 			<div
 				bind:this={scrollEl}

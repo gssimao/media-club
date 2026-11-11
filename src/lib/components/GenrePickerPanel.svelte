@@ -5,7 +5,7 @@
 		toggleGenreSelection,
 		type GenreFilterMode
 	} from '$lib/utils/movie-genres';
-	import { ArrowLeft, Tag, X } from 'phosphor-svelte';
+	import { ArrowLeft, Check, Tag, X } from 'phosphor-svelte';
 
 	interface Props {
 		options: string[];
@@ -142,7 +142,12 @@
 			</button>
 		{/if}
 		<button type="button" class="btn-secondary ml-auto px-4 py-1.5 text-xs" onclick={onClose}>
-			<ArrowLeft size={12} weight="bold" />
+			<!-- "Back to filters" returns to a parent dialog; any other label just confirms. -->
+			{#if footerActionLabel.startsWith('Back')}
+				<ArrowLeft size={12} weight="bold" />
+			{:else}
+				<Check size={12} weight="bold" />
+			{/if}
 			{footerActionLabel}
 		</button>
 	</div>
@@ -173,7 +178,7 @@
 		background: rgb(0 0 0 / 0.04);
 	}
 
-	:global(.dark) .genre-panel__mode {
+	:global([data-theme='dark']) .genre-panel__mode {
 		background: rgb(255 255 255 / 0.06);
 	}
 
@@ -195,11 +200,13 @@
 		cursor: pointer;
 	}
 
-	:global(.dark) .genre-panel__mode-btn {
+	:global([data-theme='dark']) .genre-panel__mode-btn {
 		color: rgb(168 162 158);
 	}
 
-	.genre-panel__mode-btn--active {
+	/* Listed for both themes so the dark idle color above cannot outrank the active state. */
+	.genre-panel__mode-btn--active,
+	:global([data-theme='dark']) .genre-panel__mode-btn--active {
 		background: rgb(251 191 36 / 0.9);
 		color: rgb(28 25 23);
 	}
@@ -241,7 +248,7 @@
 		color: rgb(146 64 14);
 	}
 
-	:global(.dark) .genre-panel__pill--idle {
+	:global([data-theme='dark']) .genre-panel__pill--idle {
 		color: rgb(252 211 77);
 	}
 

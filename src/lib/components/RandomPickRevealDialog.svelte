@@ -2,6 +2,7 @@
 	import CoverImage from '$lib/components/CoverImage.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
 	import type { MediaItem } from '$lib/types/media';
+	import { modal } from '$lib/utils/modal';
 	import { getDisplayGenres } from '$lib/utils/movie-genres';
 	import { DiceSix, X } from 'phosphor-svelte';
 	import { scale } from 'svelte/transition';
@@ -31,13 +32,7 @@
 	const reducedMotion = $derived(settings.motion === 'reduced');
 	const rollDurationCss = $derived(`${loadingDurationMs}ms`);
 	const genres = $derived(item ? getDisplayGenres(item) : []);
-
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') onDismiss();
-	}
 </script>
-
-<svelte:window onkeydown={open ? onKeydown : undefined} />
 
 {#if open}
 	<div
@@ -48,8 +43,14 @@
 		aria-modal="true"
 		aria-labelledby="random-reveal-title"
 		aria-busy={phase === 'loading'}
+		{@attach modal({ onEscape: () => onDismiss() })}
 	>
-		<button type="button" class="random-reveal__backdrop" aria-label="Close" onclick={onDismiss}
+		<button
+			type="button"
+			class="random-reveal__backdrop"
+			aria-label="Close"
+			tabindex="-1"
+			onclick={onDismiss}
 		></button>
 
 		<div class="random-reveal__panel surface-round anim-rise">
@@ -193,7 +194,7 @@
 		color: rgb(var(--color-text));
 	}
 
-	:global(.dark) .random-reveal__close:hover {
+	:global([data-theme='dark']) .random-reveal__close:hover {
 		background: rgb(255 255 255 / 0.1);
 	}
 
@@ -273,7 +274,7 @@
 		animation: dice-shake-spin 0.85s cubic-bezier(0.34, 1.1, 0.64, 1) infinite;
 	}
 
-	:global(.dark) .random-reveal__dice {
+	:global([data-theme='dark']) .random-reveal__dice {
 		color: rgb(251 191 36);
 	}
 

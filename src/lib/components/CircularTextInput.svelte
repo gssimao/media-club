@@ -2,8 +2,11 @@
 	import { cn } from '$lib/utils/cn';
 	import { Lock, User } from 'phosphor-svelte';
 
-	const MAX_CHARS = 30;
-	const DEGREES_PER_CHAR = 360 / MAX_CHARS;
+	/** Characters that fit once around the ring. */
+	const RING_CHARS = 30;
+	const DEGREES_PER_CHAR = 360 / RING_CHARS;
+	/** Passwords may be longer than the ring; extra dots simply lap the first ones. */
+	const MAX_PASSWORD_CHARS = 128;
 
 	interface Props {
 		name: string;
@@ -31,11 +34,16 @@
 	let focused = $state(false);
 	let inputEl = $state<HTMLInputElement | null>(null);
 
+	const maxLength = $derived(type === 'password' ? MAX_PASSWORD_CHARS : RING_CHARS);
+
 	const displayChars = $derived(
-		value.split('').map((char, index) => ({
-			display: type === 'password' ? '●' : char,
-			index
-		}))
+		value
+			.slice(0, RING_CHARS)
+			.split('')
+			.map((char, index) => ({
+				display: type === 'password' ? '●' : char,
+				index
+			}))
 	);
 
 	const nextCharAngle = $derived(-90 + displayChars.length * DEGREES_PER_CHAR);
@@ -119,7 +127,7 @@
 				</text>
 			{/each}
 
-			{#if focused && displayChars.length < MAX_CHARS}
+			{#if focused && displayChars.length < RING_CHARS}
 				<circle
 					cx="120"
 					cy="46"
@@ -170,7 +178,7 @@
 			{name}
 			{type}
 			bind:value
-			maxlength={MAX_CHARS}
+			maxlength={maxLength}
 			{autocomplete}
 			{required}
 			class="absolute inset-0 cursor-text rounded-full opacity-0"
@@ -183,7 +191,7 @@
 	<span class="text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase">
 		{label}
 		<span class="font-medium text-[rgb(var(--color-text-tertiary))] normal-case">
-			· {value.length}/{MAX_CHARS}
+			· {type === 'password' ? value.length : `${value.length}/${RING_CHARS}`}
 		</span>
 	</span>
 </div>

@@ -1,131 +1,96 @@
 export interface DragScrollOptions {
 	/** Pixels moved before treating the gesture as a drag instead of a click. */
 	threshold?: number;
-	/** Scroll container to move (defaults to the element the action is on). */
-	scrollTarget?: HTMLElement;
 }
 
 /**
- * Click-and-drag horizontal scroll for overflow containers.
- * Attach to a handle bar and pass scrollTarget to scroll a sibling container without link conflicts.
+ * Click-and-drag horizontal scroll for an overflow container, for mouse users.
+ * Attach it to the scroller itself. Touch and trackpad keep the browser's native
+ * scrolling; a drag that started on a link or button does not trigger its click.
  */
 export function dragScroll(node: HTMLElement, options: DragScrollOptions = {}) {
 	const threshold = options.threshold ?? 5;
-	let scrollNode = options.scrollTarget ?? node;
 
 	let isDown = false;
 	let isDragging = false;
 	let suppressClick = false;
 	let startX = 0;
-	let scrollLeft = 0;
+	let startScrollLeft = 0;
 
-	function endDrag() {
-		isDown = false;
-		isDragging = false;
-		node.classList.remove('cursor-grabbing');
-		node.classList.add('cursor-grab');
-		node.style.removeProperty('user-select');
-		window.removeEventListener('mousemove', onMouseMove);
-		window.removeEventListener('mouseup', onMouseUp);
-		window.removeEventListener('touchmove', onTouchMove);
-		window.removeEventListener('touchend', onTouchEnd);
-		window.removeEventListener('touchcancel', onTouchEnd);
+	function canScroll() {
+		return node.scrollWidth > node.clientWidth + 1;
 	}
 
-	function applyScroll(pageX: number) {
-		const dx = pageX - startX;
+	function endDrag() {
+		if (isDragging) {
+			node.classList.remove('cursor-grabbing');
+			node.style.removeProperty('user-select');
+			// Restoring snap lets the shelf settle on the nearest tile.
+			node.style.removeProperty('scroll-snap-type');
+			// The click that ends a drag fires right after mouseup. If the pointer was released
+			// outside the scroller there is no click, so clear the flag for the next real one.
+			setTimeout(() => (suppressClick = false), 0);
+		}
+		isDown = false;
+		isDragging = false;
+		window.removeEventListener('mousemove', onMouseMove);
+		window.removeEventListener('mouseup', endDrag);
+	}
+
+	function onMouseMove(event: MouseEvent) {
+		if (!isDown) return;
+
+		const dx = event.pageX - startX;
 		if (!isDragging && Math.abs(dx) > threshold) {
 			isDragging = true;
 			suppressClick = true;
+			node.classList.add('cursor-grabbing');
 			node.style.userSelect = 'none';
+			// Snap points fight scrollLeft updates while the pointer is moving.
+			node.style.scrollSnapType = 'none';
 		}
 
 		if (isDragging) {
-			scrollNode.scrollLeft = scrollLeft - dx;
+			event.preventDefault();
+			node.scrollLeft = startScrollLeft - dx;
 		}
 	}
 
-	function onMouseMove(e: MouseEvent) {
-		if (!isDown) return;
+	function onMouseDown(event: MouseEvent) {
+		if (event.button !== 0 || !canScroll()) return;
 
-		if (isDragging) {
-			e.preventDefault();
-		}
-
-		applyScroll(e.pageX);
-	}
-
-	function onTouchMove(e: TouchEvent) {
-		if (!isDown || e.touches.length !== 1) return;
-
-		if (isDragging) {
-			e.preventDefault();
-		}
-
-		applyScroll(e.touches[0].pageX);
-	}
-
-	function onMouseUp() {
-		endDrag();
-	}
-
-	function onTouchEnd() {
-		endDrag();
-	}
-
-	function beginDrag(pageX: number) {
 		isDown = true;
 		isDragging = false;
 		suppressClick = false;
-		startX = pageX;
-		scrollLeft = scrollNode.scrollLeft;
-
-		node.classList.remove('cursor-grab');
-		node.classList.add('cursor-grabbing');
-	}
-
-	function onMouseDown(e: MouseEvent) {
-		if (e.button !== 0) return;
-
-		beginDrag(e.pageX);
+		startX = event.pageX;
+		startScrollLeft = node.scrollLeft;
 
 		window.addEventListener('mousemove', onMouseMove);
-		window.addEventListener('mouseup', onMouseUp);
+		window.addEventListener('mouseup', endDrag);
 	}
 
-	function onTouchStart(e: TouchEvent) {
-		if (e.touches.length !== 1) return;
-
-		beginDrag(e.touches[0].pageX);
-
-		window.addEventListener('touchmove', onTouchMove, { passive: false });
-		window.addEventListener('touchend', onTouchEnd);
-		window.addEventListener('touchcancel', onTouchEnd);
+	/** Links and images inside the scroller would otherwise start a native drag-and-drop. */
+	function onDragStart(event: DragEvent) {
+		event.preventDefault();
 	}
 
-	function onClickCapture(e: MouseEvent) {
+	function onClickCapture(event: MouseEvent) {
 		if (!suppressClick) return;
-		e.preventDefault();
-		e.stopImmediatePropagation();
+		event.preventDefault();
+		event.stopImmediatePropagation();
 		suppressClick = false;
 	}
 
-	node.classList.add('cursor-grab');
 	node.addEventListener('mousedown', onMouseDown);
-	node.addEventListener('touchstart', onTouchStart, { passive: true });
+	node.addEventListener('dragstart', onDragStart);
 	node.addEventListener('click', onClickCapture, true);
 
 	return {
-		update(newOptions: DragScrollOptions = {}) {
-			scrollNode = newOptions.scrollTarget ?? node;
-		},
 		destroy() {
 			endDrag();
 			node.removeEventListener('mousedown', onMouseDown);
-			node.removeEventListener('touchstart', onTouchStart);
+			node.removeEventListener('dragstart', onDragStart);
 			node.removeEventListener('click', onClickCapture, true);
-			node.classList.remove('cursor-grab', 'cursor-grabbing');
-			node.style.removeProperty('user-select');
 		}
 	};
 }

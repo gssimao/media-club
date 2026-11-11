@@ -4,6 +4,7 @@
 	import RandomPickRevealDialog from '$lib/components/RandomPickRevealDialog.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
+	import { modal } from '$lib/utils/modal';
 	import type { Album, MediaItem } from '$lib/types/media';
 	import {
 		buildRandomMoviePool,
@@ -169,8 +170,8 @@
 		beginPick(activePoolOptions);
 	}
 
-	function onFilterKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Escape') return;
+	/** Escape steps back one level: side panel first, then the dialog. */
+	function handleFilterEscape() {
 		if (showGenrePanel) {
 			closeGenrePanel();
 			return;
@@ -199,11 +200,13 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="random-filter-title"
+		{@attach modal({ onEscape: () => handleFilterEscape() })}
 	>
 		<button
 			type="button"
 			class="random-filter__backdrop"
 			aria-label="Close filter dialog"
+			tabindex="-1"
 			onclick={closeFilterDialog}
 		></button>
 
@@ -353,8 +356,6 @@
 	</div>
 {/if}
 
-<svelte:window onkeydown={showFilterDialog ? onFilterKeydown : undefined} />
-
 <RandomPickRevealDialog
 	open={showRevealDialog}
 	phase={revealPhase}
@@ -372,13 +373,14 @@
 		inset: 0;
 		z-index: 95;
 		display: flex;
-		align-items: center;
-		justify-content: center;
 		padding: 1.25rem;
+		/* Scrolls as a whole when the panels are taller than a small screen. */
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.random-filter__backdrop {
-		position: absolute;
+		position: fixed;
 		inset: 0;
 		border: none;
 		background: rgb(0 0 0 / 0.58);
@@ -394,6 +396,8 @@
 		align-items: stretch;
 		gap: 0.75rem;
 		width: min(100%, 26rem);
+		/* Auto margins center the cluster but still let it scroll from the top when it overflows. */
+		margin: auto;
 	}
 
 	.random-filter__cluster--with-side {
@@ -417,6 +421,24 @@
 	@media (min-width: 640px) {
 		.random-filter__cluster--with-side .random-filter__panel {
 			flex: 0 0 26rem;
+		}
+	}
+
+	/* Phones: a side panel replaces the main panel instead of stacking under it,
+	   so its "Back to filters" button is always on screen. */
+	@media (max-width: 639px) {
+		.random-filter__cluster--with-side {
+			width: min(100%, 26rem);
+		}
+
+		.random-filter__cluster--with-side .random-filter__panel {
+			display: none;
+		}
+
+		.random-filter__cluster--with-side :global(.genre-panel),
+		.random-filter__cluster--with-side :global(.collection-panel) {
+			width: 100%;
+			max-height: calc(100dvh - 2.5rem);
 		}
 	}
 </style>

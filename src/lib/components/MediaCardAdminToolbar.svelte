@@ -1,27 +1,40 @@
+<script lang="ts" module>
+	export type MediaCardAdminAction = 'move' | 'notes' | 'cover' | 'delete';
+</script>
+
 <script lang="ts">
-	import { DotsThree } from 'phosphor-svelte';
 	import type { MediaItem } from '$lib/types/media';
+	import CardOptionsMenu, { type CardMenuAction } from './CardOptionsMenu.svelte';
+	import { Check, Image, PencilSimple, Trash } from 'phosphor-svelte';
 
 	interface Props {
 		item: MediaItem;
-		showAdminMenu: boolean;
-		onToggleMenu: () => void;
+		/** Whether the options menu is showing. */
+		open?: boolean;
+		onAction: (action: MediaCardAdminAction) => void;
 	}
 
-	let { item, showAdminMenu, onToggleMenu }: Props = $props();
+	let { item, open = $bindable(false), onAction }: Props = $props();
+
+	const actions = $derived.by(() => {
+		const list: CardMenuAction<MediaCardAdminAction>[] = [];
+		if (item.listType === 'wishlist') {
+			list.push({ id: 'move', label: 'Move to collection', icon: Check, tone: 'accent' });
+		}
+		list.push({ id: 'notes', label: 'Edit notes', icon: PencilSimple });
+		if (item.category === 'movie') {
+			list.push({ id: 'cover', label: 'Change cover', icon: Image });
+		}
+		list.push({ id: 'delete', label: 'Delete item', icon: Trash, tone: 'danger' });
+		return list;
+	});
 </script>
 
-<div class="flex items-center gap-1">
-	<button
-		type="button"
-		class="inline-flex size-7 items-center justify-center rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] text-[rgb(var(--color-text-secondary))] shadow-sm transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400 {showAdminMenu
-			? 'border-amber-500 text-amber-700 dark:text-amber-400'
-			: ''}"
-		aria-label="Item options for {item.title}"
-		aria-expanded={showAdminMenu}
-		aria-controls="item-actions-{item.id}"
-		onclick={onToggleMenu}
-	>
-		<DotsThree size={16} weight="bold" />
-	</button>
-</div>
+<CardOptionsMenu
+	menuId="item-menu-{item.id}"
+	triggerLabel="Item options for {item.title}"
+	subject={item.title}
+	{actions}
+	bind:open
+	onSelect={onAction}
+/>

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
 	import HeaderActions from './HeaderActions.svelte';
 	import NavDial from './NavDial.svelte';
 	import VinylDisc from './VinylDisc.svelte';
 	import type { SessionUser } from '$lib/types/auth';
 	import { settings } from '$lib/stores/settings.svelte';
+	import { modal } from '$lib/utils/modal';
 	import { X } from 'phosphor-svelte';
 
 	interface Props {
@@ -28,14 +28,6 @@
 		untrack(() => closeMobileMenu());
 	});
 
-	$effect(() => {
-		if (!browser) return;
-		document.body.style.overflow = overlayMounted ? 'hidden' : '';
-		return () => {
-			document.body.style.overflow = '';
-		};
-	});
-
 	function openMobileMenu() {
 		overlayClosing = false;
 		overlayMounted = true;
@@ -53,13 +45,7 @@
 			overlayClosing = false;
 		}, duration);
 	}
-
-	function onOverlayKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') closeMobileMenu();
-	}
 </script>
-
-<svelte:window onkeydown={overlayMounted ? onOverlayKeydown : undefined} />
 
 <!-- Desktop: fixed nav wheel (top-left) -->
 <header class="site-header site-header--desktop" aria-label="Site navigation">
@@ -71,8 +57,14 @@
 	</div>
 </header>
 
-<!-- Mobile: compact actions (top-right) -->
-<header class="site-header site-header--mobile" aria-label="Site actions">
+<!-- Mobile: compact actions (top-right). Hidden while the nav overlay is open so its
+     close button never sits on top of them. -->
+<header
+	class="site-header site-header--mobile"
+	class:is-hidden={overlayMounted}
+	aria-label="Site actions"
+	inert={overlayMounted}
+>
 	<HeaderActions showLogout={!!user} --action-btn-size="2.35rem" />
 </header>
 
@@ -101,11 +93,13 @@
 		role="dialog"
 		aria-modal="true"
 		aria-label="Navigation menu"
+		{@attach modal({ onEscape: () => closeMobileMenu(), portal: false })}
 	>
 		<button
 			type="button"
 			class="mobile-nav-overlay__backdrop"
 			aria-label="Close navigation menu"
+			tabindex="-1"
 			onclick={closeMobileMenu}
 		></button>
 
@@ -144,6 +138,12 @@
 		top: var(--nav-dial-inset);
 		right: var(--nav-dial-inset);
 		pointer-events: auto;
+		transition: opacity 0.2s ease;
+	}
+
+	.site-header--mobile.is-hidden {
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	.header-stack {

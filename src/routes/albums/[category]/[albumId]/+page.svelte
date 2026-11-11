@@ -23,6 +23,7 @@
 	let highlightedId = $state<string | null>(null);
 	let editingAlbum = $state(false);
 	let showDeleteConfirm = $state(false);
+	let showDiscardConfirm = $state(false);
 	let deleteForm: HTMLFormElement | undefined = $state();
 	let titleDraft = $state('');
 	let descriptionDraft = $state('');
@@ -60,17 +61,24 @@
 	}
 
 	function toggleEditAlbum() {
-		if (editingAlbum && isDirty && !confirm('Discard unsaved collection changes?')) {
-			return;
+		if (editingAlbum) {
+			closeEditAlbum();
+		} else {
+			editingAlbum = true;
 		}
-		editingAlbum = !editingAlbum;
-		if (!editingAlbum) resetDrafts();
 	}
 
+	/** Closes the editor, asking first when there are unsaved edits. */
 	function closeEditAlbum() {
-		if (isDirty && !confirm('Discard unsaved collection changes?')) {
+		if (isDirty) {
+			showDiscardConfirm = true;
 			return;
 		}
+		discardAlbumEdits();
+	}
+
+	function discardAlbumEdits() {
+		showDiscardConfirm = false;
 		editingAlbum = false;
 		resetDrafts();
 	}
@@ -98,7 +106,8 @@
 	<title>{data.album.title} · Media Club</title>
 </svelte:head>
 
-<PageShell title={data.album.title} description={data.album.description ?? undefined}>
+<!-- The description is shown once, under the sleeve (AlbumSleeve), not repeated in the sidebar. -->
+<PageShell title={data.album.title}>
 	{#snippet controls()}
 		<NavLink href="/albums/{data.category}" variant="accent">All {data.label} collections</NavLink>
 		<NavLink href="/{categoryPath}">Back to {data.label}</NavLink>
@@ -168,6 +177,17 @@
 						showDeleteConfirm = false;
 						deleteForm?.requestSubmit();
 					}}
+				/>
+
+				<ConfirmDialog
+					open={showDiscardConfirm}
+					title="Discard changes?"
+					message="Your edits to this collection have not been saved."
+					confirmLabel="Discard"
+					cancelLabel="Keep editing"
+					variant="danger"
+					onCancel={() => (showDiscardConfirm = false)}
+					onConfirm={discardAlbumEdits}
 				/>
 			{/if}
 		</div>

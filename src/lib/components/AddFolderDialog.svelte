@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { X, FolderPlus } from 'phosphor-svelte';
+	import { invalidateAll } from '$app/navigation';
+	import ModalShell from '$lib/components/ModalShell.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 	import type { MediaCategory } from '$lib/types/media';
+	import { FolderPlus } from 'phosphor-svelte';
 
 	interface Props {
 		category: MediaCategory;
@@ -12,93 +15,79 @@
 	let { category, isOpen, onClose }: Props = $props();
 
 	let albumTitle = $state('');
+	let saving = $state(false);
 
-	$effect(() => {
-		if (!isOpen) {
-			albumTitle = '';
-		}
-	});
-
-	function handleBackdropClick(event: MouseEvent) {
-		if (event.target === event.currentTarget) {
-			onClose();
-		}
+	/** Closes the dialog and clears the field so it opens empty next time. */
+	function close() {
+		albumTitle = '';
+		onClose();
 	}
 </script>
 
-{#if isOpen}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-		onclick={handleBackdropClick}
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="folder-dialog-title"
-		tabindex="-1"
+<ModalShell
+	open={isOpen}
+	title="Create collection"
+	description="Group items you own under one sleeve"
+	size="sm"
+	onClose={close}
+>
+	<form
+		method="POST"
+		action="/admin/albums?/createAlbum"
+		class="space-y-4"
+		use:enhance={() => {
+			const title = albumTitle.trim();
+			saving = true;
+			return async ({ result }) => {
+				saving = false;
+				if (result.type === 'failure') {
+					toast.error(String(result.data?.message ?? 'Could not create collection.'));
+					return;
+				}
+				if (result.type === 'error') {
+					toast.error('Could not create collection.');
+					return;
+				}
+				toast.success(`Created collection "${title}".`);
+				close();
+				// Refresh the shelf in place: no full page reload, scroll position stays put.
+				await invalidateAll();
+			};
+		}}
 	>
-		<div class="surface-round relative w-full max-w-md p-6" onclick={(e) => e.stopPropagation()}>
-			<div class="mb-6 flex items-start justify-between">
-				<div>
-					<h2 id="folder-dialog-title" class="text-2xl font-bold text-stone-900 dark:text-amber-50">
-						Create Collection
-					</h2>
-					<p class="mt-1 text-sm font-medium text-stone-600 dark:text-stone-400">
-						Add a new collection to organize your media
-					</p>
-				</div>
-				<button
-					onclick={onClose}
-					class="rounded-full p-2 transition-colors hover:bg-stone-200 dark:hover:bg-stone-700"
-					aria-label="Close dialog"
-				>
-					<X size={24} weight="bold" />
-				</button>
-			</div>
+		<input type="hidden" name="category" value={category} />
 
-			<form
-				method="POST"
-				action="/admin/albums?/createAlbum"
-				class="space-y-4"
-				use:enhance={() => {
-					return async ({ result, update }) => {
-						await update();
-						if (result.type === 'success' || result.type === 'redirect') {
-							onClose();
-							setTimeout(() => {
-								window.location.reload();
-							}, 100);
-						}
-					};
-				}}
+		<label class="block space-y-1 text-sm">
+			<span class="font-bold text-stone-700 dark:text-stone-300">Collection title *</span>
+			<!-- svelte-ignore a11y_autofocus -->
+			<input
+				type="text"
+				name="title"
+				bind:value={albumTitle}
+				required
+				placeholder="e.g. Wes Anderson, Sci-Fi Classics"
+				class="input-round w-full"
+				autofocus
+			/>
+		</label>
+
+		<!-- Phones: full-width buttons, primary action on top. Wider screens: a right-aligned row. -->
+		<div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+			<button
+				type="button"
+				onclick={close}
+				class="btn-secondary justify-center px-5 py-2.5 text-sm"
 			>
-				<input type="hidden" name="category" value={category} />
-
-				<label class="block space-y-1 text-sm">
-					<span class="font-bold text-stone-700 dark:text-stone-300">Collection title *</span>
-					<input
-						type="text"
-						name="title"
-						bind:value={albumTitle}
-						required
-						placeholder="e.g. Wes Anderson, Sci-Fi Classics"
-						class="input-round w-full"
-						autofocus
-					/>
-				</label>
-
-				<div class="flex justify-end gap-2 pt-2">
-					<button
-						type="button"
-						onclick={onClose}
-						class="rounded-full px-5 py-2.5 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-200 dark:text-stone-300 dark:hover:bg-stone-700"
-					>
-						Cancel
-					</button>
-					<button type="submit" class="btn-primary px-5 py-2.5 text-sm">
-						<FolderPlus size={16} weight="bold" />
-						Create Collection
-					</button>
-				</div>
-			</form>
+				Cancel
+			</button>
+			<button
+				type="submit"
+				class="btn-primary justify-center px-5 py-2.5 text-sm"
+				disabled={saving}
+			>
+				<FolderPlus size={16} weight="bold" />
+				{saving ? 'Creating…' : 'Create collection'}
+			</button>
 		</div>
-	</div>
-{/if}
+	</form>
+</ModalShell>

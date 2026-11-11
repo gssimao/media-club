@@ -1,14 +1,9 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import CoverImage from './CoverImage.svelte';
 	import MediaCardAdminPanel from './MediaCardAdminPanel.svelte';
 	import MediaCardAdminToolbar from './MediaCardAdminToolbar.svelte';
-	import {
-		FORMAT_TAG_PRESETS,
-		getDisplayNotes,
-		getDisplayTags,
-		toggleTag
-	} from '$lib/utils/format-tags';
+	import MediaCoverTools from './MediaCoverTools.svelte';
+	import { bindCoverReveal } from '$lib/utils/cover-reveal';
 	import type { Album, MediaItem } from '$lib/types/media';
 
 	interface Props {
@@ -30,28 +25,41 @@
 	}: Props = $props();
 
 	const label = $derived(item.year ? `${item.title} (${item.year})` : item.title);
-	const displayTags = $derived(getDisplayTags(item));
-	const displayNotes = $derived(getDisplayNotes(item));
-	const presetTags = $derived(FORMAT_TAG_PRESETS[item.category]);
-	const collection = $derived(
-		item.albumId ? (albums.find((album) => album.id === item.albumId) ?? null) : null
-	);
 
-	let deleteForm: HTMLFormElement | undefined = $state();
-	let showDeleteConfirm = $state(false);
+	let adminPanel: MediaCardAdminPanel | undefined = $state();
 	let showAdminMenu = $state(false);
 	let cardHovered = $state(false);
+	let coverEl = $state<HTMLDivElement | undefined>();
+	let toolsHover = $state(false);
+	let toolsPinned = $state(false);
+	let toolsKeyboard = $state(false);
+	const toolsOpen = $derived(toolsHover || toolsPinned || toolsKeyboard);
+	const reveal = bindCoverReveal({
+		setHover: (hovering) => (toolsHover = hovering),
+		togglePin: () => (toolsPinned = !toolsPinned),
+		setKeyboard: (active) => (toolsKeyboard = active)
+	});
 
-	function toggleAdminMenu() {
-		showAdminMenu = !showAdminMenu;
-	}
+	// Touch screens have no hover, so a tap pins the tools until a tap outside.
+	$effect(() => {
+		if (!toolsPinned) return;
+
+		function onPointerDown(event: PointerEvent) {
+			if (coverEl && event.target instanceof Node && !coverEl.contains(event.target)) {
+				toolsPinned = false;
+			}
+		}
+
+		document.addEventListener('pointerdown', onPointerDown, true);
+		return () => document.removeEventListener('pointerdown', onPointerDown, true);
+	});
 </script>
 
 <article
 	id="item-{item.id}"
 	class="group mx-auto flex h-full w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500 {highlighted
 		? 'scale-105'
-		: ''}"
+		: ''} {showAdminMenu ? 'relative z-20' : ''}"
 	onmouseenter={() => (cardHovered = true)}
 	onmouseleave={() => (cardHovered = false)}
 >
@@ -67,11 +75,16 @@
 		{/if}
 
 		{#if isAdmin}
-			<MediaCardAdminToolbar {item} {showAdminMenu} onToggleMenu={toggleAdminMenu} />
+			<MediaCardAdminToolbar
+				{item}
+				bind:open={showAdminMenu}
+				onAction={(action) => adminPanel?.run(action)}
+			/>
 		{/if}
 	</div>
 
 	<div
+		bind:this={coverEl}
 		class="media-disc relative aspect-square w-full max-w-[13rem] overflow-hidden rounded-full border-2 bg-[rgb(var(--color-surface-raised))] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:max-w-[15rem] {highlighted
 			? 'border-amber-400 ring-4 ring-amber-400/60 ring-offset-2 ring-offset-[rgb(var(--color-bg))]'
 			: ''} {item.listType === 'wishlist'
@@ -79,6 +92,9 @@
 			: highlighted
 				? ''
 				: 'border-amber-500/45 dark:border-amber-500/35'}"
+		role="group"
+		aria-label="Details for {item.title}"
+		{@attach reveal}
 	>
 		{#if item.listType === 'wishlist'}
 			<div
@@ -140,6 +156,15 @@
 				{/if}
 			</div>
 		</div>
+
+		<MediaCoverTools
+			{item}
+			{isAdmin}
+			{albums}
+			{showAlbumWatchedToggle}
+			{showCollectionLink}
+			open={toolsOpen}
+		/>
 	</div>
 
 	<div class="flex min-h-0 w-full flex-1 flex-col">
@@ -154,90 +179,12 @@
 			>
 				{item.subtitle ?? ''}
 			</p>
-			{#if showCollectionLink}
-				<div class="mt-1 flex min-h-[1.375rem] items-center justify-center">
-					{#if collection}
-						<a
-							href="/albums/{collection.category}/{collection.id}"
-							class="inline-block max-w-full truncate rounded-full bg-amber-400/15 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase hover:bg-amber-400/25 dark:text-amber-400"
-						>
-							In {collection.title}
-						</a>
-					{/if}
-				</div>
-			{/if}
-		</div>
-
-		{#if isAdmin}
-			<div class="mt-2 flex min-h-[1.375rem] w-full shrink-0 flex-wrap justify-center gap-1 px-1">
-				{#each presetTags as tag (tag)}
-					{@const active = displayTags.includes(tag)}
-					<form
-						method="POST"
-						action="/admin/items?/updateTags"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update({ reset: false });
-							};
-						}}
-					>
-						<input type="hidden" name="id" value={item.id} />
-						<input type="hidden" name="tags" value={JSON.stringify(toggleTag(displayTags, tag))} />
-						<button
-							type="submit"
-							class="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase transition-colors {active
-								? 'bg-amber-400 text-stone-900'
-								: 'border border-dashed border-[rgb(var(--color-border))] text-[rgb(var(--color-text-secondary))] hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400'}"
-						>
-							{tag}
-						</button>
-					</form>
-				{/each}
-			</div>
-		{:else if displayTags.length > 0}
-			<div class="mt-2 flex min-h-[1.375rem] w-full shrink-0 flex-wrap justify-center gap-1 px-1">
-				{#each displayTags as tag (tag)}
-					<span
-						class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold tracking-wide text-stone-900 uppercase"
-					>
-						{tag}
-					</span>
-				{/each}
-			</div>
-		{/if}
-
-		<div class="min-h-0 flex-1" aria-hidden="true"></div>
-
-		<div class="w-full shrink-0 {isAdmin ? 'mt-3' : ''}">
-			{#if isAdmin}
-				<MediaCardAdminPanel
-					{item}
-					{albums}
-					{showAlbumWatchedToggle}
-					{showAdminMenu}
-					onCloseMenu={() => (showAdminMenu = false)}
-					onDeleteConfirm={() => (showDeleteConfirm = true)}
-					{showDeleteConfirm}
-					onCancelDelete={() => (showDeleteConfirm = false)}
-					onConfirmDelete={() => {
-						showDeleteConfirm = false;
-						deleteForm?.requestSubmit();
-					}}
-					bind:deleteForm
-				/>
-			{:else}
-				<div class="mt-2 min-h-[3.25rem] w-full">
-					{#if displayNotes}
-						<p
-							class="line-clamp-2 w-full rounded-[2rem] border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface))] px-3 py-2 text-center text-[10px] text-[rgb(var(--color-text-secondary))]"
-						>
-							{displayNotes}
-						</p>
-					{/if}
-				</div>
-			{/if}
 		</div>
 	</div>
+
+	{#if isAdmin}
+		<MediaCardAdminPanel bind:this={adminPanel} {item} />
+	{/if}
 </article>
 
 <style>

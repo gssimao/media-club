@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { DotsThree, X } from 'phosphor-svelte';
 	import type { MovieWatchProviders, WatchProvider } from '$lib/types/tmdb';
+	import { modal } from '$lib/utils/modal';
 
 	interface Props {
 		providers?: MovieWatchProviders | null;
@@ -10,6 +11,12 @@
 	let { providers = null, regionLabel = 'US' }: Props = $props();
 
 	const MAX_VISIBLE = 4;
+	/** Logo size plus the gap between logos (size-8 + gap-1.5), in px. */
+	const SLOT_WIDTH = 38;
+	const SLOT_GAP = 6;
+
+	/** Width of the logo row. 0 until measured in the browser. */
+	let rowWidth = $state(0);
 
 	let showAllProviders = $state(false);
 
@@ -21,8 +28,19 @@
 		);
 	});
 
-	const visibleProviders = $derived(streamProviders.slice(0, MAX_VISIBLE));
-	const overflowCount = $derived(Math.max(0, streamProviders.length - MAX_VISIBLE));
+	// Show only as many logos as the card is wide enough for, so the row never gets cut off
+	// mid-logo. When some are left out, the last slot becomes the "show all" button.
+	const visibleCount = $derived.by(() => {
+		const total = streamProviders.length;
+		const slots =
+			rowWidth > 0
+				? Math.max(2, Math.min(MAX_VISIBLE + 1, Math.floor((rowWidth + SLOT_GAP) / SLOT_WIDTH)))
+				: MAX_VISIBLE + 1;
+		if (total <= Math.min(MAX_VISIBLE, slots)) return total;
+		return slots - 1;
+	});
+	const visibleProviders = $derived(streamProviders.slice(0, visibleCount));
+	const overflowCount = $derived(Math.max(0, streamProviders.length - visibleCount));
 	const hasOverflow = $derived(overflowCount > 0);
 
 	const statusMessage = $derived.by(() => {
@@ -40,13 +58,7 @@
 	function closeAllProviders() {
 		showAllProviders = false;
 	}
-
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') closeAllProviders();
-	}
 </script>
-
-<svelte:window onkeydown={showAllProviders ? onKeydown : undefined} />
 
 {#snippet providerLogo(provider: WatchProvider, linked: boolean)}
 	{#if linked && providers?.link}
@@ -103,7 +115,7 @@
 		{/if}
 	</p>
 
-	<div class="flex min-h-8 items-center justify-center">
+	<div class="flex min-h-8 items-center justify-center" bind:clientWidth={rowWidth}>
 		{#if streamProviders.length > 0}
 			<ul class="flex flex-nowrap items-center justify-center gap-1.5 overflow-hidden">
 				{#each visibleProviders as provider (provider.id)}
@@ -142,11 +154,13 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="streaming-providers-title"
+		{@attach modal({ onEscape: () => closeAllProviders() })}
 	>
 		<button
 			type="button"
 			class="streaming-providers-dialog__backdrop"
 			aria-label="Close streaming providers"
+			tabindex="-1"
 			onclick={closeAllProviders}
 		></button>
 
@@ -239,7 +253,7 @@
 	.streaming-providers-dialog {
 		position: fixed;
 		inset: 0;
-		z-index: 90;
+		z-index: 95;
 		display: flex;
 		align-items: center;
 		justify-content: center;

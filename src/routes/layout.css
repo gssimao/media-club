@@ -10,6 +10,8 @@
 
 @layer base {
 	:root {
+		/* No web font is downloaded: the CSP (vite.config.ts) only allows same-origin styles
+		   and fonts. Inter is used when installed, otherwise the platform UI font. */
 		--font-sans:
 			'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui,
 			sans-serif;
@@ -38,7 +40,11 @@
 
 	body {
 		margin: 0;
+		/* Column layout so <main> stretches and the footer sits at the bottom on short pages. */
+		display: flex;
+		flex-direction: column;
 		min-height: 100vh;
+		min-height: 100dvh;
 		color: rgb(var(--color-text));
 		font-family: var(--font-sans);
 		background-color: rgb(var(--color-bg));
@@ -116,11 +122,24 @@
 		text-decoration: none;
 	}
 
+	main {
+		flex: 1 0 auto;
+		/* Flex items with auto margins (home page) would otherwise shrink to their content. */
+		width: 100%;
+	}
+
 	button,
 	input,
 	textarea,
 	select {
 		font: inherit;
+	}
+
+	/* SearchBar draws its own clear button; hide the browser's so there is never a second "x". */
+	input[type='search']::-webkit-search-cancel-button,
+	input[type='search']::-webkit-search-decoration {
+		-webkit-appearance: none;
+		appearance: none;
 	}
 
 	/* Smooth transitions for theme changes */
@@ -223,6 +242,17 @@
 		transform: rotate(360deg);
 	}
 }
+
+/* Stacking order (keep new layers on this scale):
+     20  PageShell sidebar and filter popovers
+     50  nav dial / header actions
+     55  mobile nav launcher
+     80  mobile nav overlay
+     95  dialogs and sheets (96 for a dialog opened from another dialog)
+    100  toasts
+    110  skip link
+   Dialogs must use `modal()` from $lib/utils/modal so they render on <body>,
+   above the dial, whatever they are nested inside. */
 
 @layer components {
 	/* Rounded design system — see design-theme.mdc */

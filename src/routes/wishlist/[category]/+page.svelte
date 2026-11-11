@@ -4,7 +4,7 @@
 	import MediaSearchPanel from '$lib/components/MediaSearchPanel.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
 	import { CATEGORY_PATHS } from '$lib/types/media';
-	import { FilmStrip, MagnifyingGlass, VinylRecord, BookOpen } from 'phosphor-svelte';
+	import { BookOpen, FilmStrip, MagnifyingGlass, MonitorPlay, VinylRecord } from 'phosphor-svelte';
 
 	let { data } = $props();
 
@@ -23,6 +23,10 @@
 		<NavLink href="/wishlist/movies" active={data.category === 'movie'}>
 			<FilmStrip size={16} weight="bold" />
 			Movies
+		</NavLink>
+		<NavLink href="/wishlist/shows" active={data.category === 'show'}>
+			<MonitorPlay size={16} weight="bold" />
+			Shows
 		</NavLink>
 		<NavLink href="/wishlist/music" active={data.category === 'music'}>
 			<VinylRecord size={16} weight="bold" />

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import GenrePickerPanel from '$lib/components/GenrePickerPanel.svelte';
+	import { modal } from '$lib/utils/modal';
 	import { DEFAULT_GENRE_FILTER_MODE, type GenreFilterMode } from '$lib/utils/movie-genres';
 	import { Tag } from 'phosphor-svelte';
 
@@ -36,11 +37,6 @@
 		genreFilterMode = mode;
 		onFilterChange(selectedGenres, mode);
 	}
-
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Escape') return;
-		closePanel();
-	}
 </script>
 
 {#if options.length > 0}
@@ -64,11 +60,16 @@
 	</button>
 
 	{#if showPanel}
-		<div class="genre-filter" role="presentation">
+		<div
+			class="genre-filter anim-fade"
+			role="presentation"
+			{@attach modal({ onEscape: () => closePanel() })}
+		>
 			<button
 				type="button"
 				class="genre-filter__backdrop"
 				aria-label="Close genre filter"
+				tabindex="-1"
 				onclick={closePanel}
 			></button>
 
@@ -88,13 +89,11 @@
 	{/if}
 {/if}
 
-<svelte:window onkeydown={showPanel ? onKeydown : undefined} />
-
 <style>
 	.genre-filter {
 		position: fixed;
 		inset: 0;
-		z-index: 90;
+		z-index: 95;
 	}
 
 	.genre-filter__backdrop {

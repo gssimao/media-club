@@ -11,9 +11,11 @@
 		album: Album;
 		displayCoverUrl?: string | null;
 		href?: string;
+		/** Fill the parent's width (library grid) instead of the fixed shelf-tile width. */
+		fluid?: boolean;
 	}
 
-	let { album, displayCoverUrl = null, href }: Props = $props();
+	let { album, displayCoverUrl = null, href, fluid = false }: Props = $props();
 
 	const link = $derived(href ?? `/albums/${album.category}/${album.id}`);
 	const cover = $derived(displayCoverUrl ?? album.coverUrl);
@@ -25,7 +27,9 @@
 
 <a
 	href={link}
-	class="group relative z-0 flex w-[8.5rem] shrink-0 flex-col hover:z-10 sm:w-[9.5rem]"
+	class="group relative z-0 flex flex-col hover:z-10 {fluid
+		? 'w-full'
+		: 'w-[8.5rem] shrink-0 sm:w-[9.5rem]'}"
 	onmouseenter={() => (cardHovered = true)}
 	onmouseleave={() => (cardHovered = false)}
 >
@@ -173,8 +177,16 @@
 		transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
-	a:hover .album-disc {
-		transform: translateY(-50%) translateX(24%) rotate(28deg);
+	/* Hover only where a real pointer exists: on touch screens :hover sticks after a tap
+	   and leaves the disc hanging out of the sleeve. */
+	@media (hover: hover) {
+		a:hover .album-disc {
+			transform: translateY(-50%) translateX(24%) rotate(28deg);
+		}
+
+		a:hover .dvd-disc-slot {
+			transform: translateX(42%) translateY(-12%) scale(1.06) rotate(-8deg);
+		}
 	}
 
 	.dvd-disc-slot {
@@ -186,10 +198,6 @@
 		aspect-ratio: 1;
 		transform: translateX(8%) translateY(4%);
 		transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-
-	a:hover .dvd-disc-slot {
-		transform: translateX(42%) translateY(-12%) scale(1.06) rotate(-8deg);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

@@ -15,6 +15,7 @@
 	import type { MediaItem } from '$lib/types/media';
 	import { Plus, Tag, Trash, X } from 'phosphor-svelte';
 	import { toast } from '$lib/stores/toast.svelte';
+	import { modal } from '$lib/utils/modal';
 
 	interface Props {
 		item: Pick<MediaItem, 'id' | 'metadata' | 'title'>;
@@ -59,10 +60,6 @@
 			: 'border border-amber-400/50 text-amber-800 hover:bg-amber-400/10 dark:text-amber-300'
 	);
 
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') onClose();
-	}
-
 	function toggleGenre(genre: string) {
 		draftGenres = toggleGenreSelection(draftGenres, genre);
 	}
@@ -94,10 +91,21 @@
 	}
 </script>
 
-<svelte:window onkeydown={onKeydown} />
-
-<div class="genre-picker" role="dialog" aria-modal="true" aria-labelledby="genre-picker-title">
-	<button type="button" class="genre-picker__backdrop" aria-label="Close" onclick={onClose}
+<!-- Single root on purpose: modal() moves it to <body>, so the hidden form and the
+     confirm dialog live inside it instead of beside it. -->
+<div
+	class="genre-picker"
+	role="dialog"
+	aria-modal="true"
+	aria-labelledby="genre-picker-title"
+	{@attach modal({ onEscape: () => onClose() })}
+>
+	<button
+		type="button"
+		class="genre-picker__backdrop"
+		aria-label="Close"
+		tabindex="-1"
+		onclick={onClose}
 	></button>
 
 	<div class="genre-picker__panel surface-round anim-rise">
@@ -260,47 +268,47 @@
 			<button type="submit" class="btn-primary px-5 py-2 text-xs">Save genres</button>
 		</form>
 	</div>
+
+	<form
+		bind:this={deleteForm}
+		method="POST"
+		action={deleteCustomGenreAction}
+		class="hidden"
+		use:enhance={() => {
+			return async ({ result, update }) => {
+				const deleted = genreToDelete;
+				genreToDelete = null;
+				if (result.type === 'failure') {
+					toast.error(String(result.data?.message ?? 'Could not delete genre.'));
+					return;
+				}
+				if (deleted) {
+					draftGenres = draftGenres.filter((g) => g.toLowerCase() !== deleted.toLowerCase());
+					pendingCustomGenres = pendingCustomGenres.filter(
+						(g) => g.toLowerCase() !== deleted.toLowerCase()
+					);
+					toast.success(`Removed custom genre “${deleted}” from your catalog.`);
+				}
+				await update({ reset: false });
+			};
+		}}
+	>
+		<input type="hidden" name="genre" value={genreToDelete ?? ''} />
+	</form>
+
+	<ConfirmDialog
+		open={genreToDelete !== null}
+		title="Delete custom genre?"
+		message={genreToDelete
+			? `Remove “${genreToDelete}” from every movie and streaming item? This cannot be undone.`
+			: ''}
+		confirmLabel="Delete genre"
+		cancelLabel="Cancel"
+		variant="danger"
+		onCancel={() => (genreToDelete = null)}
+		onConfirm={confirmDeleteCustomGenre}
+	/>
 </div>
-
-<form
-	bind:this={deleteForm}
-	method="POST"
-	action={deleteCustomGenreAction}
-	class="hidden"
-	use:enhance={() => {
-		return async ({ result, update }) => {
-			const deleted = genreToDelete;
-			genreToDelete = null;
-			if (result.type === 'failure') {
-				toast.error(String(result.data?.message ?? 'Could not delete genre.'));
-				return;
-			}
-			if (deleted) {
-				draftGenres = draftGenres.filter((g) => g.toLowerCase() !== deleted.toLowerCase());
-				pendingCustomGenres = pendingCustomGenres.filter(
-					(g) => g.toLowerCase() !== deleted.toLowerCase()
-				);
-				toast.success(`Removed custom genre “${deleted}” from your catalog.`);
-			}
-			await update({ reset: false });
-		};
-	}}
->
-	<input type="hidden" name="genre" value={genreToDelete ?? ''} />
-</form>
-
-<ConfirmDialog
-	open={genreToDelete !== null}
-	title="Delete custom genre?"
-	message={genreToDelete
-		? `Remove “${genreToDelete}” from every movie and streaming item? This cannot be undone.`
-		: ''}
-	confirmLabel="Delete genre"
-	cancelLabel="Cancel"
-	variant="danger"
-	onCancel={() => (genreToDelete = null)}
-	onConfirm={confirmDeleteCustomGenre}
-/>
 
 <style>
 	.genre-picker {

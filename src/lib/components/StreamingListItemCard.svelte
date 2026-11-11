@@ -4,7 +4,8 @@
 	import CoverImage from './CoverImage.svelte';
 	import GenreEditor from './GenreEditor.svelte';
 	import StreamingProviders from './StreamingProviders.svelte';
-	import { DotsThree, FilmStrip, Heart, Trash } from 'phosphor-svelte';
+	import CardOptionsMenu, { type CardMenuAction } from './CardOptionsMenu.svelte';
+	import { FilmStrip, Heart, Trash } from 'phosphor-svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 	import type { StreamingListItemView } from '$lib/server/streaming-lists';
 	import type { MovieWatchProviders } from '$lib/types/tmdb';
@@ -34,14 +35,26 @@
 
 	const label = $derived(item.year ? `${item.title} (${item.year})` : item.title);
 
-	function closeMenu() {
-		showMenu = false;
+	type StreamingAction = 'wishlist' | 'owned' | 'delete';
+
+	const menuActions: CardMenuAction<StreamingAction>[] = [
+		{ id: 'owned', label: 'Add to collection', icon: FilmStrip, tone: 'accent' },
+		{ id: 'wishlist', label: 'Add to wishlist', icon: Heart },
+		{ id: 'delete', label: 'Remove from list', icon: Trash, tone: 'danger' }
+	];
+
+	function runAction(action: StreamingAction) {
+		if (action === 'wishlist') showWishlistConfirm = true;
+		else if (action === 'owned') showOwnedConfirm = true;
+		else showDeleteConfirm = true;
 	}
 </script>
 
 <article
 	id="streaming-item-{item.id}"
-	class="group mx-auto flex h-full w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500"
+	class="group mx-auto flex h-full w-full max-w-[15rem] scroll-mt-32 flex-col items-center transition-[transform,filter] duration-500 {showMenu
+		? 'relative z-20'
+		: ''}"
 	onmouseenter={() => (cardHovered = true)}
 	onmouseleave={() => (cardHovered = false)}
 >
@@ -56,18 +69,16 @@
 			<span aria-hidden="true"></span>
 		{/if}
 
-		<button
-			type="button"
-			class="inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] text-[rgb(var(--color-text-secondary))] shadow-sm transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400 {showMenu
-				? 'border-amber-500 text-amber-700 dark:text-amber-400'
-				: ''}"
-			aria-label="Options for {item.title}"
-			aria-expanded={showMenu}
-			aria-controls="streaming-actions-{item.id}"
-			onclick={() => (showMenu = !showMenu)}
-		>
-			<DotsThree size={16} weight="bold" />
-		</button>
+		{#if isAdmin}
+			<CardOptionsMenu
+				menuId="streaming-actions-{item.id}"
+				triggerLabel="Options for {item.title}"
+				subject={item.title}
+				actions={menuActions}
+				bind:open={showMenu}
+				onSelect={runAction}
+			/>
+		{/if}
 	</div>
 
 	<div
@@ -87,8 +98,9 @@
 				<FilmStrip size={32} weight="bold" />
 			</div>
 		{/if}
+		<!-- Top center: a corner badge gets cut off by the round cover. -->
 		<span
-			class="absolute top-2 right-2 rounded-full bg-sky-500/90 px-2 py-0.5 text-[8px] font-black tracking-wide text-white uppercase"
+			class="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-sky-500/90 px-2 py-0.5 text-[8px] font-black tracking-wide text-white uppercase shadow-sm"
 		>
 			Stream
 		</span>
@@ -113,46 +125,6 @@
 			/>
 		</div>
 	</div>
-
-	{#if showMenu}
-		<div id="streaming-actions-{item.id}" class="mt-2 w-full shrink-0 space-y-2">
-			<button
-				type="button"
-				class="btn-secondary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"
-				onclick={() => {
-					closeMenu();
-					showWishlistConfirm = true;
-				}}
-			>
-				<Heart size={11} weight="bold" />
-				Add to wishlist
-			</button>
-
-			<button
-				type="button"
-				class="btn-primary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"
-				onclick={() => {
-					closeMenu();
-					showOwnedConfirm = true;
-				}}
-			>
-				<FilmStrip size={11} weight="bold" />
-				Add to collection
-			</button>
-
-			<button
-				type="button"
-				class="inline-flex w-full items-center justify-center gap-1 rounded-full border border-red-400/80 px-2.5 py-1.5 text-[10px] font-bold text-red-700 transition-colors hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
-				onclick={() => {
-					closeMenu();
-					showDeleteConfirm = true;
-				}}
-			>
-				<Trash size={11} weight="bold" />
-				Remove from list
-			</button>
-		</div>
-	{/if}
 </article>
 
 <form

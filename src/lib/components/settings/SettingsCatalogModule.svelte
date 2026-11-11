@@ -4,6 +4,7 @@
 	import { FilmStrip, WarningCircle, X } from 'phosphor-svelte';
 	import { tick } from 'svelte';
 	import { toast } from '$lib/stores/toast.svelte';
+	import { modal } from '$lib/utils/modal';
 	import type { TmdbGenreSyncMode } from '$lib/utils/movie-genres';
 
 	interface Props {
@@ -26,10 +27,6 @@
 		if (syncing) return;
 		dialogOpen = false;
 		pendingMode = null;
-	}
-
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') closeDialog();
 	}
 
 	async function startSync(mode: TmdbGenreSyncMode) {
@@ -72,19 +69,19 @@
 	</section>
 {/if}
 
-<svelte:window onkeydown={dialogOpen ? onKeydown : undefined} />
-
 {#if dialogOpen}
 	<div
 		class="sync-dialog anim-fade"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="sync-genres-dialog-title"
+		{@attach modal({ onEscape: () => closeDialog() })}
 	>
 		<button
 			type="button"
 			class="sync-dialog__backdrop"
 			aria-label="Cancel sync"
+			tabindex="-1"
 			disabled={syncing}
 			onclick={closeDialog}
 		></button>

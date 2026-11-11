@@ -20,7 +20,7 @@
 </script>
 
 <div
-	class="pointer-events-none fixed right-4 bottom-4 z-[90] flex w-[min(100%,24rem)] flex-col gap-3 max-md:bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))]"
+	class="pointer-events-none fixed right-4 bottom-4 z-[100] flex w-[min(calc(100vw-2rem),24rem)] flex-col gap-3 max-md:bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))]"
 	aria-live="polite"
 	aria-relevant="additions"
 >

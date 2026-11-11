@@ -133,8 +133,32 @@
 			padding-right: 1rem;
 		}
 
+		/* Keep the kicker and title clear of the fixed header buttons in the top-right corner
+		   (2.35rem each, 0.35rem apart; count comes from the root layout). */
+		.page-shell__now-playing {
+			--header-actions-w: calc(
+				var(--header-action-count, 3) * 2.35rem + (var(--header-action-count, 3) - 1) * 0.35rem
+			);
+			padding-right: calc(var(--header-actions-w) + var(--nav-dial-inset) - 0.5rem);
+			min-height: 2.35rem;
+			justify-content: center;
+		}
+
+		.page-shell__description {
+			margin-right: calc(-1 * (var(--header-actions-w) + var(--nav-dial-inset) - 0.5rem));
+		}
+
 		.page-shell__title {
 			font-size: 1.2rem;
+		}
+
+		/* Controls flow as a wrapping row of pills instead of one pill per line,
+		   so the catalog stays on the first screen. */
+		.page-shell__controls {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 0.5rem;
 		}
 
 		.page-shell__content {

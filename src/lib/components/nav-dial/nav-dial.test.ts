@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	angularDistance,
+	buildNavItems,
 	dialHasOpenedBefore,
 	getSavedDialRotation,
 	itemAnglesForCount,
@@ -104,5 +105,38 @@ describe('dial rotation persistence', () => {
 		saveDialRotation(instanceId, 135);
 		expect(getSavedDialRotation(instanceId)).toBe(135);
 		expect(shouldRestoreDialRotation(instanceId)).toBe(true);
+	});
+});
+
+describe('buildNavItems', () => {
+	const items = buildNavItems(null);
+	const activeLabel = (path: string) => items.find((item) => item.match(path))?.label;
+
+	it('matches each category page', () => {
+		expect(activeLabel('/movies')).toBe('Movies');
+		expect(activeLabel('/shows/watching')).toBe('Shows');
+		expect(activeLabel('/music')).toBe('Music');
+		expect(activeLabel('/books')).toBe('Books');
+		expect(activeLabel('/wishlist/books')).toBe('Wishlist');
+	});
+
+	it('keeps the category selected on its collection pages', () => {
+		expect(activeLabel('/albums/movie')).toBe('Movies');
+		expect(activeLabel('/albums/movie/abc-123')).toBe('Movies');
+		expect(activeLabel('/albums/show')).toBe('Shows');
+		expect(activeLabel('/albums/music/abc-123')).toBe('Music');
+		expect(activeLabel('/albums/book')).toBe('Books');
+	});
+
+	it('does not confuse categories that share a prefix', () => {
+		expect(activeLabel('/albums/movies-extra')).toBeUndefined();
+		expect(activeLabel('/')).toBe('Home');
+	});
+
+	it('swaps the last node between Log in and Admin', () => {
+		expect(activeLabel('/login')).toBe('Log in');
+		const adminItems = buildNavItems({ id: 'u1', username: 'admin' });
+		expect(adminItems.find((item) => item.match('/admin/streaming'))?.label).toBe('Admin');
+		expect(adminItems.some((item) => item.label === 'Log in')).toBe(false);
 	});
 });

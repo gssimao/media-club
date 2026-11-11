@@ -48,6 +48,8 @@
 			onclick={() => {
 				value = '';
 				onInput('');
+				// Keep typing without having to tap back into the field.
+				inputEl?.focus();
 			}}
 		>
 			<X size={16} weight="bold" />

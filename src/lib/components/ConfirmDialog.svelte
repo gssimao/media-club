@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils/cn';
+	import { modal } from '$lib/utils/modal';
 	import { WarningCircle, X } from 'phosphor-svelte';
 
 	interface Props {
@@ -23,13 +24,7 @@
 		onConfirm,
 		onCancel
 	}: Props = $props();
-
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') onCancel();
-	}
 </script>
-
-<svelte:window onkeydown={open ? onKeydown : undefined} />
 
 {#if open}
 	<div
@@ -37,8 +32,14 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="confirm-dialog-title"
+		{@attach modal({ onEscape: () => onCancel() })}
 	>
-		<button type="button" class="confirm-dialog__backdrop" aria-label="Cancel" onclick={onCancel}
+		<button
+			type="button"
+			class="confirm-dialog__backdrop"
+			aria-label="Cancel"
+			tabindex="-1"
+			onclick={onCancel}
 		></button>
 
 		<div
@@ -102,7 +103,8 @@
 	.confirm-dialog {
 		position: fixed;
 		inset: 0;
-		z-index: 95;
+		/* Always opened from a card, sheet, or another dialog, so it sits one step above them. */
+		z-index: 96;
 		display: flex;
 		align-items: center;
 		justify-content: center;

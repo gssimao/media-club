@@ -109,7 +109,9 @@
 				<span class="dial-node-button">
 					<Icon size={22} weight="bold" />
 				</span>
-				{#if active || (preview && (dragging || animating))}
+				<!-- The hub already names the current page, so nodes are only labelled while
+				     the dial is turning. A resting label here collides with the rim and selector. -->
+				{#if preview && (dragging || animating)}
 					<span class="dial-node-label">{item.label}</span>
 				{/if}
 			</span>

@@ -246,7 +246,7 @@
 		cursor: not-allowed;
 	}
 
-	:global(.dark) .collection-panel__bulk-btn {
+	:global([data-theme='dark']) .collection-panel__bulk-btn {
 		color: rgb(252 211 77);
 	}
 
@@ -294,7 +294,7 @@
 		color: rgb(120 113 108);
 	}
 
-	:global(.dark) .collection-panel__pill--idle {
+	:global([data-theme='dark']) .collection-panel__pill--idle {
 		color: rgb(168 162 158);
 	}
 
@@ -309,7 +309,7 @@
 		color: rgb(185 28 28);
 	}
 
-	:global(.dark) .collection-panel__pill--excluded {
+	:global([data-theme='dark']) .collection-panel__pill--excluded {
 		color: rgb(252 165 165);
 	}
 

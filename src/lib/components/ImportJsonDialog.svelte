@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { IMPORT_JSON_EXAMPLE } from '$lib/import-json-example';
 	import { toast } from '$lib/stores/toast.svelte';
+	import { modal } from '$lib/utils/modal';
 	import { FileArrowUp, X } from 'phosphor-svelte';
 
 	interface Props {
@@ -14,10 +15,6 @@
 	let payload = $state('');
 	let fileName = $state('');
 	let importing = $state(false);
-
-	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && !importing) onClose();
-	}
 
 	async function onFileSelected(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
@@ -45,19 +42,19 @@
 	}
 </script>
 
-<svelte:window onkeydown={open ? onKeydown : undefined} />
-
 {#if open}
 	<div
 		class="import-dialog anim-fade"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="import-dialog-title"
+		{@attach modal({ onEscape: () => handleClose() })}
 	>
 		<button
 			type="button"
 			class="import-dialog__backdrop"
 			aria-label="Close import dialog"
+			tabindex="-1"
 			disabled={importing}
 			onclick={handleClose}
 		></button>

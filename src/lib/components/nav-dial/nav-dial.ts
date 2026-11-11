@@ -30,12 +30,25 @@ export const DIAL_SNAP_MS = 450;
 /** Extra degrees before switching sticky preview during drag (wider drop zone). */
 export const SELECTOR_STICKINESS_DEG = 12;
 
+/** True when `path` is `base` itself or a page nested under it (`/movies`, `/movies/x`). */
+function isUnder(path: string, base: string): boolean {
+	return path === base || path.startsWith(`${base}/`);
+}
+
+/**
+ * A category owns its own page plus its collection pages (`/albums/movie/...`),
+ * so the dial stays on Movies while browsing a movie collection.
+ */
+function matchCategory(pagePath: string, albumCategory: string) {
+	return (path: string) => isUnder(path, pagePath) || isUnder(path, `/albums/${albumCategory}`);
+}
+
 const catalogItems: NavItem[] = [
 	{ href: '/', label: 'Home', icon: House, match: (p) => p === '/' },
-	{ href: '/movies', label: 'Movies', icon: FilmStrip, match: (p) => p.startsWith('/movies') },
-	{ href: '/shows', label: 'Shows', icon: MonitorPlay, match: (p) => p.startsWith('/shows') },
-	{ href: '/music', label: 'Music', icon: VinylRecord, match: (p) => p.startsWith('/music') },
-	{ href: '/books', label: 'Books', icon: BookOpen, match: (p) => p.startsWith('/books') },
+	{ href: '/movies', label: 'Movies', icon: FilmStrip, match: matchCategory('/movies', 'movie') },
+	{ href: '/shows', label: 'Shows', icon: MonitorPlay, match: matchCategory('/shows', 'show') },
+	{ href: '/music', label: 'Music', icon: VinylRecord, match: matchCategory('/music', 'music') },
+	{ href: '/books', label: 'Books', icon: BookOpen, match: matchCategory('/books', 'book') },
 	{
 		href: '/wishlist/movies',
 		label: 'Wishlist',
