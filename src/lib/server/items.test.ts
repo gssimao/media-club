@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as schema from '$lib/server/db/schema';
 import type { AppDatabase } from '$lib/server/db';
-import { addItem, getItemById, updateItemCover } from './items';
+import { addItem, getItemById, listRandomCoverUrls, updateItemCover } from './items';
 
 describe('updateItemCover', () => {
 	let sqlite: Database.Database;
@@ -67,5 +67,73 @@ describe('updateItemCover', () => {
 		const item = await getItemById(db, id!);
 		expect(item?.metadata?.posterPath).toBe('/new.jpg');
 		expect(item?.metadata?.tmdbId).toBe(552);
+	});
+});
+
+describe('listRandomCoverUrls', () => {
+	let sqlite: Database.Database;
+	let db: AppDatabase;
+
+	beforeAll(async () => {
+		sqlite = new Database(':memory:');
+		const localDb = drizzle(sqlite, { schema });
+		migrate(localDb, { migrationsFolder: join(process.cwd(), 'drizzle') });
+		db = localDb as unknown as AppDatabase;
+
+		const base = { subtitle: null, year: null };
+		await addItem(db, 'movie', 'owned', {
+			...base,
+			externalId: '1',
+			title: 'Heat',
+			coverUrl: 'https://example.com/heat.jpg'
+		});
+		// Same title on the wishlist shares its cover with the owned copy.
+		await addItem(db, 'movie', 'wishlist', {
+			...base,
+			externalId: '1',
+			title: 'Heat',
+			coverUrl: 'https://example.com/heat.jpg'
+		});
+		await addItem(db, 'music', 'owned', {
+			...base,
+			externalId: '2',
+			title: 'Kind of Blue',
+			coverUrl: 'https://example.com/blue.jpg'
+		});
+		await addItem(db, 'book', 'wishlist', {
+			...base,
+			externalId: '3',
+			title: 'Dune',
+			coverUrl: 'https://example.com/dune.jpg'
+		});
+		await addItem(db, 'show', 'owned', {
+			...base,
+			externalId: '4',
+			title: 'No Cover',
+			coverUrl: null
+		});
+		await addItem(db, 'show', 'owned', {
+			...base,
+			externalId: '5',
+			title: 'Blank Cover',
+			coverUrl: ''
+		});
+	});
+
+	afterAll(() => {
+		sqlite.close();
+	});
+
+	it('returns each cover once, across categories and list types, skipping missing covers', async () => {
+		const covers = await listRandomCoverUrls(db);
+		expect([...covers].sort()).toEqual([
+			'https://example.com/blue.jpg',
+			'https://example.com/dune.jpg',
+			'https://example.com/heat.jpg'
+		]);
+	});
+
+	it('respects the limit', async () => {
+		expect(await listRandomCoverUrls(db, 2)).toHaveLength(2);
 	});
 });

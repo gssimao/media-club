@@ -1,4 +1,4 @@
-import { and, count, desc, eq, isNull, or } from 'drizzle-orm';
+import { and, count, desc, eq, isNotNull, isNull, ne, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { albums, items, streamingListItems } from '$lib/server/db/schema';
 import { isFormatLikeNote } from '$lib/utils/format-tags';
@@ -418,6 +418,21 @@ export async function moveToOwned(
 	await db.update(items).set({ listType: 'owned', updatedAt: new Date() }).where(eq(items.id, id));
 
 	return { ok: true, itemId: id };
+}
+
+/**
+ * Random sample of distinct cover URLs across every category and list type.
+ * Feeds the decorative floating covers on the home page.
+ */
+export async function listRandomCoverUrls(db: AppDatabase, limit = 40): Promise<string[]> {
+	const rows = await db
+		.selectDistinct({ coverUrl: items.coverUrl })
+		.from(items)
+		.where(and(isNotNull(items.coverUrl), ne(items.coverUrl, '')))
+		.orderBy(sql`random()`)
+		.limit(limit);
+
+	return rows.flatMap((row) => (row.coverUrl ? [row.coverUrl] : []));
 }
 
 export async function getRecentItems(db: AppDatabase, limit = 8) {

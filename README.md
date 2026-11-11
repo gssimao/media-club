@@ -89,7 +89,7 @@ Books use Open Library and need no API key.
 
 ## Customizing colors
 
-Edit [`src/lib/theme/palette.ts`](src/lib/theme/palette.ts), then run `npm run theme` to regenerate `src/routes/theme.css`. Never edit `theme.css` by hand.
+Edit [`src/lib/theme/palette.ts`](src/lib/theme/palette.ts), then run `npm run theme` to regenerate `src/routes/theme.css`. Never edit `theme.css` by hand. The four home page glow colors (`glowOrange`, `glowRed`, `glowBlue`, `glowGreen`) are set there too.
 
 ## Contributing
 

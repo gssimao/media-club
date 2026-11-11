@@ -13,6 +13,7 @@
 		VinylRecord
 	} from 'phosphor-svelte';
 	import HeaderActions from '$lib/components/HeaderActions.svelte';
+	import HomeAmbience from '$lib/components/HomeAmbience.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { CATEGORY_PATHS } from '$lib/types/media';
 	import type { Component } from 'svelte';
@@ -222,6 +223,8 @@
 		content="Self-hosted media catalog for movies, TV shows, vinyl, and books."
 	/>
 </svelte:head>
+
+<HomeAmbience covers={data.ambientCovers} />
 
 <div class="home-actions">
 	<HeaderActions showLogout={!!data.user} />

@@ -27,7 +27,11 @@ const CSS_VARS: Record<keyof ThemePalette, string> = {
 	accentHover: '--color-accent-hover',
 	accentLight: '--color-accent-light',
 	secondary: '--color-secondary',
-	secondaryHover: '--color-secondary-hover'
+	secondaryHover: '--color-secondary-hover',
+	glowOrange: '--color-glow-orange',
+	glowRed: '--color-glow-red',
+	glowBlue: '--color-glow-blue',
+	glowGreen: '--color-glow-green'
 };
 
 function hexToRgb(hex: string): [number, number, number] {

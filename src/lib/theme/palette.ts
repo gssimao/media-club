@@ -40,6 +40,14 @@ export interface ThemePalette {
 	secondary: string;
 	/** Secondary blue hover state. */
 	secondaryHover: string;
+	/** Home page screen glow: burnt orange light spilling in from the page edges. */
+	glowOrange: string;
+	/** Home page screen glow: deep red. */
+	glowRed: string;
+	/** Home page screen glow: deep blue. */
+	glowBlue: string;
+	/** Home page screen glow: deep green. */
+	glowGreen: string;
 }
 
 /** Light theme — warm parchment "daylight record shop". */
@@ -55,7 +63,11 @@ export const light: ThemePalette = {
 	accentHover: '#DE9E00',
 	accentLight: '#F8EBCB',
 	secondary: '#00539B',
-	secondaryHover: '#003C78'
+	secondaryHover: '#003C78',
+	glowOrange: '#C8601C',
+	glowRed: '#A8322A',
+	glowBlue: '#2C5C96',
+	glowGreen: '#3A7A4E'
 };
 
 /** Dark theme — warm late-night video store. */
@@ -71,5 +83,9 @@ export const dark: ThemePalette = {
 	accentHover: '#FFC832',
 	accentLight: '#504628',
 	secondary: '#5096D2',
-	secondaryHover: '#64AAE6'
+	secondaryHover: '#64AAE6',
+	glowOrange: '#D9661F',
+	glowRed: '#B5302A',
+	glowBlue: '#2A5FA5',
+	glowGreen: '#2F7D50'
 };
