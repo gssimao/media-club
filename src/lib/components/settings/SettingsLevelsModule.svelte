@@ -123,15 +123,15 @@
 	}
 
 	.meter-label {
-		font-size: 0.62rem;
-		font-weight: 900;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: none;
+		letter-spacing: 0;
 		color: rgb(var(--color-text-secondary));
 	}
 
 	.meter-count {
-		font-size: 0.55rem;
+		font-size: 0.6875rem;
 		font-weight: 600;
 		line-height: 1.25;
 		text-align: center;
@@ -140,7 +140,7 @@
 
 	@media (min-width: 480px) {
 		.meter-count {
-			font-size: 0.6rem;
+			font-size: 0.75rem;
 			white-space: nowrap;
 		}
 	}

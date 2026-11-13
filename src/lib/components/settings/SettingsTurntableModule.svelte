@@ -81,9 +81,9 @@
 		display: flex;
 		justify-content: space-between;
 		width: 6.5rem;
-		font-size: 0.6rem;
-		font-weight: 900;
-		letter-spacing: 0.05em;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0;
 		color: rgb(var(--color-text-tertiary));
 	}
 
@@ -154,12 +154,14 @@
 	}
 
 	.rpm-pill {
+		min-width: 44px;
+		min-height: 44px;
 		padding: 0.3rem 0.7rem;
 		border-radius: 9999px;
 		border: 1px solid rgb(var(--color-border));
 		background: transparent;
-		font-size: 0.68rem;
-		font-weight: 900;
+		font-size: 0.75rem;
+		font-weight: 600;
 		color: rgb(var(--color-text-secondary));
 		cursor: pointer;
 		transition:

@@ -74,8 +74,8 @@
 	// Shelf density from Settings — Compact packs more discs per row (they scale down fluidly).
 	const gridClass = $derived(
 		settings.density === 'compact'
-			? 'grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
-			: 'grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+			? 'grid grid-cols-2 gap-x-4 gap-y-6 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
+			: 'grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
 	);
 </script>
 
@@ -91,7 +91,7 @@
 
 		<div class="media-grid__body space-y-6">
 			<div class="flex items-center justify-between">
-				<p class="text-sm font-bold tracking-wide text-stone-600 uppercase dark:text-stone-400">
+				<p class="text-sm font-bold tracking-normal text-stone-600 normal-case dark:text-stone-400">
 					{#if sectionTitle}
 						{sectionTitle}
 						<span class="font-medium text-[rgb(var(--color-text-tertiary))] normal-case">
@@ -106,7 +106,7 @@
 						<button
 							onclick={onAddFolder}
 							aria-describedby="add-album-tip"
-							class="flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-2 text-xs font-bold tracking-wide text-amber-700 uppercase transition-all hover:bg-amber-400/20 dark:text-amber-400"
+							class="flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-2 text-xs font-bold tracking-normal text-amber-700 normal-case transition-all hover:bg-amber-400/20 dark:text-amber-400"
 						>
 							<FolderPlus size={14} weight="bold" />
 							Add Collection

@@ -14,11 +14,11 @@
 	<div class="console-head">
 		<span class="console-brand">
 			<span class="led led--pulse" aria-hidden="true"></span>
-			Media Club · Control Booth
+			Your preferences
 		</span>
 		<button type="button" class="reset-btn" onclick={() => settings.reset()}>
 			<ArrowCounterClockwise size={13} weight="bold" />
-			Reset booth
+			Reset preferences
 		</button>
 	</div>
 
@@ -57,10 +57,10 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		font-size: 0.65rem;
-		font-weight: 900;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		text-transform: none;
 		color: rgb(var(--color-text-secondary));
 	}
 
@@ -68,14 +68,15 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		padding: 0.4rem 0.9rem;
+		padding: 0.5rem 0.9rem;
+		min-height: 44px;
 		border-radius: 9999px;
 		border: 1px solid rgb(var(--color-border));
 		background: rgb(var(--color-bg) / 0.6);
-		font-size: 0.65rem;
-		font-weight: 800;
+		font-size: 0.8125rem;
+		font-weight: 500;
 		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		text-transform: none;
 		color: rgb(var(--color-text-secondary));
 		cursor: pointer;
 		transition:
@@ -106,7 +107,7 @@
 
 	.console-grid :global(.module) {
 		min-width: 0;
-		border-radius: 1.75rem;
+		border-radius: 1rem;
 		border: 1px solid rgb(var(--color-border));
 		background: rgb(var(--color-bg) / 0.55);
 		box-shadow: inset 0 1px 4px rgb(0 0 0 / 0.06);
@@ -118,10 +119,10 @@
 		align-items: center;
 		gap: 0.5rem;
 		margin: 0 0 1rem;
-		font-size: 0.7rem;
-		font-weight: 900;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
+		font-size: 0.875rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		text-transform: none;
 		color: rgb(var(--color-text-secondary));
 	}
 
@@ -150,7 +151,7 @@
 
 	.console-grid :global(.hint) {
 		margin: 0.9rem 0 0;
-		font-size: 0.72rem;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		line-height: 1.4;
 		color: rgb(var(--color-text-tertiary));

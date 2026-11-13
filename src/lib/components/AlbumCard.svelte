@@ -42,7 +42,7 @@
 				<div class="dvd-spine" aria-hidden="true"></div>
 				<div
 					class={cn(
-						'dvd-front aspect-[7/10] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-shadow duration-300 group-hover:shadow-lg',
+						'dvd-front aspect-[7/10] overflow-hidden rounded-xl border shadow-md transition-shadow duration-300 group-hover:shadow-lg',
 						colorPreset.border,
 						cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
 					)}
@@ -67,7 +67,7 @@
 				<div class="sleeve-spine" aria-hidden="true"></div>
 				<div
 					class={cn(
-						'sleeve-front aspect-[3/4] overflow-hidden rounded-[1.5rem] border-2 shadow-md transition-shadow duration-300 group-hover:shadow-lg',
+						'sleeve-front aspect-[3/4] overflow-hidden rounded-xl border shadow-md transition-shadow duration-300 group-hover:shadow-lg',
 						colorPreset.border,
 						cover ? 'bg-[rgb(var(--color-surface))] dark:bg-stone-900' : colorPreset.background
 					)}
@@ -90,11 +90,11 @@
 		{/if}
 	</div>
 	<div class="mt-2.5 px-0.5">
-		<h3 class="line-clamp-2 text-xs font-bold text-stone-900 dark:text-amber-50">
+		<h3 class="line-clamp-2 text-sm font-medium text-stone-900 dark:text-amber-50">
 			{album.title}
 		</h3>
 		<p
-			class="mt-0.5 text-[10px] font-semibold text-[rgb(var(--color-text-tertiary))] dark:text-stone-400"
+			class="mt-0.5 text-xs font-normal text-[rgb(var(--color-text-tertiary))] dark:text-stone-400"
 		>
 			{album.itemCount === 1 ? '1 item' : `${album.itemCount} items`}
 		</p>

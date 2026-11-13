@@ -38,12 +38,12 @@
 		aria-label={placeholder}
 		bind:value
 		oninput={() => onInput(value)}
-		class="input-round w-full py-3 pr-11 pl-11 text-sm"
+		class="input-round w-full py-3 pr-14 pl-11 text-base"
 	/>
 	{#if value}
 		<button
 			type="button"
-			class="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[rgb(var(--color-text-tertiary))] transition-colors hover:bg-[rgb(var(--color-accent-light))] hover:text-[rgb(var(--color-text))]"
+			class="absolute top-1/2 right-1 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-[rgb(var(--color-text-tertiary))] transition-colors hover:bg-[rgb(var(--color-accent-light))] hover:text-[rgb(var(--color-text))]"
 			aria-label="Clear search"
 			onclick={() => {
 				value = '';

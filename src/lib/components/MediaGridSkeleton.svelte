@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { navigating, page } from '$app/state';
 	import MediaCardSkeleton from '$lib/components/MediaCardSkeleton.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
 
@@ -12,19 +13,22 @@
 
 	let { isAdmin = false, showSearch = true, showSectionHeader = true, count }: Props = $props();
 
+	const record = $derived(
+		(navigating.to?.url.pathname ?? page.url.pathname).split('/').includes('music')
+	);
 	const placeholderCount = $derived(count ?? (settings.density === 'compact' ? 8 : 6));
 
 	const gridClass = $derived(
 		settings.density === 'compact'
-			? 'grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
-			: 'grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+			? 'grid grid-cols-2 gap-x-4 gap-y-6 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
+			: 'grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
 	);
 </script>
 
 <div class="media-grid-skeleton" aria-busy="true" aria-label="Loading catalog">
 	{#if showSearch}
 		<div class="media-grid-skeleton__search">
-			<div class="skeleton h-[2.75rem] w-full rounded-full"></div>
+			<div class="skeleton h-[3.125rem] w-full rounded-xl"></div>
 		</div>
 	{/if}
 
@@ -38,7 +42,7 @@
 		<div class={gridClass}>
 			{#each Array.from({ length: placeholderCount }, (_, index) => index) as index (index)}
 				<div class="flex h-full min-w-0 flex-col">
-					<MediaCardSkeleton {isAdmin} />
+					<MediaCardSkeleton {isAdmin} {record} />
 				</div>
 			{/each}
 		</div>

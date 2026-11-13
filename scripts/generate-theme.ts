@@ -10,7 +10,7 @@
  * keep working), and prints WCAG contrast warnings for risky text/background pairs.
  */
 import { writeFileSync } from 'node:fs';
-import { dark, light, type ThemePalette } from '../src/lib/theme/palette.ts';
+import { brandRamp, dark, light, type ThemePalette } from '../src/lib/theme/palette.ts';
 
 const OUTPUT_PATH = 'src/routes/theme.css';
 
@@ -120,6 +120,12 @@ const css = `/*
  * Values are space-separated RGB triples so components can apply opacity,
  * e.g. rgb(var(--color-accent) / 0.5).
  */
+
+@theme {
+${Object.entries(brandRamp)
+	.map(([step, color]) => '\t--color-amber-' + step + ': ' + color + ';')
+	.join('\n')}
+}
 
 ${themeBlock(':root', 'light', light)}
 

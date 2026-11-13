@@ -1,480 +1,229 @@
 <script lang="ts">
 	import {
+		ArrowRight,
 		BookOpen,
-		Faders,
 		FilmStrip,
 		Heart,
-		House,
 		MonitorPlay,
 		Pause,
 		Play,
-		SignIn,
-		UserGear,
 		VinylRecord
 	} from 'phosphor-svelte';
-	import HeaderActions from '$lib/components/HeaderActions.svelte';
 	import HomeAmbience from '$lib/components/HomeAmbience.svelte';
+	import VinylDisc from '$lib/components/VinylDisc.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
+	import { prefersReducedMotion } from 'svelte/motion';
 	import { CATEGORY_PATHS } from '$lib/types/media';
-	import type { Component } from 'svelte';
-
 	let { data } = $props();
-
+	let paused = $state(false);
+	const motionAllowed = $derived(settings.motion !== 'reduced' && !prefersReducedMotion.current);
 	const icons = {
 		movie: FilmStrip,
 		show: MonitorPlay,
 		music: VinylRecord,
 		book: BookOpen
 	} as const;
-
-	const CD_CENTER = 260;
-	const CD_NAV_RADIUS = 175;
-	const CD_BTN_SIZE = 56;
-	const CD_BTN_HALF = CD_BTN_SIZE / 2;
-
-	const HOVER_PLAYBACK_RATE = 0.05;
-	const NORMAL_PLAYBACK_RATE = 1;
-	const RATE_TWEEN_MS = 1500;
-
-	type CdNavButton = {
-		href: string;
-		label: string;
-		icon: Component<{ size?: number; weight?: 'bold' | 'regular' | 'fill' }>;
-		variant: 'primary' | 'secondary';
-		angle: number;
-	};
-
-	const catalogNav = [
-		{ href: '/', label: 'Home', icon: House },
-		{ href: '/movies', label: 'Movies', icon: FilmStrip },
-		{ href: '/shows', label: 'Shows', icon: MonitorPlay },
-		{ href: '/music', label: 'Music', icon: VinylRecord },
-		{ href: '/books', label: 'Books', icon: BookOpen },
-		{ href: '/wishlist/movies', label: 'Wishlist', icon: Heart },
-		{ href: '/settings', label: 'Settings', icon: Faders }
-	] as const;
-
-	const cdNavButtons = $derived.by((): CdNavButton[] => {
-		const items = data.user
-			? [...catalogNav, { href: '/admin', label: 'Admin', icon: UserGear }]
-			: [...catalogNav, { href: '/login', label: 'Log in', icon: SignIn }];
-		const count = items.length;
-
-		return items.map((item, i) => ({
-			...item,
-			variant: item.href === '/' ? ('primary' as const) : ('secondary' as const),
-			angle: (360 / count) * i
-		}));
-	});
-
-	let cdSpinEl = $state<SVGGElement | undefined>(undefined);
-
-	let spinAnim: Animation | undefined;
-	let counterAnims: Animation[] = [];
-	let rateTweenFrame: number | undefined;
-	let currentPlaybackRate = NORMAL_PLAYBACK_RATE;
-	let slowPinned = $state(false);
-	let isHovering = false;
-
-	function applyPlaybackRate(rate: number) {
-		if (spinAnim) spinAnim.playbackRate = rate;
-		for (const counter of counterAnims) {
-			counter.playbackRate = rate;
-		}
-	}
-
-	function cdNavPosition(angleDeg: number) {
-		const rad = (angleDeg * Math.PI) / 180;
-		return {
-			x: CD_CENTER + CD_NAV_RADIUS * Math.sin(rad),
-			y: CD_CENTER - CD_NAV_RADIUS * Math.cos(rad)
-		};
-	}
-
-	function easeOutCubic(t: number) {
-		return 1 - (1 - t) ** 3;
-	}
-
-	function easeInCubic(t: number) {
-		return t ** 3;
-	}
-
-	function cancelRateTween() {
-		if (rateTweenFrame !== undefined) {
-			cancelAnimationFrame(rateTweenFrame);
-			rateTweenFrame = undefined;
-		}
-	}
-
-	function tweenPlaybackRate(
-		targetRate: number,
-		durationMs: number,
-		easing: (t: number) => number
-	) {
-		if (!spinAnim) return;
-
-		cancelRateTween();
-
-		const startRate = currentPlaybackRate;
-		const startTime = performance.now();
-
-		function tick(now: number) {
-			const t = Math.min((now - startTime) / durationMs, 1);
-			currentPlaybackRate = startRate + (targetRate - startRate) * easing(t);
-			applyPlaybackRate(currentPlaybackRate);
-
-			if (t < 1) {
-				rateTweenFrame = requestAnimationFrame(tick);
-			} else {
-				rateTweenFrame = undefined;
-			}
-		}
-
-		rateTweenFrame = requestAnimationFrame(tick);
-	}
-
-	function slowDown() {
-		tweenPlaybackRate(HOVER_PLAYBACK_RATE, RATE_TWEEN_MS, easeOutCubic);
-	}
-
-	function speedUp() {
-		tweenPlaybackRate(NORMAL_PLAYBACK_RATE, RATE_TWEEN_MS, easeInCubic);
-	}
-
-	function onCdMouseEnter() {
-		isHovering = true;
-		slowDown();
-	}
-
-	function onCdMouseLeave() {
-		isHovering = false;
-		if (!slowPinned) {
-			speedUp();
-		}
-	}
-
-	function toggleSlow() {
-		slowPinned = !slowPinned;
-		if (slowPinned) {
-			slowDown();
-		} else if (!isHovering) {
-			speedUp();
-		}
-	}
-
-	$effect(() => {
-		const el = cdSpinEl;
-		const navCount = cdNavButtons.length;
-		// Settings are reactive — RPM or motion changes rebuild the animations.
-		const spinPeriodMs = settings.spinPeriodMs;
-		const motionReducedInApp = settings.motion === 'reduced';
-		if (!el) return;
-
-		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		if (reducedMotion || motionReducedInApp) return;
-
-		const timing = {
-			duration: spinPeriodMs,
-			iterations: Infinity,
-			easing: 'linear'
-		} as const;
-
-		const anim = el.animate(
-			[{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
-			timing
-		);
-
-		// Counter-rotate each icon at the same rate so they stay upright while orbiting.
-		// Query the live DOM instead of reactive bind:this refs — array bindings retrigger
-		// this effect on every slot mount and were resetting the disc mid-spin.
-		void navCount;
-		const iconEls = el.querySelectorAll<HTMLSpanElement>('.cd-nav-icon');
-		const counters = [...iconEls].map((icon) =>
-			icon.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(-360deg)' }], timing)
-		);
-
-		// Align start times so the counter-rotation cancels the disc rotation exactly.
-		void anim.ready.then(() => {
-			for (const counter of counters) {
-				counter.startTime = anim.startTime;
-			}
-		});
-
-		spinAnim = anim;
-		counterAnims = counters;
-		currentPlaybackRate = NORMAL_PLAYBACK_RATE;
-
-		return () => {
-			cancelRateTween();
-			anim.cancel();
-			for (const counter of counters) {
-				counter.cancel();
-			}
-			spinAnim = undefined;
-			counterAnims = [];
-		};
-	});
 </script>
 
-<svelte:head>
-	<title>Media Club</title>
-	<meta
+<svelte:head
+	><title>Media Club</title><meta
 		name="description"
-		content="Self-hosted media catalog for movies, TV shows, vinyl, and books."
-	/>
-</svelte:head>
-
-<HomeAmbience covers={data.ambientCovers} />
-
-<div class="home-actions">
-	<HeaderActions showLogout={!!data.user} />
-</div>
-
-{#snippet categoryStats(compact: boolean)}
-	{#each data.summary as row (row.category)}
-		{@const Icon = icons[row.category]}
-		<a
-			href="/{CATEGORY_PATHS[row.category]}"
-			class="group pointer-events-auto flex flex-col items-center gap-1.5 transition-transform hover:-translate-y-0.5"
-		>
-			<span
-				class="flex flex-col items-center justify-center gap-0.5 rounded-full bg-amber-400/15 ring-2 ring-amber-400/60 transition-all group-hover:bg-amber-400/25 group-hover:ring-amber-500 {compact
-					? 'size-12 sm:size-14'
-					: 'size-14 xl:size-16'}"
-			>
-				<Icon size={compact ? 16 : 18} weight="bold" class="text-amber-700 dark:text-amber-400" />
-				<span
-					class="font-black text-amber-700 group-hover:text-amber-800 dark:text-amber-400 dark:group-hover:text-amber-300 {compact
-						? 'text-xs sm:text-sm'
-						: 'text-sm xl:text-base'}"
-				>
-					{row.owned + row.wishlist}
-				</span>
-			</span>
-			<span
-				class="font-bold tracking-wider text-stone-600 uppercase dark:text-stone-400 {compact
-					? 'text-[0.6rem] sm:text-[0.65rem]'
-					: 'text-[0.65rem] xl:text-xs'}"
-			>
-				{row.label}
-			</span>
-		</a>
-	{/each}
-{/snippet}
-
-<section class="flex min-h-[80vh] flex-col items-center px-4 pt-10 pb-16">
-	<div class="w-full max-w-2xl space-y-3 text-center">
-		<h1
-			class="text-5xl font-black tracking-tight text-stone-900 uppercase sm:text-6xl lg:text-7xl dark:text-amber-50"
-		>
-			Media Club
-		</h1>
-		<p class="text-lg font-medium text-stone-700 sm:text-xl dark:text-stone-300">
-			Catalog your movies, TV shows, vinyl, and books
-		</p>
+		content="A home for your favorite movies, TV shows, vinyl, and books. Browse the collection and find your next favorite."
+	/></svelte:head
+>
+<HomeAmbience covers={data.ambientCovers} {paused} />
+<section class="home-hero" aria-labelledby="home-title">
+	<div class="hero-record" class:is-paused={paused} style:--spin-period="{settings.spinPeriodMs}ms">
+		<VinylDisc spinning={motionAllowed} class="size-full" />
 	</div>
-
-	<div class="relative mx-auto my-10 flex w-full max-w-6xl flex-col items-center px-2">
-		<button
-			type="button"
-			class="mb-5 inline-flex items-center gap-2 rounded-full border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised)/0.7)] px-4 py-1.5 text-xs font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase transition-colors hover:border-amber-500 hover:text-amber-700 dark:hover:border-amber-500 dark:hover:text-amber-400"
-			onclick={toggleSlow}
-			aria-pressed={slowPinned}
-		>
-			{#if slowPinned}
-				<Play size={13} weight="bold" />
-				Spin the disc
-			{:else}
-				<Pause size={13} weight="bold" />
-				Slow the disc
-			{/if}
-		</button>
-
-		<div class="relative flex shrink-0 flex-col items-center">
-			<!-- Desktop: decorative overlay left of disc — does not affect CD centering -->
-			<div
-				class="pointer-events-none absolute top-1/2 right-full hidden -translate-y-1/2 pr-5 lg:flex lg:flex-col lg:gap-3.5 xl:pr-7"
-			>
-				{@render categoryStats(false)}
-			</div>
-
-			<svg
-				class="cd-disc"
-				width="720"
-				height="720"
-				viewBox="0 0 520 520"
-				role="img"
-				aria-label="Media Club disc navigation"
-				onmouseenter={onCdMouseEnter}
-				onmouseleave={onCdMouseLeave}
-			>
-				<defs>
-					<radialGradient id="cdSurface" cx="50%" cy="50%" r="50%">
-						<stop offset="0%" stop-color="rgb(252, 185, 0)" stop-opacity="0.12" />
-						<stop offset="55%" stop-color="rgb(252, 185, 0)" stop-opacity="0.22" />
-						<stop offset="100%" stop-color="rgb(252, 185, 0)" stop-opacity="0.32" />
-					</radialGradient>
-				</defs>
-
-				<g class="cd-spin" bind:this={cdSpinEl}>
-					<circle cx="260" cy="260" r="250" fill="url(#cdSurface)" pointer-events="none" />
-					{#each [230, 210, 190, 170, 150, 130, 110, 90] as radius, i (radius)}
-						<circle
-							cx="260"
-							cy="260"
-							r={radius}
-							fill="none"
-							stroke="currentColor"
-							stroke-width="0.75"
-							class="text-amber-500"
-							opacity={0.32 - i * 0.02}
-							pointer-events="none"
-						/>
-					{/each}
-					{#each Array.from({ length: 12 }, (_, i) => i * 30) as angle (angle)}
-						<line
-							x1="260"
-							y1="48"
-							x2="260"
-							y2="72"
-							stroke="currentColor"
-							stroke-width="1.5"
-							class="text-amber-500"
-							opacity="0.4"
-							transform="rotate({angle} 260 260)"
-							pointer-events="none"
-						/>
-					{/each}
-					<circle cx="260" cy="260" r="44" fill="rgb(var(--color-bg))" pointer-events="none" />
-					<circle
-						cx="260"
-						cy="260"
-						r="44"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						class="text-amber-500"
-						opacity="0.6"
-						pointer-events="none"
-					/>
-					<circle
-						cx="260"
-						cy="260"
-						r="24"
-						fill="currentColor"
-						class="text-amber-400"
-						opacity="0.9"
-						pointer-events="none"
-					/>
-
-					{#each cdNavButtons as btn (btn.href)}
-						{@const Icon = btn.icon}
-						{@const pos = cdNavPosition(btn.angle)}
-						<foreignObject
-							x={pos.x - CD_BTN_HALF}
-							y={pos.y - CD_BTN_HALF}
-							width={CD_BTN_SIZE}
-							height={CD_BTN_SIZE}
-							class="cd-nav-slot"
-						>
-							<a
-								href={btn.href}
-								class="cd-nav-btn cd-nav-btn--{btn.variant}"
-								aria-label={btn.label}
-								title={btn.label}
-								xmlns="http://www.w3.org/1999/xhtml"
-							>
-								<span class="cd-nav-icon">
-									<Icon size={22} weight="bold" />
-								</span>
-							</a>
-						</foreignObject>
-					{/each}
-				</g>
-			</svg>
-
-			<!-- Mobile: compact row below disc -->
-			<div class="mt-6 flex flex-wrap items-center justify-center gap-5 sm:gap-6 lg:hidden">
-				{@render categoryStats(true)}
-			</div>
-		</div>
+	<p class="eyebrow">The personal collection</p>
+	<h1 id="home-title">Your collection.<br /><span>A world of stories.</span></h1>
+	<p class="hero-description">
+		Movies, shows, records, and books.<br class="mobile-break" /> All the things worth keeping.
+	</p>
+	<a class="btn-primary hero-cta" href="/movies">Explore the collection <ArrowRight size={18} /></a>
+	<nav class="category-grid" aria-label="Browse your collection">
+		{#each data.summary as row (row.category)}
+			{@const Icon = icons[row.category]}
+			<a class="category-link" href="/{CATEGORY_PATHS[row.category]}">
+				<span class="category-icon"><Icon size={24} weight="regular" /></span>
+				<span class="category-name">{row.label}</span>
+				<span class="category-count"
+					>{row.owned} owned <span aria-hidden="true">·</span> {row.wishlist} wished</span
+				>
+				<ArrowRight size={17} class="category-arrow" />
+			</a>
+		{/each}
+	</nav>
+	<div class="home-secondary">
+		<a href="/wishlist/movies"><Heart size={16} />Browse wishlists</a>
+		{#if motionAllowed}<button
+				type="button"
+				aria-pressed={paused}
+				onclick={() => {
+					paused = !paused;
+				}}
+				>{#if paused}<Play size={15} />Resume ambience{:else}<Pause size={15} />Pause ambience{/if}</button
+			>{/if}
 	</div>
 </section>
 
 <style>
-	.home-actions {
-		position: fixed;
-		top: 0.75rem;
-		right: 0.75rem;
-		z-index: 50;
+	.home-hero {
+		position: relative;
+		width: 100%;
+		max-width: 60rem;
+		margin-inline: auto;
+		padding: clamp(2.5rem, 6vh, 5rem) 0 3rem;
+		text-align: center;
 	}
-
-	.cd-disc {
-		width: min(720px, 88vw);
-		height: min(720px, 88vw);
-		flex-shrink: 0;
-		opacity: 0.48;
+	.hero-record {
+		width: 6rem;
+		height: 6rem;
+		margin: 0 auto 1.75rem;
+		border-radius: 50%;
+		box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
 	}
-
-	:global([data-theme='dark']) .cd-disc {
-		opacity: 0.4;
+	.hero-record.is-paused :global(.record-spin) {
+		animation-play-state: paused;
 	}
-
-	.cd-spin {
-		transform-box: fill-box;
-		transform-origin: center;
+	.eyebrow {
+		color: rgb(var(--color-text-secondary));
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 	}
-
-	.cd-nav-slot {
-		overflow: visible;
+	h1 {
+		margin: 1.25rem 0;
+		font-size: clamp(2.6rem, 6.6vw, 5.25rem);
+		line-height: 1.02;
+		letter-spacing: -0.065em;
+		font-weight: 650;
 	}
-
-	.cd-nav-btn {
+	h1 span {
+		color: rgb(var(--color-text-secondary));
+	}
+	.hero-description {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: rgb(var(--color-text-secondary));
+		text-wrap: balance;
+	}
+	.mobile-break {
+		display: none;
+	}
+	.hero-cta {
+		margin-top: 1.75rem;
+	}
+	.category-grid {
+		margin-top: clamp(2.5rem, 6vw, 4rem);
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.75rem;
+		text-align: left;
+	}
+	.category-link {
+		position: relative;
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 3.5rem;
-		height: 3.5rem;
-		border-radius: 9999px;
-		border-width: 2px;
-		border-style: solid;
+		flex-direction: column;
+		padding: 1.5rem;
+		gap: 0.4rem;
+		border-radius: 1.25rem;
+		border: 1px solid rgb(var(--color-border) / 0.8);
+		background: rgb(var(--color-surface-raised) / 0.84);
 		transition:
-			transform 0.2s ease,
-			background-color 0.2s ease,
-			border-color 0.2s ease;
+			background-color 200ms ease,
+			border-color 200ms ease,
+			transform 250ms var(--ease-out);
 	}
-
-	.cd-nav-btn:hover {
-		transform: scale(1.08);
+	.category-icon {
+		color: rgb(var(--color-accent-hover));
+		margin-bottom: 1rem;
 	}
-
-	/* Counter-rotated by WAAPI so icons stay upright while orbiting */
-	.cd-nav-icon {
+	.category-name {
+		font-size: 1rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+	}
+	.category-count {
+		color: rgb(var(--color-text-tertiary));
+		font-size: 0.75rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.category-link :global(.category-arrow) {
+		position: absolute;
+		top: 1.5rem;
+		right: 1.5rem;
+		color: rgb(var(--color-text-tertiary));
+	}
+	.home-secondary {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.25rem 1.5rem;
+		margin-top: 1.5rem;
+	}
+	.home-secondary a,
+	.home-secondary button {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.cd-nav-btn--primary {
-		border-color: rgb(245 158 11);
-		background-color: rgb(251 191 36);
-		color: rgb(28 25 23);
-	}
-
-	.cd-nav-btn--primary:hover {
-		background-color: rgb(245 158 11);
-	}
-
-	/* Theme tokens keep the orbiting buttons in tune with both themes */
-	.cd-nav-btn--secondary {
-		border-color: rgb(var(--color-border));
-		background-color: rgb(var(--color-surface-raised));
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0.5rem;
+		border: 0;
+		background: transparent;
 		color: rgb(var(--color-text-secondary));
+		font-size: 0.8125rem;
+		cursor: pointer;
 	}
-
-	.cd-nav-btn--secondary:hover {
-		border-color: rgb(var(--color-accent) / 0.6);
-		background-color: rgb(var(--color-accent-light));
+	.home-secondary :is(a, button):hover {
 		color: rgb(var(--color-text));
+	}
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.category-link:hover {
+			transform: translateY(-3px);
+			background: rgb(var(--color-surface-raised));
+			border-color: rgb(var(--color-accent) / 0.6);
+		}
+	}
+	@media (max-width: 639px) {
+		.home-hero {
+			padding-top: 2rem;
+		}
+		.hero-record {
+			width: 4.25rem;
+			height: 4.25rem;
+			margin-bottom: 1.5rem;
+		}
+		h1 {
+			font-size: clamp(2.35rem, 10.5vw, 3.6rem);
+		}
+		.hero-description {
+			font-size: 0.9375rem;
+		}
+		.mobile-break {
+			display: initial;
+		}
+		.category-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.65rem;
+			margin-top: 2.5rem;
+		}
+		.category-link {
+			padding: 1.1rem;
+		}
+		.category-icon {
+			margin-bottom: 0.65rem;
+		}
+		.category-link :global(.category-arrow) {
+			top: 1.2rem;
+			right: 1.1rem;
+		}
+	}
+	:global([data-motion='reduced']) .category-link {
+		transition: none;
+		transform: none;
 	}
 </style>

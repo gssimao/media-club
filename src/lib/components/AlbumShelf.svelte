@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { prefersReducedMotion } from 'svelte/motion';
+	import { settings } from '$lib/stores/settings.svelte';
 	import type { Album, MediaCategory } from '$lib/types/media';
 	import { dragScroll } from '$lib/utils/drag-scroll';
 	import { CaretLeft, CaretRight } from 'phosphor-svelte';
@@ -45,14 +47,19 @@
 
 	function scrollByPage(direction: 1 | -1) {
 		if (!scrollEl) return;
-		scrollEl.scrollBy({ left: direction * scrollEl.clientWidth * 0.8, behavior: 'smooth' });
+		scrollEl.scrollBy({
+			left: direction * scrollEl.clientWidth * 0.8,
+			behavior: settings.motion === 'reduced' || prefersReducedMotion.current ? 'instant' : 'smooth'
+		});
 	}
 </script>
 
 {#if preview.length > 0}
 	<section class="mb-8" aria-label="Collections">
 		<div class="mb-2 flex items-center justify-between gap-3">
-			<h2 class="text-sm font-black tracking-wide text-stone-700 uppercase dark:text-stone-300">
+			<h2
+				class="text-sm font-semibold tracking-normal text-stone-700 normal-case dark:text-stone-300"
+			>
 				Collections
 			</h2>
 			<div class="flex items-center gap-1.5">
@@ -157,8 +164,8 @@
 
 	.shelf-arrow {
 		display: none;
-		width: 2.375rem;
-		height: 2.375rem;
+		width: 2.75rem;
+		height: 2.75rem;
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;

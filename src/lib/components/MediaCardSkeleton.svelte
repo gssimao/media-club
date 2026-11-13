@@ -1,9 +1,10 @@
 <script lang="ts">
 	interface Props {
 		isAdmin?: boolean;
+		record?: boolean;
 	}
 
-	let { isAdmin = false }: Props = $props();
+	let { isAdmin = false, record = false }: Props = $props();
 </script>
 
 <article class="mx-auto flex h-full w-full max-w-[15rem] flex-col items-center" aria-hidden="true">
@@ -15,7 +16,9 @@
 	</div>
 
 	<div
-		class="skeleton-disc aspect-square w-full max-w-[13rem] rounded-full border-2 border-[rgb(var(--color-border))]/40 sm:max-w-[15rem]"
+		class="skeleton-disc {record
+			? 'aspect-square rounded-full'
+			: 'aspect-[2/3] rounded-xl'} w-full max-w-[13rem] border-2 border-[rgb(var(--color-border))]/40 sm:max-w-[15rem]"
 	></div>
 
 	<div class="mt-2.5 w-full shrink-0 px-1 text-center">

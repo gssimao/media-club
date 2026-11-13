@@ -7,11 +7,14 @@
 	interface Props {
 		/** Cover URLs sampled at random from the whole catalog. */
 		covers: string[];
+		paused?: boolean;
 	}
 
-	let { covers }: Props = $props();
+	let { covers, paused = false }: Props = $props();
 
-	const animated = $derived(settings.motion !== 'reduced' && !prefersReducedMotion.current);
+	const animated = $derived(
+		!paused && settings.motion !== 'reduced' && !prefersReducedMotion.current
+	);
 </script>
 
 <!-- Decorative backdrop: coloured light on the page edges with covers drifting through it. -->

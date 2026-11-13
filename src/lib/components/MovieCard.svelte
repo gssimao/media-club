@@ -91,7 +91,7 @@
 	<div class="mb-1 flex min-h-7 w-full items-center justify-between px-0.5">
 		{#if item.year}
 			<span
-				class="text-xs font-black tracking-widest text-amber-700 tabular-nums dark:text-amber-400"
+				class="text-xs font-medium tracking-normal text-[rgb(var(--color-text-tertiary))] tabular-nums"
 			>
 				{item.year}
 			</span>
@@ -110,7 +110,7 @@
 
 	<div
 		bind:this={coverEl}
-		class="bluray-case relative aspect-[2/3] w-full max-w-[13rem] overflow-hidden rounded-sm bg-[rgb(var(--color-surface-raised))] shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl sm:max-w-[15rem] {highlighted
+		class="bluray-case relative aspect-[2/3] w-full max-w-[13rem] overflow-hidden rounded-xl bg-[rgb(var(--color-surface-raised))] shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl sm:max-w-[15rem] {highlighted
 			? 'ring-4 ring-amber-400/60 ring-offset-2 ring-offset-[rgb(var(--color-bg))]'
 			: ''} {item.listType === 'wishlist'
 			? 'border-2 border-dashed border-amber-500 dark:border-amber-500'
@@ -121,7 +121,7 @@
 	>
 		{#if item.listType === 'wishlist'}
 			<div
-				class="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-amber-400 px-2.5 py-0.5 text-[9px] font-black tracking-wide text-stone-900 uppercase shadow-md"
+				class="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-amber-400 px-2.5 py-0.5 text-[9px] font-semibold tracking-normal text-stone-900 normal-case shadow-md"
 			>
 				Wishlist
 			</div>
@@ -132,31 +132,31 @@
 			<div class="absolute top-0 right-0 left-0 z-10">
 				{#if topFormat === '4K'}
 					<div
-						class="bg-gradient-to-r from-black to-stone-900 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+						class="tracking-normalr bg-gradient-to-r from-black to-stone-900 py-1 text-center text-[10px] font-semibold text-white normal-case shadow-sm"
 					>
 						4K Ultra HD
 					</div>
 				{:else if topFormat === 'Streaming'}
 					<div
-						class="bg-gradient-to-r from-violet-600 to-violet-500 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+						class="tracking-normalr bg-gradient-to-r from-violet-600 to-violet-500 py-1 text-center text-[10px] font-semibold text-white normal-case shadow-sm"
 					>
 						Streaming
 					</div>
 				{:else if topFormat === 'Digital'}
 					<div
-						class="bg-gradient-to-r from-stone-700 to-stone-600 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+						class="tracking-normalr bg-gradient-to-r from-stone-700 to-stone-600 py-1 text-center text-[10px] font-semibold text-white normal-case shadow-sm"
 					>
 						Digital
 					</div>
 				{:else if topFormat === 'Blu-ray'}
 					<div
-						class="bg-gradient-to-r from-blue-600 to-blue-500 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+						class="tracking-normalr bg-gradient-to-r from-blue-600 to-blue-500 py-1 text-center text-[10px] font-semibold text-white normal-case shadow-sm"
 					>
 						Blu-ray
 					</div>
 				{:else if topFormat === 'DVD'}
 					<div
-						class="bg-gradient-to-r from-red-600 to-red-500 py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm"
+						class="tracking-normalr bg-gradient-to-r from-red-600 to-red-500 py-1 text-center text-[10px] font-semibold text-white normal-case shadow-sm"
 					>
 						DVD
 					</div>
@@ -206,7 +206,7 @@
 	<div class="flex min-h-0 w-full flex-1 flex-col">
 		<div class="mt-2.5 w-full shrink-0 px-1 text-center">
 			<h2
-				class="line-clamp-2 min-h-[2.5rem] text-xs leading-snug font-bold text-stone-900 dark:text-amber-50"
+				class="line-clamp-2 min-h-[2.5rem] text-sm leading-snug font-medium text-stone-900 dark:text-amber-50"
 			>
 				{item.title}
 			</h2>

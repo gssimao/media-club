@@ -1,48 +1,44 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
-	import CircularTextInput from '$lib/components/CircularTextInput.svelte';
-
 	let { form } = $props();
 </script>
 
-<svelte:head>
-	<title>Log in · Media Club</title>
-</svelte:head>
-
+<svelte:head><title>Log in · Media Club</title></svelte:head>
 <PageShell
-	title="Admin login"
-	description="Only the site admin can add, edit, or remove items. Everyone else can browse the catalog."
+	title="Welcome back"
+	description="Log in to manage your collection. Everyone is welcome to browse."
 >
-	<form
-		method="POST"
-		class="surface-round mx-auto w-full max-w-md space-y-6 p-6 sm:p-8 lg:max-w-2xl"
-	>
-		{#if form?.message}
-			<div
-				class="rounded-[2rem] border border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
+	<form method="POST" class="surface-round mx-auto w-full max-w-md space-y-6 p-6 sm:p-8">
+		{#if form?.message}<p
+				role="alert"
+				class="rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300"
 			>
 				{form.message}
-			</div>
-		{/if}
-
-		<div class="flex flex-col items-center gap-8 lg:flex-row lg:justify-center">
-			<CircularTextInput
+			</p>{/if}
+		<div class="space-y-2">
+			<label for="username" class="block text-sm font-medium">Username</label><input
+				id="username"
 				name="username"
-				label="Username"
 				autocomplete="username"
-				placeholder="Username"
-				required
-			/>
-			<CircularTextInput
-				name="password"
-				label="Password"
-				type="password"
-				autocomplete="current-password"
-				placeholder="Password"
+				class="input-round w-full"
 				required
 			/>
 		</div>
-
-		<button type="submit" class="btn-primary w-full justify-center py-3">Log in</button>
+		<div class="space-y-2">
+			<label for="password" class="block text-sm font-medium">Password</label><input
+				id="password"
+				name="password"
+				type="password"
+				autocomplete="current-password"
+				class="input-round w-full"
+				required
+			/>
+		</div>
+		<button type="submit" class="btn-primary w-full">Log in</button>
+		<a
+			href="/movies"
+			class="flex min-h-11 items-center justify-center text-sm text-[rgb(var(--color-text-secondary))]"
+			>Continue browsing</a
+		>
 	</form>
 </PageShell>

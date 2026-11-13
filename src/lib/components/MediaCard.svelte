@@ -66,7 +66,7 @@
 	<div class="mb-1 flex min-h-7 w-full items-center justify-between px-0.5">
 		{#if item.year}
 			<span
-				class="text-xs font-black tracking-widest text-amber-700 tabular-nums dark:text-amber-400"
+				class="text-xs font-medium tracking-normal text-[rgb(var(--color-text-tertiary))] tabular-nums"
 			>
 				{item.year}
 			</span>
@@ -85,6 +85,7 @@
 
 	<div
 		bind:this={coverEl}
+		class:media-disc--book={item.category === 'book'}
 		class="media-disc relative aspect-square w-full max-w-[13rem] overflow-hidden rounded-full border-2 bg-[rgb(var(--color-surface-raised))] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:max-w-[15rem] {highlighted
 			? 'border-amber-400 ring-4 ring-amber-400/60 ring-offset-2 ring-offset-[rgb(var(--color-bg))]'
 			: ''} {item.listType === 'wishlist'
@@ -98,47 +99,50 @@
 	>
 		{#if item.listType === 'wishlist'}
 			<div
-				class="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-amber-400 px-2.5 py-0.5 text-[9px] font-black tracking-wide text-stone-900 uppercase"
+				class="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-amber-400 px-2.5 py-0.5 text-[9px] font-semibold tracking-normal text-stone-900 normal-case"
 			>
 				Wishlist
 			</div>
 		{/if}
 
-		<svg
-			class="pointer-events-none absolute inset-0 size-full text-amber-500 dark:text-amber-400"
-			viewBox="0 0 100 100"
-			aria-hidden="true"
-		>
-			<g class="disc-grooves">
-				{#each [47, 44, 41] as radius (radius)}
-					<circle
-						cx="50"
-						cy="50"
-						r={radius}
-						fill="none"
-						stroke="currentColor"
-						stroke-width="0.5"
-						opacity="0.35"
-					/>
-				{/each}
-				{#each Array.from({ length: 12 }, (_, i) => i * 30) as angle (angle)}
-					<line
-						x1="50"
-						y1="2.5"
-						x2="50"
-						y2="7"
-						stroke="currentColor"
-						stroke-width="1"
-						opacity="0.45"
-						transform="rotate({angle} 50 50)"
-					/>
-				{/each}
-			</g>
-		</svg>
+		{#if item.category !== 'book'}<svg
+				class="pointer-events-none absolute inset-0 size-full text-amber-500 dark:text-amber-400"
+				viewBox="0 0 100 100"
+				aria-hidden="true"
+			>
+				<g class="disc-grooves">
+					{#each [47, 44, 41] as radius (radius)}
+						<circle
+							cx="50"
+							cy="50"
+							r={radius}
+							fill="none"
+							stroke="currentColor"
+							stroke-width="0.5"
+							opacity="0.35"
+						/>
+					{/each}
+					{#each Array.from({ length: 12 }, (_, i) => i * 30) as angle (angle)}
+						<line
+							x1="50"
+							y1="2.5"
+							x2="50"
+							y2="7"
+							stroke="currentColor"
+							stroke-width="1"
+							opacity="0.45"
+							transform="rotate({angle} 50 50)"
+						/>
+					{/each}
+				</g>
+			</svg>{/if}
 
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div
-				class="aspect-[2/3] w-[58%] overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
+				class={item.category === 'book'
+					? 'h-full w-full overflow-hidden'
+					: 'aspect-square w-[76%] overflow-hidden rounded-full'}
+				style="background: rgb(var(--color-bg))"
 			>
 				{#if item.coverUrl}
 					<CoverImage
@@ -170,7 +174,7 @@
 	<div class="flex min-h-0 w-full flex-1 flex-col">
 		<div class="mt-2.5 w-full shrink-0 px-1 text-center">
 			<h2
-				class="line-clamp-2 min-h-[2.5rem] text-xs leading-snug font-bold text-stone-900 dark:text-amber-50"
+				class="line-clamp-2 min-h-[2.5rem] text-sm leading-snug font-medium text-stone-900 dark:text-amber-50"
 			>
 				{item.title}
 			</h2>
@@ -188,6 +192,11 @@
 </article>
 
 <style>
+	.media-disc--book {
+		aspect-ratio: 2 / 3;
+		border-radius: 0.65rem;
+		border: 1px solid rgb(var(--color-border));
+	}
 	@keyframes disc-spin {
 		to {
 			transform: rotate(360deg);

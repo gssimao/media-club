@@ -4,28 +4,34 @@
 
 	interface Props {
 		showLogout?: boolean;
+		showSettings?: boolean;
 	}
 
-	let { showLogout = false }: Props = $props();
+	let { showLogout = false, showSettings = true }: Props = $props();
 </script>
 
 <div class="header-actions">
-	<a href="/settings" class="action-btn" aria-label="Settings">
-		<Gear size={16} weight="bold" />
-	</a>
+	{#if showSettings}<a href="/settings" class="action-btn" aria-label="Settings">
+			<Gear size={20} weight="regular" />
+		</a>{/if}
 
-	<button type="button" class="action-btn" onclick={() => theme.toggle()} aria-label="Toggle theme">
+	<button
+		type="button"
+		class="action-btn"
+		onclick={() => theme.toggle()}
+		aria-label={theme.current === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+	>
 		{#if theme.current === 'dark'}
-			<Sun size={16} weight="bold" />
+			<Sun size={20} weight="regular" />
 		{:else}
-			<Moon size={16} weight="bold" />
+			<Moon size={20} weight="regular" />
 		{/if}
 	</button>
 
 	{#if showLogout}
 		<form method="POST" action="/logout">
 			<button type="submit" class="action-btn" aria-label="Log out">
-				<SignOut size={16} weight="bold" />
+				<SignOut size={20} weight="regular" />
 			</button>
 		</form>
 	{/if}
@@ -39,13 +45,13 @@
 
 	.action-btn {
 		display: inline-flex;
-		width: var(--action-btn-size, 2.25rem);
-		height: var(--action-btn-size, 2.25rem);
+		width: var(--action-btn-size, 2.75rem);
+		height: var(--action-btn-size, 2.75rem);
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
-		border: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-surface-raised) / 0.92);
+		border: 1px solid transparent;
+		background: transparent;
 		color: rgb(var(--color-text-secondary));
 		cursor: pointer;
 		backdrop-filter: blur(6px);

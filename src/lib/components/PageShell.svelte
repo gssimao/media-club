@@ -1,169 +1,78 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-
-	interface Props {
-		title: string;
-		description?: string;
-		controls?: Snippet;
-		children: Snippet;
-	}
-
-	let { title, description, controls, children }: Props = $props();
+	let {
+		title,
+		description,
+		controls,
+		children
+	}: { title: string; description?: string; controls?: Snippet; children: Snippet } = $props();
 </script>
 
 <div class="page-shell">
-	<aside class="page-shell__control" aria-label="Page control center">
-		<div class="page-shell__now-playing">
-			<p class="page-shell__kicker">Now playing:</p>
-			<h1 class="page-shell__title">{title}</h1>
-			{#if description}
-				<p class="page-shell__description">{description}</p>
-			{/if}
+	<header class="page-shell__heading">
+		<div class="page-shell__intro">
+			<h1>{title}</h1>
+			{#if description}<p>{description}</p>{/if}
 		</div>
-
-		{#if controls}
-			<div class="page-shell__controls">
+		{#if controls}<div class="page-shell__controls" role="group" aria-label="Page controls">
 				{@render controls()}
-			</div>
-		{/if}
-	</aside>
-
-	<div class="page-shell__content">
-		{@render children()}
-	</div>
+			</div>{/if}
+	</header>
+	<div class="page-shell__content">{@render children()}</div>
 </div>
 
 <style>
 	.page-shell {
-		/* Sidebar clears the fixed dial; content sits in the right column with modest breathing room */
-		--page-shell-control-offset: var(--nav-dial-reserve-h);
-		--page-shell-content-offset: 1.25rem;
-		display: grid;
-		grid-template-columns: var(--nav-dial-reserve-w) minmax(0, 1fr);
-		align-items: start;
-		gap: 1.25rem 1.75rem;
-		min-height: calc(100vh - var(--nav-dial-reserve-h));
+		min-width: 0;
+		padding-block: 2.5rem 1rem;
 	}
-
-	.page-shell__control {
-		position: sticky;
-		top: calc(var(--nav-dial-reserve-h) + 1.25rem);
-		z-index: 20;
-		align-self: start;
+	.page-shell__heading {
 		display: flex;
-		flex-direction: column;
-		gap: 1.25rem;
-		/* Margin clears the fixed dial on first paint; sticky top keeps it below the wheel when scrolling */
-		margin-top: var(--page-shell-control-offset);
-		padding-top: 0;
-		padding-left: var(--nav-dial-inset);
-		padding-right: 0.25rem;
-		max-width: var(--nav-dial-reserve-w);
-		/* overflow: visible — MediaFilterPopover strips extend past this column */
-		overflow: visible;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1.5rem 2rem;
+		margin-bottom: 2.5rem;
 	}
-
-	.page-shell__now-playing {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
+	.page-shell__intro {
+		min-width: 0;
 	}
-
-	.page-shell__kicker {
+	h1 {
 		margin: 0;
-		font-size: 0.7rem;
-		font-weight: 800;
-		line-height: 1.35;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		font-size: clamp(1.85rem, 4vw, 2.75rem);
+		font-weight: 650;
+		letter-spacing: -0.045em;
+		line-height: 1.12;
+		text-wrap: balance;
+	}
+	p {
+		margin: 0.65rem 0 0;
+		max-width: 42rem;
 		color: rgb(var(--color-text-secondary));
+		font-size: 0.9375rem;
+		line-height: 1.6;
 	}
-
-	.page-shell__title {
-		display: block;
-		margin: 0.15rem 0 0;
-		font-style: italic;
-		font-size: 1.35rem;
-		font-weight: 900;
-		line-height: 1.15;
-		letter-spacing: 0.02em;
-		text-transform: none;
-		color: rgb(var(--color-text));
-	}
-
-	.page-shell__description {
-		margin: 0;
-		font-size: 0.8rem;
-		font-weight: 500;
-		line-height: 1.45;
-		color: rgb(var(--color-text-secondary));
-	}
-
 	.page-shell__controls {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.65rem;
-		overflow: visible;
-	}
-
-	.page-shell__content {
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
 		min-width: 0;
 		max-width: 100%;
-		align-self: start;
-		padding-top: var(--page-shell-content-offset);
-		padding-right: 0.25rem;
 	}
-
+	.page-shell__content {
+		min-width: 0;
+	}
 	@media (max-width: 767px) {
 		.page-shell {
-			--page-shell-control-offset: 0;
-			--page-shell-content-offset: 0.25rem;
-			grid-template-columns: minmax(0, 1fr);
-			gap: 1rem;
-			min-height: auto;
+			padding-top: 1.75rem;
 		}
-
-		.page-shell__control {
-			position: static;
-			max-width: none;
-			margin-top: 0;
-			padding-top: 0.35rem;
-			padding-left: 1rem;
-			padding-right: 1rem;
+		.page-shell__heading {
+			gap: 1.25rem;
+			margin-bottom: 1.75rem;
 		}
-
-		/* Keep the kicker and title clear of the fixed header buttons in the top-right corner
-		   (2.35rem each, 0.35rem apart; count comes from the root layout). */
-		.page-shell__now-playing {
-			--header-actions-w: calc(
-				var(--header-action-count, 3) * 2.35rem + (var(--header-action-count, 3) - 1) * 0.35rem
-			);
-			padding-right: calc(var(--header-actions-w) + var(--nav-dial-inset) - 0.5rem);
-			min-height: 2.35rem;
-			justify-content: center;
-		}
-
-		.page-shell__description {
-			margin-right: calc(-1 * (var(--header-actions-w) + var(--nav-dial-inset) - 0.5rem));
-		}
-
-		.page-shell__title {
-			font-size: 1.2rem;
-		}
-
-		/* Controls flow as a wrapping row of pills instead of one pill per line,
-		   so the catalog stays on the first screen. */
-		.page-shell__controls {
-			flex-direction: row;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 0.5rem;
-		}
-
-		.page-shell__content {
-			padding-left: 1rem;
-			padding-right: 1rem;
+		p {
+			font-size: 0.875rem;
 		}
 	}
 </style>

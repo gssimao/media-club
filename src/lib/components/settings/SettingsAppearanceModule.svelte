@@ -30,7 +30,7 @@
 		</span>
 	</div>
 
-	<p class="hint">Warm daylight or late-night video store.</p>
+	<p class="hint">Soft daylight or a darkened cinema.</p>
 </section>
 
 <style>
@@ -46,10 +46,10 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		font-size: 0.72rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-transform: none;
+		letter-spacing: 0;
 		color: rgb(var(--color-text));
 		transition: opacity 0.2s ease;
 	}
@@ -61,7 +61,7 @@
 	.switch {
 		position: relative;
 		width: 4rem;
-		height: 2.1rem;
+		height: 2.75rem;
 		border-radius: 9999px;
 		border: 2px solid rgb(var(--color-border));
 		background: rgb(var(--color-bg));

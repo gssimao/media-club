@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { captureGifPoster } from '$lib/utils/gif-poster';
@@ -16,7 +17,7 @@
 	let { src, alt, class: className = '', hovered: hoveredProp, loading = 'lazy' }: Props = $props();
 
 	const isGif = $derived(isGifUrl(src));
-	const reducedMotion = $derived(settings.motion === 'reduced');
+	const reducedMotion = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
 
 	let internalHovered = $state(false);
 	let posterUrl = $state<string | null>(null);
@@ -41,7 +42,7 @@
 	});
 
 	$effect(() => {
-		if (!browser || !isGif || reducedMotion) {
+		if (!browser || !isGif) {
 			posterUrl = null;
 			return;
 		}
@@ -98,7 +99,7 @@
 	}
 </script>
 
-{#if failed}
+{#if failed || (isGif && reducedMotion && !posterUrl)}
 	<!-- Dead cover URL: show the same placeholder as items without a cover instead of
 	     the browser's broken-image icon. -->
 	<div
@@ -109,13 +110,16 @@
 			className
 		)}
 	>
-		<span class="px-1 text-center text-[10px] leading-tight font-bold uppercase">No cover</span>
+		<span class="px-1 text-center text-xs leading-tight font-medium"
+			>{failed ? 'No cover' : 'Still artwork unavailable'}</span
+		>
 	</div>
 {:else}
 	<img
 		src={displaySrc}
 		{alt}
 		class={cn(className)}
+		decoding="async"
 		{loading}
 		{@attach watchLoadFailure}
 		onmouseenter={hoveredProp === undefined ? handleMouseEnter : undefined}

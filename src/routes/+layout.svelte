@@ -5,7 +5,6 @@
 	import CatalogPageLoading from '$lib/components/CatalogPageLoading.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
 	import ToastHost from '$lib/components/ToastHost.svelte';
-	import VinylDisc from '$lib/components/VinylDisc.svelte';
 	import { getCatalogSkeletonConfig } from '$lib/utils/catalog-nav';
 	import { navigating } from '$app/state';
 
@@ -26,17 +25,9 @@
 	Skip to content
 </a>
 
-{#if data.pathname !== '/'}
-	<SiteHeader user={data.user} pathname={data.pathname} />
-{/if}
+<SiteHeader user={data.user} pathname={data.pathname} />
 
-<main
-	id="main-content"
-	style:--header-action-count={data.user ? 3 : 2}
-	class="pb-8 {data.pathname === '/'
-		? 'mx-auto max-w-7xl px-4 pt-2 sm:px-6 lg:px-8'
-		: 'app-main--shell w-full max-w-none px-4 sm:px-6 lg:px-8'}"
->
+<main id="main-content" class="app-main">
 	{#if skeletonConfig?.variant === 'album-detail'}
 		<AlbumDetailLoading />
 	{:else if skeletonConfig?.variant === 'album-library'}
@@ -54,14 +45,8 @@
 
 <ToastHost />
 
-<footer
-	class="mt-8 rounded-t-[2rem] border-t border-amber-400/80 bg-[rgb(var(--color-surface))] py-8 text-center text-sm font-bold text-[rgb(var(--color-text-secondary))] dark:border-amber-500/60"
->
-	<div class="flex items-center justify-center gap-3 px-6">
-		<VinylDisc spinning class="size-6 shrink-0 opacity-80" />
-		<p class="text-xs tracking-wide text-balance uppercase sm:text-sm">
-			Media Club: Free, self-hosted media inventory
-		</p>
-		<VinylDisc spinning class="size-6 shrink-0 opacity-80" />
-	</div>
+<footer class="site-footer">
+	<span>media club.</span>
+	<p>A home for the things you love.</p>
+	<a href="/settings">Make it yours</a>
 </footer>

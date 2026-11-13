@@ -40,7 +40,7 @@
 				<div class="min-w-0 flex-1">
 					<h2
 						id="{uid}-title"
-						class="text-base font-black tracking-wide text-stone-900 uppercase dark:text-amber-50"
+						class="text-lg font-semibold tracking-tight text-[rgb(var(--color-text))]"
 					>
 						{title}
 					</h2>
@@ -54,7 +54,7 @@
 				</div>
 				<button
 					type="button"
-					class="-mt-1 -mr-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full text-[rgb(var(--color-text-tertiary))] transition-colors hover:bg-black/5 hover:text-[rgb(var(--color-text))] dark:hover:bg-white/10"
+					class="-mt-1 -mr-1 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-[rgb(var(--color-text-tertiary))] transition-colors hover:bg-black/5 hover:text-[rgb(var(--color-text))] dark:hover:bg-white/10"
 					aria-label="Close dialog"
 					onclick={onClose}
 				>
@@ -111,9 +111,15 @@
 		max-width: 48rem;
 	}
 
-	@media (max-width: 480px) {
+	@media (max-width: 639px) {
+		.modal-shell {
+			align-items: flex-end;
+			padding: 0.5rem 0.5rem max(0.5rem, env(safe-area-inset-bottom));
+		}
 		.modal-shell__panel {
 			padding: 1.25rem;
+			max-height: 88dvh;
+			border-radius: 1.5rem;
 		}
 	}
 </style>

@@ -11,22 +11,16 @@
 @layer base {
 	:root {
 		/* No web font is downloaded: the CSP (vite.config.ts) only allows same-origin styles
-		   and fonts. Inter is used when installed, otherwise the platform UI font. */
+		   and fonts. Use the native UI font on each platform. */
 		--font-sans:
-			'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui,
-			sans-serif;
+			-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
 
-		/* Fixed nav dial footprint — keep in sync with SiteHeader.svelte */
-		--nav-dial-r: clamp(5.5rem, 20vw, 8.5rem);
-		--nav-dial-inset: 0.65rem;
-		--nav-dial-actions-h: 1.65rem;
-		--nav-dial-stack-gap: 0.2rem;
-		--nav-dial-size: calc(var(--nav-dial-r) * 2);
-		--nav-dial-reserve-w: calc(var(--nav-dial-size) + var(--nav-dial-inset) * 2 + 0.75rem);
-		--nav-dial-reserve-h: calc(
-			var(--nav-dial-inset) + var(--nav-dial-actions-h) + var(--nav-dial-stack-gap) +
-				var(--nav-dial-size) + 0.5rem
-		);
+		--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+		--nav-dial-r: 7rem;
+		--nav-dial-size: 14rem;
+		--nav-dial-inset: 1rem;
+		--nav-dial-reserve-w: 0px;
+		--nav-dial-reserve-h: 4.5rem;
 	}
 
 	* {
@@ -34,6 +28,7 @@
 	}
 
 	html {
+		scroll-padding-top: 6rem;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 	}
@@ -48,73 +43,8 @@
 		color: rgb(var(--color-text));
 		font-family: var(--font-sans);
 		background-color: rgb(var(--color-bg));
-		background-image:
-			linear-gradient(
-				to top,
-				rgba(93, 78, 58, 0.18) 0%,
-				rgba(121, 104, 79, 0.1) 14%,
-				transparent 45vh
-			),
-			radial-gradient(
-				ellipse 100% 60% at 50% -10%,
-				rgba(255, 253, 246, 0.95),
-				rgba(250, 246, 237, 0.55) 40%,
-				transparent 75%
-			),
-			radial-gradient(
-				ellipse 120% 50% at 50% 110%,
-				rgba(214, 200, 174, 0.45),
-				rgba(244, 238, 226, 0.2) 45%,
-				transparent 70%
-			),
-			radial-gradient(circle at -20% 50%, rgba(252, 185, 0, 0.12), transparent 50%),
-			radial-gradient(circle at 120% 50%, rgba(252, 185, 0, 0.12), transparent 50%);
-		background-attachment: fixed;
-		transition:
-			background-color 0.3s ease,
-			background-image 0.3s ease,
-			color 0.3s ease;
-	}
-
-	[data-theme='dark'] body {
-		background-color: rgb(var(--color-bg));
-		background-image:
-			linear-gradient(
-				to top,
-				rgba(15, 13, 11, 0.85) 0%,
-				rgba(20, 18, 16, 0.55) 18%,
-				transparent 45vh
-			),
-			radial-gradient(
-				ellipse 90% 65% at 50% -15%,
-				rgba(68, 60, 50, 0.85),
-				rgba(48, 45, 42, 0.5) 35%,
-				transparent 70%
-			),
-			radial-gradient(
-				ellipse 110% 45% at 50% 115%,
-				rgba(120, 100, 60, 0.3),
-				rgba(80, 70, 40, 0.15) 50%,
-				transparent 75%
-			),
-			radial-gradient(
-				circle at -15% 35%,
-				rgba(252, 185, 0, 0.14),
-				rgba(252, 185, 0, 0.05) 35%,
-				transparent 55%
-			),
-			radial-gradient(
-				circle at 115% 65%,
-				rgba(252, 185, 0, 0.14),
-				rgba(252, 185, 0, 0.05) 35%,
-				transparent 55%
-			),
-			radial-gradient(
-				ellipse 70% 85% at 50% 50%,
-				rgba(38, 35, 32, 1),
-				rgba(28, 25, 23, 0.95) 60%,
-				transparent 85%
-			);
+		line-height: 1.5;
+		isolation: isolate;
 	}
 
 	a {
@@ -142,14 +72,7 @@
 		appearance: none;
 	}
 
-	/* Smooth transitions for theme changes */
-	* {
-		transition-property: background-color, border-color, color, fill, stroke;
-		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-		transition-duration: 200ms;
-	}
-
-	/* Amber focus ring — keyboard navigation on any control */
+	/* Visible focus ring — keyboard navigation on any control */
 	:focus-visible {
 		outline: 2px solid rgb(var(--color-accent));
 		outline-offset: 2px;
@@ -257,11 +180,13 @@
 @layer components {
 	/* Rounded design system — see design-theme.mdc */
 	.btn-primary {
-		@apply inline-flex items-center gap-2 rounded-full border-2 border-amber-500 bg-amber-400 px-8 py-4 text-base font-black tracking-wide text-stone-900 uppercase transition-all hover:bg-amber-500;
+		@apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent px-6 py-3 text-sm font-semibold transition-colors;
+		background: rgb(var(--color-accent));
+		color: #202124;
 	}
 
 	.btn-secondary {
-		@apply inline-flex items-center gap-2 rounded-full border-2 px-8 py-4 text-base font-black tracking-wide uppercase transition-all;
+		@apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold transition-colors;
 		border-color: rgb(var(--color-border));
 		background-color: rgb(var(--color-surface-raised));
 		color: rgb(var(--color-text-secondary));
@@ -274,13 +199,13 @@
 	}
 
 	.surface-round {
-		@apply rounded-[2rem] border;
+		@apply rounded-3xl border;
 		border-color: rgb(var(--color-border));
 		background-color: rgb(var(--color-surface-raised));
 	}
 
 	.input-round {
-		@apply rounded-full border px-4 py-2.5 font-medium transition-colors focus:outline-none;
+		@apply min-h-11 rounded-xl border px-4 py-2.5 font-normal transition-colors;
 		border-color: rgb(var(--color-border));
 		background-color: rgb(var(--color-surface-raised));
 		color: rgb(var(--color-text));
@@ -297,7 +222,7 @@
 	/* Sidebar / PageShell controls — one size for nav links, filters, and action pills */
 	.pill-nav,
 	.control-pill {
-		@apply inline-flex min-h-[2.375rem] items-center gap-1.5 rounded-full px-4 py-2 text-sm leading-none font-bold tracking-wide uppercase transition-all;
+		@apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm leading-snug font-medium transition-colors;
 	}
 
 	.control-pill--block {
@@ -313,11 +238,11 @@
 	}
 
 	.control-pill--primary {
-		@apply border-2 border-amber-500 bg-amber-400 text-stone-900 hover:bg-amber-500;
+		@apply border border-transparent bg-amber-400 text-stone-900 hover:bg-amber-300;
 	}
 
 	.control-pill--secondary {
-		@apply border-2;
+		@apply border;
 		border-color: rgb(var(--color-border));
 		background-color: rgb(var(--color-surface-raised));
 		color: rgb(var(--color-text-secondary));
@@ -334,13 +259,78 @@
 	}
 
 	.input-round--control {
-		@apply min-h-[2.375rem] py-2;
+		@apply min-h-11 py-2;
 	}
 
-	.app-main--shell {
-		padding-left: 0;
-		padding-top: 0;
+	.app-main {
+		max-width: 90rem;
+		margin: 0 auto;
+		padding: 0 3rem 2rem;
 	}
+	.icon-button {
+		display: inline-flex;
+		width: 44px;
+		height: 44px;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		border: 0;
+		background: transparent;
+		color: rgb(var(--color-text-secondary));
+		cursor: pointer;
+	}
+	.icon-button:hover {
+		background: rgb(var(--color-surface-raised));
+		color: rgb(var(--color-text));
+	}
+	.site-footer {
+		max-width: 84rem;
+		width: calc(100% - 6rem);
+		margin: 2rem auto 0;
+		padding: 1.5rem 0 2rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.5rem;
+		border-top: 1px solid rgb(var(--color-border) / 0.65);
+		font-size: 0.75rem;
+		color: rgb(var(--color-text-tertiary));
+	}
+	.site-footer > span {
+		color: rgb(var(--color-text-secondary));
+		font-weight: 600;
+		font-size: 0.875rem;
+		letter-spacing: -0.03em;
+	}
+	.site-footer a {
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+	}
+	button:not(:disabled),
+	a {
+		-webkit-tap-highlight-color: transparent;
+		touch-action: manipulation;
+	}
+	button:disabled {
+		cursor: not-allowed;
+	}
+	.btn-primary:hover {
+		filter: brightness(1.06);
+	}
+	.btn-primary:active,
+	.btn-secondary:active,
+	.icon-button:active {
+		opacity: 0.8;
+	}
+	input:not([type='checkbox']):not([type='radio']):not([type='range']),
+	select,
+	textarea {
+		font-size: 1rem;
+	}
+
 	.anim-rise {
 		animation: mc-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 		animation-delay: var(--rise-delay, 0ms);
@@ -368,7 +358,7 @@
 	/* Horizontal media-option strip — filter / pick-one popovers.
 	   Ancestors (e.g. .page-shell__control) must not use overflow: hidden/auto or popovers clip. */
 	.media-option-popover {
-		@apply rounded-[2rem] border-2 border-amber-400/45 bg-[rgb(var(--color-surface-raised))] px-2 py-2 shadow-lg;
+		@apply rounded-2xl border border-[rgb(var(--color-border))] bg-[rgb(var(--color-surface-raised))] px-2 py-2 shadow-lg;
 		box-shadow:
 			0 12px 28px rgb(0 0 0 / 0.18),
 			0 0 0 1px rgb(var(--color-accent) / 0.12);
@@ -478,25 +468,35 @@
 
 @media (max-width: 767px) {
 	:root {
-		--nav-dial-reserve-w: 0px;
-		--nav-dial-reserve-h: 3.5rem;
-		--mobile-nav-fab-reserve: 5.75rem;
+		--nav-dial-reserve-h: 4rem;
 	}
-
-	.app-main--shell {
-		padding-bottom: var(--mobile-nav-fab-reserve);
+	.app-main {
+		padding: 0 1.25rem 1.5rem;
 	}
-
-	footer {
-		margin-bottom: var(--mobile-nav-fab-reserve);
+	.site-footer {
+		width: calc(100% - 2.5rem);
+		margin-top: 1rem;
+		margin-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+	}
+	.site-footer p {
+		display: none;
 	}
 }
-
-@media (min-width: 768px) {
-	:root {
-		--mobile-nav-fab-reserve: 0px;
-		--nav-dial-r: clamp(6.5rem, 14vw, 9rem);
-		--nav-dial-inset: 0.75rem;
-		--nav-dial-actions-h: 1.75rem;
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
 	}
+}
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+	animation-duration: 0.01ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: 0.01ms !important;
+	scroll-behavior: auto !important;
 }

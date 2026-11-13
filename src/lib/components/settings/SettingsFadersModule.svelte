@@ -71,10 +71,10 @@
 		align-items: baseline;
 		justify-content: space-between;
 		margin-bottom: 0.35rem;
-		font-size: 0.72rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-transform: none;
+		letter-spacing: 0;
 		color: rgb(var(--color-text-secondary));
 	}
 
@@ -97,17 +97,17 @@
 
 	.fader-end {
 		flex-shrink: 0;
-		font-size: 0.55rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		text-transform: none;
+		letter-spacing: 0;
 		color: rgb(var(--color-text-tertiary));
 		white-space: nowrap;
 	}
 
 	@media (min-width: 480px) {
 		.fader-end {
-			font-size: 0.6rem;
+			font-size: 0.75rem;
 		}
 	}
 

@@ -16,7 +16,7 @@
  */
 
 export interface ThemePalette {
-	/** Page background. Light mode uses warm parchment instead of pure white to reduce glare. */
+	/** Page background. Light mode uses a soft off-white. */
 	bg: string;
 	/** Panels and wells that sit on the background (footer, notes, recent-item rows). */
 	surface: string;
@@ -30,7 +30,7 @@ export interface ThemePalette {
 	textSecondary: string;
 	/** Placeholders and metadata. Keep at or above 4.5:1 against bg. */
 	textTertiary: string;
-	/** Brand amber — button fills, rings, highlights. Not for small text on light bg. */
+	/** Champagne accent — button fills, rings, highlights. Not for small text on light bg. */
 	accent: string;
 	/** Accent hover state (darker in light mode, brighter in dark mode). */
 	accentHover: string;
@@ -50,42 +50,57 @@ export interface ThemePalette {
 	glowGreen: string;
 }
 
-/** Light theme — warm parchment "daylight record shop". */
+/** Light theme — soft white, ink, and champagne. */
 export const light: ThemePalette = {
-	bg: '#F4EEE2',
-	surface: '#FAF6ED',
-	surfaceRaised: '#FFFDF6',
-	border: '#D6C8AE',
-	text: '#2B2318',
-	textSecondary: '#5D4E3A',
-	textTertiary: '#79684F',
-	accent: '#FCB900',
-	accentHover: '#DE9E00',
-	accentLight: '#F8EBCB',
-	secondary: '#00539B',
-	secondaryHover: '#003C78',
-	glowOrange: '#C8601C',
-	glowRed: '#A8322A',
-	glowBlue: '#2C5C96',
-	glowGreen: '#3A7A4E'
+	bg: '#F6F5F2',
+	surface: '#EEEDEA',
+	surfaceRaised: '#FFFFFF',
+	border: '#D9D8D4',
+	text: '#202124',
+	textSecondary: '#555860',
+	textTertiary: '#6B6D73',
+	accent: '#D0B488',
+	accentHover: '#735B36',
+	accentLight: '#EEE7DA',
+	secondary: '#316A9B',
+	secondaryHover: '#24547E',
+	glowOrange: '#BA8B55',
+	glowRed: '#A76569',
+	glowBlue: '#59799D',
+	glowGreen: '#608378'
 };
 
-/** Dark theme — warm late-night video store. */
+/** Dark theme — charcoal cinema with warm highlights. */
 export const dark: ThemePalette = {
-	bg: '#1C1917',
-	surface: '#262320',
-	surfaceRaised: '#302D2A',
-	border: '#443C32',
-	text: '#FFFAF0',
-	textSecondary: '#DCC8AA',
-	textTertiary: '#B4A082',
-	accent: '#FCB900',
-	accentHover: '#FFC832',
-	accentLight: '#504628',
-	secondary: '#5096D2',
-	secondaryHover: '#64AAE6',
-	glowOrange: '#D9661F',
-	glowRed: '#B5302A',
-	glowBlue: '#2A5FA5',
-	glowGreen: '#2F7D50'
+	bg: '#101114',
+	surface: '#191B20',
+	surfaceRaised: '#22252B',
+	border: '#383B43',
+	text: '#F4F3EF',
+	textSecondary: '#C5C5C9',
+	textTertiary: '#A4A5AD',
+	accent: '#D8BE92',
+	accentHover: '#E7CCA1',
+	accentLight: '#353027',
+	secondary: '#8BAED1',
+	secondaryHover: '#A9C7E5',
+	glowOrange: '#BA8B55',
+	glowRed: '#A76569',
+	glowBlue: '#59799D',
+	glowGreen: '#608378'
+};
+
+/** Keep existing amber utility classes on the same restrained brand ramp. */
+export const brandRamp = {
+	50: '#FAF7F0',
+	100: '#F3EBDD',
+	200: '#E9D9BC',
+	300: '#E2CAA3',
+	400: '#D8BE92',
+	500: '#C5A474',
+	600: '#987647',
+	700: '#735B36',
+	800: '#58452C',
+	900: '#3B3022',
+	950: '#241E17'
 };

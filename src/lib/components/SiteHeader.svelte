@@ -1,340 +1,323 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import {
+		BookOpen,
+		DotsThree,
+		FilmStrip,
+		Heart,
+		House,
+		MonitorPlay,
+		SignIn,
+		SignOut,
+		SlidersHorizontal,
+		UserGear,
+		VinylRecord,
+		X
+	} from 'phosphor-svelte';
 	import HeaderActions from './HeaderActions.svelte';
-	import NavDial from './NavDial.svelte';
-	import VinylDisc from './VinylDisc.svelte';
 	import type { SessionUser } from '$lib/types/auth';
-	import { settings } from '$lib/stores/settings.svelte';
 	import { modal } from '$lib/utils/modal';
-	import { X } from 'phosphor-svelte';
-
-	interface Props {
-		user: SessionUser | null;
-		pathname: string;
+	let { user, pathname }: { user: SessionUser | null; pathname: string } = $props();
+	let menuOpen = $state(false);
+	const destinations = [
+		{ href: '/', label: 'Home', icon: House, category: '' },
+		{ href: '/movies', label: 'Movies', icon: FilmStrip, category: 'movie' },
+		{ href: '/shows', label: 'Shows', icon: MonitorPlay, category: 'show' },
+		{ href: '/music', label: 'Music', icon: VinylRecord, category: 'music' },
+		{ href: '/books', label: 'Books', icon: BookOpen, category: 'book' }
+	];
+	function isCurrent(item: (typeof destinations)[number]) {
+		return (
+			pathname === item.href ||
+			(item.href !== '/' &&
+				(pathname.startsWith(item.href + '/') ||
+					pathname === '/albums/' + item.category ||
+					pathname.startsWith('/albums/' + item.category + '/')))
+		);
 	}
-
-	let { user, pathname }: Props = $props();
-
-	const MOBILE_NAV_CLOSE_MS = 400;
-
-	let mobileMenuOpen = $state(false);
-	let overlayMounted = $state(false);
-	let overlayClosing = $state(false);
-
-	const reducedMotion = $derived(settings.motion === 'reduced');
-
 	$effect(() => {
 		void pathname;
-		untrack(() => closeMobileMenu());
+		untrack(() => {
+			menuOpen = false;
+		});
 	});
-
-	function openMobileMenu() {
-		overlayClosing = false;
-		overlayMounted = true;
-		mobileMenuOpen = true;
-	}
-
-	function closeMobileMenu() {
-		if (!overlayMounted || overlayClosing) return;
-		overlayClosing = true;
-		mobileMenuOpen = false;
-
-		const duration = reducedMotion ? 0 : MOBILE_NAV_CLOSE_MS;
-		setTimeout(() => {
-			overlayMounted = false;
-			overlayClosing = false;
-		}, duration);
-	}
 </script>
 
-<!-- Desktop: fixed nav wheel (top-left) -->
-<header class="site-header site-header--desktop" aria-label="Site navigation">
-	<div class="header-stack">
-		<div class="header-actions-slot" data-dial-hub>
-			<HeaderActions showLogout={!!user} --action-btn-size="var(--nav-dial-actions-h)" />
+<header class="site-header">
+	<div class="site-header__inner">
+		<a href="/" class="brand" aria-label="Media Club home"
+			><FilmStrip size={24} weight="regular" /><span
+				>media club<span class="brand-dot">.</span></span
+			></a
+		>
+		<nav class="desktop-nav" aria-label="Main navigation">
+			{#each destinations.slice(1) as item (item.href)}
+				<a href={item.href} aria-current={isCurrent(item) ? 'page' : undefined}>{item.label}</a>
+			{/each}
+			<a
+				href="/wishlist/movies"
+				aria-current={pathname.startsWith('/wishlist') ? 'page' : undefined}>Wishlist</a
+			>
+		</nav>
+		<div class="site-header__actions">
+			<HeaderActions showSettings={false} />
+			<button
+				class="icon-button"
+				type="button"
+				aria-label="More navigation"
+				aria-expanded={menuOpen}
+				aria-controls="more-navigation"
+				onclick={() => {
+					menuOpen = true;
+				}}><DotsThree size={24} weight="bold" /></button
+			>
 		</div>
-		<NavDial instanceId="desktop" {user} {pathname} />
 	</div>
 </header>
 
-<!-- Mobile: compact actions (top-right). Hidden while the nav overlay is open so its
-     close button never sits on top of them. -->
-<header
-	class="site-header site-header--mobile"
-	class:is-hidden={overlayMounted}
-	aria-label="Site actions"
-	inert={overlayMounted}
->
-	<HeaderActions showLogout={!!user} --action-btn-size="2.35rem" />
-</header>
+<nav class="mobile-tabs" aria-label="Main navigation">
+	{#each destinations as item (item.href)}
+		{@const Icon = item.icon}
+		<a href={item.href} aria-current={isCurrent(item) ? 'page' : undefined}
+			><Icon size={22} weight={isCurrent(item) ? 'fill' : 'regular'} /><span>{item.label}</span></a
+		>
+	{/each}
+</nav>
 
-<!-- Mobile: spinning record launcher -->
-<button
-	type="button"
-	class="mobile-nav-fab"
-	class:is-open={mobileMenuOpen}
-	aria-label={mobileMenuOpen ? 'Navigation menu open' : 'Open navigation menu'}
-	aria-expanded={mobileMenuOpen}
-	aria-controls="mobile-nav-overlay"
-	disabled={mobileMenuOpen}
-	onclick={openMobileMenu}
->
-	<span class="mobile-nav-fab__glow" aria-hidden="true"></span>
-	<span class="mobile-nav-fab__disc">
-		<VinylDisc spinning class="size-full text-amber-400" />
-	</span>
-</button>
-
-{#if overlayMounted}
+{#if menuOpen}
 	<div
-		id="mobile-nav-overlay"
-		class="mobile-nav-overlay"
-		class:is-closing={overlayClosing}
+		class="navigation-overlay anim-fade"
 		role="dialog"
 		aria-modal="true"
-		aria-label="Navigation menu"
-		{@attach modal({ onEscape: () => closeMobileMenu(), portal: false })}
+		aria-labelledby="navigation-title"
+		id="more-navigation"
+		{@attach modal({
+			onEscape: () => {
+				menuOpen = false;
+			}
+		})}
 	>
 		<button
+			class="navigation-backdrop"
 			type="button"
-			class="mobile-nav-overlay__backdrop"
-			aria-label="Close navigation menu"
 			tabindex="-1"
-			onclick={closeMobileMenu}
+			aria-label="Close navigation"
+			onclick={() => {
+				menuOpen = false;
+			}}
 		></button>
-
-		<button
-			type="button"
-			class="mobile-nav-overlay__close"
-			aria-label="Close navigation menu"
-			onclick={closeMobileMenu}
-		>
-			<X size={18} weight="bold" />
-		</button>
-
-		<div class="mobile-nav-overlay__content">
-			<p class="mobile-nav-overlay__hint">Spin the dial or tap a destination</p>
-			<NavDial instanceId="mobile" {user} {pathname} onNavigate={closeMobileMenu} />
-		</div>
+		<section class="navigation-panel surface-round anim-rise">
+			<div class="navigation-heading">
+				<h2 id="navigation-title">Your Media Club</h2>
+				<button
+					class="icon-button"
+					type="button"
+					aria-label="Close navigation"
+					onclick={() => {
+						menuOpen = false;
+					}}><X size={20} /></button
+				>
+			</div>
+			<nav aria-label="More destinations">
+				<a
+					href="/wishlist/movies"
+					onclick={() => {
+						menuOpen = false;
+					}}><Heart size={21} />Wishlist</a
+				>
+				<a
+					href="/settings"
+					onclick={() => {
+						menuOpen = false;
+					}}><SlidersHorizontal size={21} />Settings</a
+				>
+				{#if user}
+					<a
+						href="/admin"
+						onclick={() => {
+							menuOpen = false;
+						}}><UserGear size={21} />Admin</a
+					>
+					<form method="POST" action="/logout">
+						<button type="submit"><SignOut size={21} />Log out</button>
+					</form>
+				{:else}
+					<a
+						href="/login"
+						onclick={() => {
+							menuOpen = false;
+						}}><SignIn size={21} />Admin login</a
+					>
+				{/if}
+			</nav>
+		</section>
 	</div>
 {/if}
 
 <style>
 	.site-header {
+		position: sticky;
+		top: 0;
 		z-index: 50;
-		pointer-events: none;
+		border-bottom: 1px solid rgb(var(--color-border) / 0.65);
+		background: rgb(var(--color-bg) / 0.88);
+		-webkit-backdrop-filter: blur(20px);
+		backdrop-filter: blur(20px);
 	}
-
-	.site-header--desktop {
+	.site-header__inner {
+		max-width: 90rem;
+		margin: auto;
+		min-height: 4.5rem;
+		padding: env(safe-area-inset-top, 0px) max(1.25rem, env(safe-area-inset-right)) 0
+			max(1.25rem, env(safe-area-inset-left));
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+	}
+	.brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.65rem;
+		min-height: 44px;
+		white-space: nowrap;
+		font-size: 1.25rem;
+		font-weight: 650;
+		letter-spacing: -0.055em;
+	}
+	.brand-dot {
+		color: rgb(var(--color-accent));
+	}
+	.desktop-nav {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	.desktop-nav a {
+		padding: 0.75rem 1rem;
+		border-radius: 0.75rem;
+		color: rgb(var(--color-text-secondary));
+		font-size: 0.875rem;
+		font-weight: 550;
+	}
+	.desktop-nav a:hover,
+	.desktop-nav a[aria-current] {
+		color: rgb(var(--color-text));
+		background: rgb(var(--color-surface-raised));
+	}
+	.site-header__actions {
+		display: flex;
+		gap: 0.25rem;
+	}
+	.mobile-tabs {
 		display: none;
-		position: fixed;
-		top: var(--nav-dial-inset);
-		left: 0;
 	}
-
-	.site-header--mobile {
-		display: block;
-		position: fixed;
-		top: var(--nav-dial-inset);
-		right: var(--nav-dial-inset);
-		pointer-events: auto;
-		transition: opacity 0.2s ease;
-	}
-
-	.site-header--mobile.is-hidden {
-		opacity: 0;
-		pointer-events: none;
-	}
-
-	.header-stack {
-		pointer-events: auto;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--nav-dial-stack-gap);
-		width: var(--nav-dial-reserve-w);
-	}
-
-	.header-actions-slot {
-		display: flex;
-		justify-content: center;
-		min-height: var(--nav-dial-actions-h);
-	}
-
-	.mobile-nav-fab {
-		position: fixed;
-		left: 50%;
-		bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-		z-index: 55;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 4.25rem;
-		height: 4.25rem;
-		padding: 0;
-		border: none;
-		background: transparent;
-		transform: translateX(-50%);
-		cursor: pointer;
-	}
-
-	.mobile-nav-fab:is(:disabled, .is-open) {
-		opacity: 0;
-		pointer-events: none;
-	}
-
-	.mobile-nav-fab__glow {
-		position: absolute;
-		inset: -0.35rem;
-		border-radius: 9999px;
-		background: radial-gradient(circle, rgb(var(--color-accent) / 0.45) 0%, transparent 70%);
-		animation: fab-pulse 2.4s ease-in-out infinite;
-	}
-
-	.mobile-nav-fab__disc {
-		position: relative;
-		display: flex;
-		width: 3.75rem;
-		height: 3.75rem;
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		border: 2px solid rgb(var(--color-accent));
-		background: rgb(var(--color-accent) / 0.18);
-		box-shadow:
-			0 0 0 4px rgb(var(--color-accent) / 0.12),
-			0 10px 28px rgb(0 0 0 / 0.35);
-		backdrop-filter: blur(8px);
-	}
-
-	.mobile-nav-overlay {
+	.navigation-overlay {
 		position: fixed;
 		inset: 0;
 		z-index: 80;
 		display: flex;
-		flex-direction: column;
+		align-items: flex-start;
 		justify-content: flex-end;
-		align-items: center;
-		pointer-events: none;
+		padding: 5.5rem 1.5rem 1.5rem;
 	}
-
-	.mobile-nav-overlay__backdrop {
+	.navigation-backdrop {
 		position: absolute;
 		inset: 0;
-		z-index: 0;
-		border: none;
-		pointer-events: auto;
-		cursor: pointer;
-		background: linear-gradient(
-			to bottom,
-			rgb(0 0 0 / 0) 0%,
-			rgb(0 0 0 / 0.12) 30%,
-			rgb(0 0 0 / 0.55) 55%,
-			rgb(0 0 0 / 0.88) 100%
-		);
-		animation: mc-fade 0.35s ease-out backwards;
-	}
-
-	.mobile-nav-overlay.is-closing .mobile-nav-overlay__backdrop {
-		animation: mc-fade-out 0.35s ease-in forwards;
-	}
-
-	.mobile-nav-overlay__close {
-		position: absolute;
-		top: calc(0.85rem + env(safe-area-inset-top, 0px));
-		right: calc(0.85rem + env(safe-area-inset-right, 0px));
-		z-index: 2;
-		display: inline-flex;
-		width: 2.25rem;
-		height: 2.25rem;
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		border: 1px solid rgb(var(--color-accent) / 0.45);
-		background: rgb(0 0 0 / 0.35);
-		color: rgb(var(--color-accent));
+		border: 0;
+		background: rgb(0 0 0 / 0.45);
 		backdrop-filter: blur(8px);
-		cursor: pointer;
-		pointer-events: auto;
 	}
-
-	.mobile-nav-overlay__content {
+	.navigation-panel {
 		position: relative;
-		z-index: 1;
+		width: min(100%, 23rem);
+		padding: 1rem;
+		box-shadow: 0 24px 80px rgb(0 0 0 / 0.25);
+	}
+	.navigation-heading {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 0.75rem;
-		width: min(100%, 22rem);
-		padding: 0 1rem 1.5rem;
-		padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
-		pointer-events: auto;
-		--nav-dial-r: clamp(6.25rem, 30vw, 7.75rem);
-		--nav-dial-size: calc(var(--nav-dial-r) * 2);
-		animation: mc-slide-up-bottom 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0 0.25rem 0.75rem 0.75rem;
 	}
-
-	.mobile-nav-overlay.is-closing .mobile-nav-overlay__content {
-		animation: mc-slide-down-bottom 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+	h2 {
+		font-size: 1rem;
+		font-weight: 600;
 	}
-
-	.mobile-nav-overlay__hint {
-		margin: 0;
-		font-size: 0.65rem;
-		font-weight: 800;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: rgb(var(--color-accent) / 0.9);
-		text-shadow: 0 1px 10px rgb(0 0 0 / 0.65);
+	.navigation-panel nav a,
+	.navigation-panel nav button {
+		display: flex;
+		width: 100%;
+		min-height: 52px;
+		align-items: center;
+		gap: 0.9rem;
+		padding: 0.75rem;
+		border: 0;
+		border-radius: 0.75rem;
+		background: transparent;
+		text-align: left;
+		color: rgb(var(--color-text-secondary));
+		cursor: pointer;
 	}
-
-	@keyframes fab-pulse {
-		0%,
-		100% {
-			opacity: 0.55;
-			transform: scale(1);
+	.navigation-panel nav a:hover,
+	.navigation-panel nav button:hover {
+		background: rgb(var(--color-surface));
+		color: rgb(var(--color-text));
+	}
+	@media (max-width: 767px) {
+		.site-header__inner {
+			min-height: 4rem;
+			gap: 0.5rem;
+			padding-inline: max(1rem, env(safe-area-inset-left));
 		}
-		50% {
-			opacity: 1;
-			transform: scale(1.08);
-		}
-	}
-
-	@media (min-width: 768px) {
-		.site-header--desktop {
-			display: block;
-		}
-
-		.site-header--mobile,
-		.mobile-nav-fab,
-		.mobile-nav-overlay {
+		.desktop-nav {
 			display: none;
 		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.mobile-nav-fab__glow {
-			animation: none;
+		.mobile-tabs {
+			position: fixed;
+			z-index: 55;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			display: grid;
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			padding: 0.5rem max(0.5rem, env(safe-area-inset-right))
+				max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
+			border-top: 1px solid rgb(var(--color-border) / 0.7);
+			background: rgb(var(--color-surface) / 0.94);
+			-webkit-backdrop-filter: blur(20px);
+			backdrop-filter: blur(20px);
 		}
-
-		.mobile-nav-overlay__backdrop,
-		.mobile-nav-overlay__content,
-		.mobile-nav-overlay.is-closing .mobile-nav-overlay__backdrop,
-		.mobile-nav-overlay.is-closing .mobile-nav-overlay__content {
-			animation-duration: 0.01ms;
-			animation-delay: 0ms;
+		.mobile-tabs a {
+			display: flex;
+			min-height: 48px;
+			align-items: center;
+			justify-content: center;
+			flex-direction: column;
+			gap: 0.3rem;
+			border-radius: 0.8rem;
+			color: rgb(var(--color-text-tertiary));
+			font-size: 0.65rem;
+			font-weight: 550;
+		}
+		.mobile-tabs a[aria-current] {
+			color: rgb(var(--color-text));
+			background: rgb(var(--color-accent) / 0.12);
+		}
+		.navigation-overlay {
+			align-items: flex-end;
+			padding: 0.75rem 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+		}
+		.navigation-panel {
+			width: 100%;
+			max-height: 85dvh;
+			overflow-y: auto;
 		}
 	}
-
-	:global([data-motion='reduced']) .mobile-nav-fab__glow {
-		animation: none;
-	}
-
-	:global([data-motion='reduced']) .mobile-nav-overlay__backdrop,
-	:global([data-motion='reduced']) .mobile-nav-overlay__content,
-	:global([data-motion='reduced']) .mobile-nav-overlay.is-closing .mobile-nav-overlay__backdrop,
-	:global([data-motion='reduced']) .mobile-nav-overlay.is-closing .mobile-nav-overlay__content {
-		animation-duration: 0.01ms;
-		animation-delay: 0ms;
+	@media (min-width: 1024px) {
+		.site-header__inner {
+			padding-inline: 3rem;
+		}
 	}
 </style>
