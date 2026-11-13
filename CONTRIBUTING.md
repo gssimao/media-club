@@ -30,9 +30,16 @@ npm run format   # auto-fix formatting
 npm run lint
 npm run check
 npm test
+npm run audit
 ```
 
 **CI** (GitHub Actions on push/PR) runs lint, check, tests, and `npm audit`.
+
+The `minimatch` override in `package.json` selects patched 11.x releases for
+ESLint and typescript-eslint to address
+[GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+Remove it once those tools require a patched version themselves; validate changes
+with the commands above. Keep CI's moderate-severity audit threshold in place.
 
 ## Code style
 
