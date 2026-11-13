@@ -1,229 +1,141 @@
 <script lang="ts">
-	import {
-		ArrowRight,
-		BookOpen,
-		FilmStrip,
-		Heart,
-		MonitorPlay,
-		Pause,
-		Play,
-		VinylRecord
-	} from 'phosphor-svelte';
-	import HomeAmbience from '$lib/components/HomeAmbience.svelte';
-	import VinylDisc from '$lib/components/VinylDisc.svelte';
-	import { settings } from '$lib/stores/settings.svelte';
+	import { Pause, Play } from 'phosphor-svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
+	import CollectionWheel from '$lib/components/CollectionWheel.svelte';
+	import HomeAmbience from '$lib/components/HomeAmbience.svelte';
+	import { settings } from '$lib/stores/settings.svelte';
 	import { CATEGORY_PATHS } from '$lib/types/media';
 	let { data } = $props();
 	let paused = $state(false);
+	let hidden = $state(false);
 	const motionAllowed = $derived(settings.motion !== 'reduced' && !prefersReducedMotion.current);
-	const icons = {
-		movie: FilmStrip,
-		show: MonitorPlay,
-		music: VinylRecord,
-		book: BookOpen
-	} as const;
+	const tones = { movie: 'coral', show: 'lilac', music: 'mint', book: 'sky' } as const;
+	const total = $derived(data.summary.reduce((count, row) => count + row.owned, 0));
+	$effect(() => {
+		const update = () => {
+			hidden = document.hidden;
+		};
+		update();
+		document.addEventListener('visibilitychange', update);
+		return () => document.removeEventListener('visibilitychange', update);
+	});
 </script>
 
 <svelte:head
-	><title>Media Club</title><meta
+	><title>Media Club · My collection</title><meta
 		name="description"
-		content="A home for your favorite movies, TV shows, vinyl, and books. Browse the collection and find your next favorite."
+		content="My collection of movies, shows, records, and books."
 	/></svelte:head
 >
 <HomeAmbience covers={data.ambientCovers} {paused} />
-<section class="home-hero" aria-labelledby="home-title">
-	<div class="hero-record" class:is-paused={paused} style:--spin-period="{settings.spinPeriodMs}ms">
-		<VinylDisc spinning={motionAllowed} class="size-full" />
-	</div>
-	<p class="eyebrow">The personal collection</p>
-	<h1 id="home-title">Your collection.<br /><span>A world of stories.</span></h1>
-	<p class="hero-description">
-		Movies, shows, records, and books.<br class="mobile-break" /> All the things worth keeping.
-	</p>
-	<a class="btn-primary hero-cta" href="/movies">Explore the collection <ArrowRight size={18} /></a>
-	<nav class="category-grid" aria-label="Browse your collection">
-		{#each data.summary as row (row.category)}
-			{@const Icon = icons[row.category]}
-			<a class="category-link" href="/{CATEGORY_PATHS[row.category]}">
-				<span class="category-icon"><Icon size={24} weight="regular" /></span>
-				<span class="category-name">{row.label}</span>
-				<span class="category-count"
-					>{row.owned} owned <span aria-hidden="true">·</span> {row.wishlist} wished</span
-				>
-				<ArrowRight size={17} class="category-arrow" />
-			</a>
-		{/each}
+<section class="collection-room" aria-labelledby="collection-title">
+	<header class="collection-heading">
+		<h1 id="collection-title">Media Club<span aria-hidden="true">.</span></h1>
+		<p>{total} in my collection</p>
+	</header>
+	<div class="wheel-stage"><CollectionWheel user={data.user} {paused} {hidden} /></div>
+	<nav class="collection-counts" aria-label="Collection totals">
+		{#each data.summary as row (row.category)}<a
+				href="/{CATEGORY_PATHS[row.category]}"
+				data-tone={tones[row.category]}
+				><span class="count-disc">{row.owned}</span><span>{row.label}</span></a
+			>{/each}
 	</nav>
-	<div class="home-secondary">
-		<a href="/wishlist/movies"><Heart size={16} />Browse wishlists</a>
-		{#if motionAllowed}<button
-				type="button"
-				aria-pressed={paused}
-				onclick={() => {
-					paused = !paused;
-				}}
-				>{#if paused}<Play size={15} />Resume ambience{:else}<Pause size={15} />Pause ambience{/if}</button
-			>{/if}
-	</div>
+	{#if motionAllowed}<button
+			class="movement-toggle"
+			type="button"
+			aria-pressed={paused}
+			onclick={() => {
+				paused = !paused;
+			}}
+			>{#if paused}<Play size={14} />Resume movement{:else}<Pause size={14} />Pause movement{/if}</button
+		>{/if}
 </section>
 
 <style>
-	.home-hero {
-		position: relative;
-		width: 100%;
-		max-width: 60rem;
-		margin-inline: auto;
-		padding: clamp(2.5rem, 6vh, 5rem) 0 3rem;
-		text-align: center;
-	}
-	.hero-record {
-		width: 6rem;
-		height: 6rem;
-		margin: 0 auto 1.75rem;
-		border-radius: 50%;
-		box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
-	}
-	.hero-record.is-paused :global(.record-spin) {
-		animation-play-state: paused;
-	}
-	.eyebrow {
-		color: rgb(var(--color-text-secondary));
-		font-size: 0.6875rem;
-		font-weight: 600;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-	}
-	h1 {
-		margin: 1.25rem 0;
-		font-size: clamp(2.6rem, 6.6vw, 5.25rem);
-		line-height: 1.02;
-		letter-spacing: -0.065em;
-		font-weight: 650;
-	}
-	h1 span {
-		color: rgb(var(--color-text-secondary));
-	}
-	.hero-description {
-		font-size: 1rem;
-		line-height: 1.65;
-		color: rgb(var(--color-text-secondary));
-		text-wrap: balance;
-	}
-	.mobile-break {
-		display: none;
-	}
-	.hero-cta {
-		margin-top: 1.75rem;
-	}
-	.category-grid {
-		margin-top: clamp(2.5rem, 6vw, 4rem);
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 0.75rem;
-		text-align: left;
-	}
-	.category-link {
-		position: relative;
+	.collection-room {
+		min-height: calc(100svh - 2rem);
 		display: flex;
 		flex-direction: column;
-		padding: 1.5rem;
-		gap: 0.4rem;
-		border-radius: 1.25rem;
-		border: 1px solid rgb(var(--color-border) / 0.8);
-		background: rgb(var(--color-surface-raised) / 0.84);
-		transition:
-			background-color 200ms ease,
-			border-color 200ms ease,
-			transform 250ms var(--ease-out);
+		align-items: center;
+		padding: 3.75rem 0 1.5rem;
 	}
-	.category-icon {
-		color: rgb(var(--color-accent-hover));
-		margin-bottom: 1rem;
+	.collection-heading {
+		text-align: center;
+		margin-bottom: 1.75rem;
 	}
-	.category-name {
-		font-size: 1rem;
-		font-weight: 600;
-		letter-spacing: -0.02em;
+	h1 {
+		font-size: clamp(2rem, 4.5vw, 3.25rem);
+		font-weight: 680;
+		letter-spacing: -0.065em;
+		line-height: 1;
 	}
-	.category-count {
-		color: rgb(var(--color-text-tertiary));
+	h1 span {
+		color: rgb(var(--color-accent));
+	}
+	.collection-heading p {
+		margin-top: 0.7rem;
 		font-size: 0.75rem;
+		color: rgb(var(--color-text-tertiary));
 		font-variant-numeric: tabular-nums;
 	}
-	.category-link :global(.category-arrow) {
-		position: absolute;
-		top: 1.5rem;
-		right: 1.5rem;
-		color: rgb(var(--color-text-tertiary));
+	.wheel-stage {
+		width: min(100%, 35rem);
 	}
-	.home-secondary {
+	.collection-counts {
 		display: flex;
-		flex-wrap: wrap;
 		justify-content: center;
-		gap: 0.25rem 1.5rem;
-		margin-top: 1.5rem;
+		gap: clamp(1.2rem, 3.5vw, 2.5rem);
+		margin-top: 1.75rem;
 	}
-	.home-secondary a,
-	.home-secondary button {
+	.collection-counts a {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		min-width: 44px;
+		font-size: 0.6875rem;
+		color: rgb(var(--color-text-secondary));
+	}
+	.count-disc {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		border: 1px solid rgb(var(--destination-color) / 0.5);
+		color: rgb(var(--destination-color));
+		background: rgb(var(--color-surface) / 0.8);
+		font-size: 0.875rem;
+		font-variant-numeric: tabular-nums;
+		transition: transform 200ms ease;
+	}
+	.collection-counts a:hover .count-disc {
+		transform: rotate(-10deg);
+	}
+	.movement-toggle {
 		display: inline-flex;
 		align-items: center;
-		justify-content: center;
 		gap: 0.5rem;
 		min-height: 44px;
-		padding: 0.5rem;
 		border: 0;
-		background: transparent;
-		color: rgb(var(--color-text-secondary));
-		font-size: 0.8125rem;
+		background: none;
+		color: rgb(var(--color-text-tertiary));
+		font-size: 0.6875rem;
+		padding: 0.5rem 1rem;
+		margin-top: 0.75rem;
 		cursor: pointer;
 	}
-	.home-secondary :is(a, button):hover {
-		color: rgb(var(--color-text));
-	}
-	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-		.category-link:hover {
-			transform: translateY(-3px);
-			background: rgb(var(--color-surface-raised));
-			border-color: rgb(var(--color-accent) / 0.6);
-		}
-	}
 	@media (max-width: 639px) {
-		.home-hero {
-			padding-top: 2rem;
+		.collection-room {
+			padding-top: 5.5rem;
+			min-height: 100svh;
 		}
-		.hero-record {
-			width: 4.25rem;
-			height: 4.25rem;
-			margin-bottom: 1.5rem;
+		.collection-heading {
+			margin-bottom: 2rem;
 		}
-		h1 {
-			font-size: clamp(2.35rem, 10.5vw, 3.6rem);
+		.collection-counts {
+			margin-top: 2rem;
 		}
-		.hero-description {
-			font-size: 0.9375rem;
-		}
-		.mobile-break {
-			display: initial;
-		}
-		.category-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 0.65rem;
-			margin-top: 2.5rem;
-		}
-		.category-link {
-			padding: 1.1rem;
-		}
-		.category-icon {
-			margin-bottom: 0.65rem;
-		}
-		.category-link :global(.category-arrow) {
-			top: 1.2rem;
-			right: 1.1rem;
-		}
-	}
-	:global([data-motion='reduced']) .category-link {
-		transition: none;
-		transform: none;
 	}
 </style>

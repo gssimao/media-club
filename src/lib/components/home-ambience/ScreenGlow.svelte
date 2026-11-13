@@ -101,7 +101,7 @@
 	/* A soft half-ellipse of light anchored to the page edge. Gradient only (no blur
 	   filter) and animated through opacity/transform, so it stays on the compositor. */
 	.lamp {
-		--glow-strength: 0.22;
+		--glow-strength: 0.24;
 		--glow-anchor: 0%;
 
 		position: absolute;
@@ -130,6 +130,6 @@
 	}
 
 	:global([data-theme='dark']) .lamp {
-		--glow-strength: 0.34;
+		--glow-strength: 0.42;
 	}
 </style>

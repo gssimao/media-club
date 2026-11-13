@@ -15,6 +15,7 @@ import type { Component } from 'svelte';
 export type NavItem = {
 	href: string;
 	label: string;
+	tone: 'accent' | 'coral' | 'lilac' | 'mint' | 'sky';
 	icon: Component<{ size?: number; weight?: 'bold' | 'regular' | 'fill' }>;
 	match: (path: string) => boolean;
 };
@@ -44,20 +45,46 @@ function matchCategory(pagePath: string, albumCategory: string) {
 }
 
 const catalogItems: NavItem[] = [
-	{ href: '/', label: 'Home', icon: House, match: (p) => p === '/' },
-	{ href: '/movies', label: 'Movies', icon: FilmStrip, match: matchCategory('/movies', 'movie') },
-	{ href: '/shows', label: 'Shows', icon: MonitorPlay, match: matchCategory('/shows', 'show') },
-	{ href: '/music', label: 'Music', icon: VinylRecord, match: matchCategory('/music', 'music') },
-	{ href: '/books', label: 'Books', icon: BookOpen, match: matchCategory('/books', 'book') },
+	{ href: '/', label: 'Home', tone: 'accent', icon: House, match: (p) => p === '/' },
+	{
+		href: '/movies',
+		label: 'Movies',
+		tone: 'coral',
+		icon: FilmStrip,
+		match: matchCategory('/movies', 'movie')
+	},
+	{
+		href: '/shows',
+		label: 'Shows',
+		tone: 'lilac',
+		icon: MonitorPlay,
+		match: matchCategory('/shows', 'show')
+	},
+	{
+		href: '/music',
+		label: 'Music',
+		tone: 'mint',
+		icon: VinylRecord,
+		match: matchCategory('/music', 'music')
+	},
+	{
+		href: '/books',
+		label: 'Books',
+		tone: 'sky',
+		icon: BookOpen,
+		match: matchCategory('/books', 'book')
+	},
 	{
 		href: '/wishlist/movies',
 		label: 'Wishlist',
+		tone: 'coral',
 		icon: Heart,
 		match: (p) => p.startsWith('/wishlist')
 	},
 	{
 		href: '/settings',
 		label: 'Settings',
+		tone: 'accent',
 		icon: Faders,
 		match: (p) => p.startsWith('/settings')
 	}
@@ -70,6 +97,7 @@ export function buildNavItems(user: SessionUser | null): NavItem[] {
 				{
 					href: '/admin',
 					label: 'Admin',
+					tone: 'accent',
 					icon: UserGear,
 					match: (p) => p.startsWith('/admin')
 				}
@@ -79,6 +107,7 @@ export function buildNavItems(user: SessionUser | null): NavItem[] {
 				{
 					href: '/login',
 					label: 'Log in',
+					tone: 'accent',
 					icon: SignIn,
 					match: (p) => p === '/login'
 				}
@@ -152,6 +181,11 @@ export function snapRotationToIndex(
 	selector = SELECTOR
 ): number {
 	return normalizeAngle(selector - itemAngles[index] + 180) - 180;
+}
+
+/** Snap by the shortest arc, even after several turns or crossing +/-180 degrees. */
+export function nearestSnapRotation(itemAngles: number[], index: number, rotation: number): number {
+	return rotation + unwrapAngleDelta(snapRotationToIndex(itemAngles, index) - rotation);
 }
 
 export function pointerAngle(

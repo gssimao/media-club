@@ -12,8 +12,17 @@
 
 	let { covers, paused = false }: Props = $props();
 
+	let visible = $state(true);
+	$effect(() => {
+		const update = () => {
+			visible = !document.hidden;
+		};
+		update();
+		document.addEventListener('visibilitychange', update);
+		return () => document.removeEventListener('visibilitychange', update);
+	});
 	const animated = $derived(
-		!paused && settings.motion !== 'reduced' && !prefersReducedMotion.current
+		visible && !paused && settings.motion !== 'reduced' && !prefersReducedMotion.current
 	);
 </script>
 

@@ -18,7 +18,7 @@ export type GlowColor = (typeof GLOW_COLORS)[number];
 /** Warm tones come up more often than cool ones. */
 const GLOW_WEIGHTS: Record<GlowColor, number> = { orange: 3, red: 3, blue: 2, green: 2 };
 
-export const GLOW_LAMPS_PER_SIDE = 3;
+export const GLOW_LAMPS_PER_SIDE = 2;
 
 /** Below this width the side lanes overlap the page content, so fewer covers float at once. */
 const NARROW_VIEWPORT_PX = 640;
@@ -64,18 +64,15 @@ export interface GlowCycle {
 
 export function createGlowCycle(rand: Rand = Math.random, previous?: GlowColor): GlowCycle {
 	const peak = between(rand, 0.6, 1);
-	// Brightness wanders while lit, the way reflected light shifts as scenes change.
-	const shimmer = Array.from({ length: 4 }, () => peak * between(rand, 0.45, 1));
-	shimmer[Math.floor(rand() * shimmer.length) % shimmer.length] = peak;
-
+	// A single slow breath of light; no flicker between peaks.
 	return {
 		color: pickGlowColor(rand, previous),
 		centerPct: between(rand, 8, 92),
 		heightVh: between(rand, 55, 115),
 		reachPct: between(rand, 60, 100),
-		levels: [0, ...shimmer, 0],
+		levels: [0, peak * 0.7, peak, peak * 0.7, 0],
 		driftPct: between(rand, -12, 12),
-		durationMs: between(rand, 11_000, 22_000),
+		durationMs: between(rand, 24_000, 40_000),
 		pauseMs: between(rand, 1_500, 7_000)
 	};
 }
@@ -85,7 +82,7 @@ export function createStillGlow(index: number, side: AmbienceSide) {
 	const offset = side === 'left' ? 0 : 2;
 	return {
 		color: GLOW_COLORS[(index + offset) % GLOW_COLORS.length],
-		centerPct: 18 + index * 32,
+		centerPct: 25 + index * 50,
 		heightVh: 80,
 		reachPct: 80,
 		level: 0.5

@@ -148,7 +148,7 @@
 		box-shadow:
 			0 0.75rem 2rem rgb(0 0 0 / 0.35),
 			0 0 0 1px rgb(255 255 255 / 0.08);
-		animation: cover-bob 5s ease-in-out infinite alternate;
+		animation: cover-bob 9s ease-in-out infinite alternate;
 	}
 
 	@keyframes cover-drift {

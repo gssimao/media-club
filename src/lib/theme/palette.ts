@@ -40,6 +40,11 @@ export interface ThemePalette {
 	secondary: string;
 	/** Secondary blue hover state. */
 	secondaryHover: string;
+	/** Destination accents, readable on the page and raised surfaces. */
+	coral: string;
+	lilac: string;
+	mint: string;
+	sky: string;
 	/** Home page screen glow: burnt orange light spilling in from the page edges. */
 	glowOrange: string;
 	/** Home page screen glow: deep red. */
@@ -64,10 +69,14 @@ export const light: ThemePalette = {
 	accentLight: '#EEE7DA',
 	secondary: '#316A9B',
 	secondaryHover: '#24547E',
-	glowOrange: '#BA8B55',
-	glowRed: '#A76569',
-	glowBlue: '#59799D',
-	glowGreen: '#608378'
+	coral: '#9C4D41',
+	lilac: '#73568F',
+	mint: '#316F5E',
+	sky: '#376C91',
+	glowOrange: '#CA985D',
+	glowRed: '#BB7776',
+	glowBlue: '#7A83BC',
+	glowGreen: '#6EA28E'
 };
 
 /** Dark theme — charcoal cinema with warm highlights. */
@@ -84,10 +93,14 @@ export const dark: ThemePalette = {
 	accentLight: '#353027',
 	secondary: '#8BAED1',
 	secondaryHover: '#A9C7E5',
-	glowOrange: '#BA8B55',
-	glowRed: '#A76569',
-	glowBlue: '#59799D',
-	glowGreen: '#608378'
+	coral: '#E6A18D',
+	lilac: '#B9A0D9',
+	mint: '#8EC3AF',
+	sky: '#90B9DD',
+	glowOrange: '#CA985D',
+	glowRed: '#BB7776',
+	glowBlue: '#7A83BC',
+	glowGreen: '#6EA28E'
 };
 
 /** Keep existing amber utility classes on the same restrained brand ramp. */

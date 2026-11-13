@@ -7,6 +7,7 @@ import {
 	itemAnglesForCount,
 	markDialOpened,
 	nearestItemIndex,
+	nearestSnapRotation,
 	nearestItemIndexWithHysteresis,
 	normalizeAngle,
 	saveDialRotation,
@@ -138,5 +139,18 @@ describe('buildNavItems', () => {
 		const adminItems = buildNavItems({ id: 'u1', username: 'admin' });
 		expect(adminItems.find((item) => item.match('/admin/streaming'))?.label).toBe('Admin');
 		expect(adminItems.some((item) => item.label === 'Log in')).toBe(false);
+	});
+});
+
+describe('nearestSnapRotation', () => {
+	const angles = itemAnglesForCount(8);
+	it('does not unwind full revolutions when released after a long drag', () => {
+		const rotation = nearestSnapRotation(angles, 2, 1000);
+		expect(Math.abs(rotation - 1000)).toBeLessThanOrEqual(180);
+		expect(nearestItemIndex(angles, rotation)).toBe(2);
+	});
+	it('crosses the negative/positive boundary by the short arc', () => {
+		expect(nearestSnapRotation(angles, 4, -179)).toBe(-180);
+		expect(nearestSnapRotation(angles, 4, 179)).toBe(180);
 	});
 });

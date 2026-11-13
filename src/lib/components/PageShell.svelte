@@ -45,6 +45,15 @@
 		line-height: 1.12;
 		text-wrap: balance;
 	}
+	h1::after {
+		content: '';
+		display: block;
+		width: 2.5rem;
+		height: 2px;
+		border-radius: 1px;
+		background: rgb(var(--destination-color, var(--color-accent)));
+		margin-top: 0.75rem;
+	}
 	p {
 		margin: 0.65rem 0 0;
 		max-width: 42rem;

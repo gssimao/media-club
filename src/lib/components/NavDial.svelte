@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
+	import { prefersReducedMotion } from 'svelte/motion';
+	import { settings } from '$lib/stores/settings.svelte';
 	import NavDialFace from './nav-dial/NavDialFace.svelte';
 	import {
 		buildNavItems,
@@ -15,7 +17,7 @@
 		pointerAngle,
 		saveDialRotation,
 		shouldRestoreDialRotation,
-		snapRotationToIndex,
+		nearestSnapRotation,
 		unwrapAngleDelta
 	} from './nav-dial/nav-dial';
 	import type { SessionUser } from '$lib/types/auth';
@@ -29,9 +31,17 @@
 
 	let { user, pathname, instanceId = 'main', onNavigate }: Props = $props();
 
-	const restoringRotation = shouldRestoreDialRotation(instanceId);
-	const savedRotation = getSavedDialRotation(instanceId);
-	const initialItemAngles = itemAnglesForCount(buildNavItems(user).length);
+	const restoringRotation = untrack(() => shouldRestoreDialRotation(instanceId));
+	const savedRotation = untrack(() => getSavedDialRotation(instanceId));
+	const initialItemAngles = untrack(() => itemAnglesForCount(buildNavItems(user).length));
+	const initialIndex = untrack(() =>
+		Math.max(
+			0,
+			buildNavItems(user).findIndex((item) => item.match(pathname))
+		)
+	);
+	const initialRotation = nearestSnapRotation(initialItemAngles, initialIndex, savedRotation ?? 0);
+	const reduced = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
 
 	const navItems = $derived(buildNavItems(user));
 	const activeIndex = $derived(
@@ -42,7 +52,7 @@
 	);
 
 	let dialRoot = $state<HTMLElement | null>(null);
-	let rotation = $state(restoringRotation && savedRotation !== null ? savedRotation : 0);
+	let rotation = $state(initialRotation);
 	let skipDialTransition = $state(restoringRotation);
 	let suppressInitialPathSnap = restoringRotation;
 	let dragging = $state(false);
@@ -51,11 +61,7 @@
 	let targetNavIndex = $state<number | null>(null);
 	let pendingHref = $state<string | null>(null);
 	let pathAtNavigationStart = '';
-	let stickyPreviewIndex = $state(
-		restoringRotation && savedRotation !== null
-			? nearestItemIndex(initialItemAngles, savedRotation)
-			: 0
-	);
+	let stickyPreviewIndex = $state(initialIndex);
 	let lastPointerAngle = 0;
 	let rotationAtDragStart = 0;
 	let totalDragDelta = 0;
@@ -70,7 +76,7 @@
 	);
 
 	function setRotationForIndex(index: number) {
-		rotation = snapRotationToIndex(itemAngles, index);
+		rotation = nearestSnapRotation(itemAngles, index, rotation);
 	}
 
 	function snapToPath(path: string) {
@@ -140,17 +146,21 @@
 		const item = navItems[index];
 		if (!item) return;
 
+		clearTimeout(navTimer);
 		pathAtNavigationStart = pathname;
 		targetNavIndex = index;
 		pendingHref = item.href !== pathname ? item.href : null;
 		animating = true;
 		setRotationForIndex(index);
 
-		navTimer = setTimeout(() => {
-			if (pendingHref) void goto(pendingHref);
-			else finishNavigation();
-			onNavigate?.();
-		}, DIAL_SNAP_MS);
+		navTimer = setTimeout(
+			() => {
+				if (pendingHref) void goto(pendingHref);
+				else finishNavigation();
+				onNavigate?.();
+			},
+			reduced ? 0 : DIAL_SNAP_MS
+		);
 	}
 
 	function onPointerDown(event: PointerEvent) {
@@ -184,7 +194,8 @@
 	function onPointerUp(event: PointerEvent) {
 		if (!dragging) return;
 		dragging = false;
-		dialRoot?.releasePointerCapture(event.pointerId);
+		if (dialRoot?.hasPointerCapture(event.pointerId))
+			dialRoot.releasePointerCapture(event.pointerId);
 
 		if (dragMoved) {
 			navigateToIndex(stickyPreviewIndex);
@@ -196,9 +207,20 @@
 	}
 
 	function onNodeClick(event: MouseEvent, index: number) {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
 		event.preventDefault();
 		if (dragMoved || animating) return;
 		navigateToIndex(index);
+	}
+
+	function cancelDrag(event: PointerEvent) {
+		if (!dragging) return;
+		dragging = false;
+		dragMoved = false;
+		if (dialRoot?.hasPointerCapture(event.pointerId))
+			dialRoot.releasePointerCapture(event.pointerId);
+		setRotationForIndex(activeIndex);
 	}
 
 	function onCenterClick() {
@@ -212,12 +234,12 @@
 		class="nav-dial"
 		class:is-dragging={dragging}
 		class:is-animating={animating}
-		role="application"
-		aria-label="Spin the navigation dial"
+		role="navigation"
+		aria-label="Navigation wheel"
 		onpointerdown={onPointerDown}
 		onpointermove={onPointerMove}
 		onpointerup={onPointerUp}
-		onpointercancel={onPointerUp}
+		onpointercancel={cancelDrag}
 	>
 		<NavDialFace
 			{instanceId}
@@ -248,6 +270,8 @@
 	}
 
 	.nav-dial {
+		/* Clip the rotator's empty corners, which otherwise create horizontal scroll. */
+		overflow: clip;
 		--dial-snap-duration: 450ms;
 		--dial-snap-easing: cubic-bezier(0.45, 0, 0.55, 1);
 		position: relative;

@@ -28,6 +28,10 @@ const CSS_VARS: Record<keyof ThemePalette, string> = {
 	accentLight: '--color-accent-light',
 	secondary: '--color-secondary',
 	secondaryHover: '--color-secondary-hover',
+	coral: '--color-coral',
+	lilac: '--color-lilac',
+	mint: '--color-mint',
+	sky: '--color-sky',
 	glowOrange: '--color-glow-orange',
 	glowRed: '--color-glow-red',
 	glowBlue: '--color-glow-blue',
@@ -84,6 +88,9 @@ function checkContrast(themeName: string, palette: ThemePalette): string[] {
 		{ fg: 'textTertiary', bg: 'surfaceRaised', min: 4.5 }
 	];
 
+	for (const fg of ['coral', 'lilac', 'mint', 'sky'] as const) {
+		pairs.push({ fg, bg: 'bg', min: 4.5 }, { fg, bg: 'surfaceRaised', min: 4.5 });
+	}
 	const warnings: string[] = [];
 	for (const { fg, bg, min } of pairs) {
 		const ratio = contrastRatio(palette[fg], palette[bg]);

@@ -4,11 +4,17 @@
 	import AlbumLibraryLoading from '$lib/components/AlbumLibraryLoading.svelte';
 	import CatalogPageLoading from '$lib/components/CatalogPageLoading.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import HomeAmbience from '$lib/components/HomeAmbience.svelte';
+	import { buildNavItems } from '$lib/components/nav-dial/nav-dial';
 	import ToastHost from '$lib/components/ToastHost.svelte';
 	import { getCatalogSkeletonConfig } from '$lib/utils/catalog-nav';
 	import { navigating } from '$app/state';
 
 	let { data, children } = $props();
+
+	const sectionTone = $derived(
+		buildNavItems(data.user).find((item) => item.match(data.pathname))?.tone ?? 'accent'
+	);
 
 	const skeletonConfig = $derived.by(() => {
 		if (!navigating?.to) return null;
@@ -27,7 +33,13 @@
 
 <SiteHeader user={data.user} pathname={data.pathname} />
 
-<main id="main-content" class="app-main">
+{#if data.pathname !== '/'}<HomeAmbience covers={[]} />{/if}
+<main
+	id="main-content"
+	class="app-main"
+	class:app-main--with-dial={data.pathname !== '/'}
+	data-tone={sectionTone}
+>
 	{#if skeletonConfig?.variant === 'album-detail'}
 		<AlbumDetailLoading />
 	{:else if skeletonConfig?.variant === 'album-library'}
@@ -45,8 +57,8 @@
 
 <ToastHost />
 
-<footer class="site-footer">
-	<span>media club.</span>
-	<p>A home for the things you love.</p>
-	<a href="/settings">Make it yours</a>
-</footer>
+{#if data.pathname !== '/'}<footer class="site-footer">
+		<span>media club.</span>
+
+		<a href="/settings">Settings</a>
+	</footer>{/if}

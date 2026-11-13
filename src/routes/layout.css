@@ -8,6 +8,22 @@
    not the OS prefers-color-scheme default — otherwise dark: utilities ignore the toggle. */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
+[data-tone] {
+	--destination-color: var(--color-accent-hover);
+}
+[data-tone='coral'] {
+	--destination-color: var(--color-coral);
+}
+[data-tone='lilac'] {
+	--destination-color: var(--color-lilac);
+}
+[data-tone='mint'] {
+	--destination-color: var(--color-mint);
+}
+[data-tone='sky'] {
+	--destination-color: var(--color-sky);
+}
+
 @layer base {
 	:root {
 		/* No web font is downloaded: the CSP (vite.config.ts) only allows same-origin styles
@@ -16,10 +32,10 @@
 			-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
 
 		--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-		--nav-dial-r: 7rem;
-		--nav-dial-size: 14rem;
+		--nav-dial-r: 7.5rem;
+		--nav-dial-size: 15rem;
 		--nav-dial-inset: 1rem;
-		--nav-dial-reserve-w: 0px;
+		--nav-dial-reserve-w: 19rem;
 		--nav-dial-reserve-h: 4.5rem;
 	}
 
@@ -466,6 +482,26 @@
 	animation: none;
 }
 
+@media (min-width: 1100px) {
+	.app-main--with-dial {
+		width: calc(100% - var(--nav-dial-reserve-w));
+		margin-left: var(--nav-dial-reserve-w);
+		padding-left: 1rem;
+	}
+	.site-footer {
+		width: calc(100% - var(--nav-dial-reserve-w) - 4rem);
+		margin-left: calc(var(--nav-dial-reserve-w) + 1rem);
+	}
+}
+@media (max-width: 1099px) {
+	.app-main {
+		padding-inline: max(1.25rem, env(safe-area-inset-left));
+	}
+	.site-footer {
+		margin-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+	}
+}
+
 @media (max-width: 767px) {
 	:root {
 		--nav-dial-reserve-h: 4rem;
@@ -476,7 +512,7 @@
 	.site-footer {
 		width: calc(100% - 2.5rem);
 		margin-top: 1rem;
-		margin-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+		margin-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 	}
 	.site-footer p {
 		display: none;

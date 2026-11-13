@@ -1,323 +1,224 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import {
-		BookOpen,
-		DotsThree,
-		FilmStrip,
-		Heart,
-		House,
-		MonitorPlay,
-		SignIn,
-		SignOut,
-		SlidersHorizontal,
-		UserGear,
-		VinylRecord,
-		X
-	} from 'phosphor-svelte';
+	import { X } from 'phosphor-svelte';
 	import HeaderActions from './HeaderActions.svelte';
-	import type { SessionUser } from '$lib/types/auth';
+	import NavDial from './NavDial.svelte';
+	import VinylDisc from './VinylDisc.svelte';
 	import { modal } from '$lib/utils/modal';
+	import type { SessionUser } from '$lib/types/auth';
 	let { user, pathname }: { user: SessionUser | null; pathname: string } = $props();
-	let menuOpen = $state(false);
-	const destinations = [
-		{ href: '/', label: 'Home', icon: House, category: '' },
-		{ href: '/movies', label: 'Movies', icon: FilmStrip, category: 'movie' },
-		{ href: '/shows', label: 'Shows', icon: MonitorPlay, category: 'show' },
-		{ href: '/music', label: 'Music', icon: VinylRecord, category: 'music' },
-		{ href: '/books', label: 'Books', icon: BookOpen, category: 'book' }
-	];
-	function isCurrent(item: (typeof destinations)[number]) {
-		return (
-			pathname === item.href ||
-			(item.href !== '/' &&
-				(pathname.startsWith(item.href + '/') ||
-					pathname === '/albums/' + item.category ||
-					pathname.startsWith('/albums/' + item.category + '/')))
-		);
-	}
+	let open = $state(false);
+	const home = $derived(pathname === '/');
 	$effect(() => {
 		void pathname;
 		untrack(() => {
-			menuOpen = false;
+			open = false;
 		});
 	});
 </script>
 
-<header class="site-header">
-	<div class="site-header__inner">
-		<a href="/" class="brand" aria-label="Media Club home"
-			><FilmStrip size={24} weight="regular" /><span
-				>media club<span class="brand-dot">.</span></span
-			></a
-		>
-		<nav class="desktop-nav" aria-label="Main navigation">
-			{#each destinations.slice(1) as item (item.href)}
-				<a href={item.href} aria-current={isCurrent(item) ? 'page' : undefined}>{item.label}</a>
-			{/each}
-			<a
-				href="/wishlist/movies"
-				aria-current={pathname.startsWith('/wishlist') ? 'page' : undefined}>Wishlist</a
-			>
-		</nav>
-		<div class="site-header__actions">
-			<HeaderActions showSettings={false} />
-			<button
-				class="icon-button"
-				type="button"
-				aria-label="More navigation"
-				aria-expanded={menuOpen}
-				aria-controls="more-navigation"
-				onclick={() => {
-					menuOpen = true;
-				}}><DotsThree size={24} weight="bold" /></button
-			>
-		</div>
-	</div>
-</header>
-
-<nav class="mobile-tabs" aria-label="Main navigation">
-	{#each destinations as item (item.href)}
-		{@const Icon = item.icon}
-		<a href={item.href} aria-current={isCurrent(item) ? 'page' : undefined}
-			><Icon size={22} weight={isCurrent(item) ? 'fill' : 'regular'} /><span>{item.label}</span></a
-		>
-	{/each}
-</nav>
-
-{#if menuOpen}
+{#if home}
+	<header class="home-actions" aria-label="Site actions">
+		<HeaderActions showLogout={!!user} />
+	</header>
+{:else}
+	<header class="wheel-sidebar" aria-label="Site navigation">
+		<a href="/" class="brand">Media Club<span>.</span></a>
+		<div class="sidebar-actions"><HeaderActions showLogout={!!user} /></div>
+		<NavDial instanceId="desktop" {user} {pathname} />
+		<p class="dial-hint">Spin the dial or tap a destination</p>
+	</header>
+	<header class="compact-header" aria-label="Site actions">
+		<a href="/" class="brand">Media Club<span>.</span></a><HeaderActions showLogout={!!user} />
+	</header>
+	<button
+		class="wheel-launcher"
+		type="button"
+		aria-label="Open navigation wheel"
+		aria-haspopup="dialog"
+		aria-expanded={open}
+		aria-controls="navigation-wheel"
+		onclick={(event) => {
+			// Safari does not focus buttons on a pointer click. Give the modal a
+			// reliable trigger to return focus to when it closes.
+			event.currentTarget.focus({ preventScroll: true });
+			open = true;
+		}}
+	>
+		<VinylDisc class="launcher-record" /><span>Navigate</span>
+	</button>
+{/if}
+{#if open}
 	<div
-		class="navigation-overlay anim-fade"
+		id="navigation-wheel"
+		class="wheel-overlay anim-fade"
 		role="dialog"
 		aria-modal="true"
-		aria-labelledby="navigation-title"
-		id="more-navigation"
+		aria-labelledby="wheel-title"
 		{@attach modal({
 			onEscape: () => {
-				menuOpen = false;
+				open = false;
 			}
 		})}
 	>
 		<button
-			class="navigation-backdrop"
+			class="wheel-backdrop"
 			type="button"
 			tabindex="-1"
-			aria-label="Close navigation"
+			aria-label="Close navigation wheel"
 			onclick={() => {
-				menuOpen = false;
+				open = false;
 			}}
 		></button>
-		<section class="navigation-panel surface-round anim-rise">
-			<div class="navigation-heading">
-				<h2 id="navigation-title">Your Media Club</h2>
+		<section class="wheel-sheet anim-rise">
+			<div class="sheet-heading">
+				<h2 id="wheel-title">Media Club</h2>
 				<button
-					class="icon-button"
 					type="button"
-					aria-label="Close navigation"
+					class="icon-button"
+					aria-label="Close navigation wheel"
 					onclick={() => {
-						menuOpen = false;
-					}}><X size={20} /></button
+						open = false;
+					}}><X size={22} /></button
 				>
 			</div>
-			<nav aria-label="More destinations">
-				<a
-					href="/wishlist/movies"
-					onclick={() => {
-						menuOpen = false;
-					}}><Heart size={21} />Wishlist</a
-				>
-				<a
-					href="/settings"
-					onclick={() => {
-						menuOpen = false;
-					}}><SlidersHorizontal size={21} />Settings</a
-				>
-				{#if user}
-					<a
-						href="/admin"
-						onclick={() => {
-							menuOpen = false;
-						}}><UserGear size={21} />Admin</a
-					>
-					<form method="POST" action="/logout">
-						<button type="submit"><SignOut size={21} />Log out</button>
-					</form>
-				{:else}
-					<a
-						href="/login"
-						onclick={() => {
-							menuOpen = false;
-						}}><SignIn size={21} />Admin login</a
-					>
-				{/if}
-			</nav>
+			<NavDial
+				instanceId="mobile"
+				{user}
+				{pathname}
+				onNavigate={() => {
+					open = false;
+				}}
+			/>
+			<p class="dial-hint">Spin the dial or tap a destination</p>
 		</section>
 	</div>
 {/if}
 
 <style>
-	.site-header {
-		position: sticky;
-		top: 0;
-		z-index: 50;
-		border-bottom: 1px solid rgb(var(--color-border) / 0.65);
-		background: rgb(var(--color-bg) / 0.88);
-		-webkit-backdrop-filter: blur(20px);
-		backdrop-filter: blur(20px);
-	}
-	.site-header__inner {
-		max-width: 90rem;
-		margin: auto;
-		min-height: 4.5rem;
-		padding: env(safe-area-inset-top, 0px) max(1.25rem, env(safe-area-inset-right)) 0
-			max(1.25rem, env(safe-area-inset-left));
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1.5rem;
-	}
 	.brand {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.65rem;
 		min-height: 44px;
-		white-space: nowrap;
-		font-size: 1.25rem;
+		color: rgb(var(--color-text));
+		font-size: 1.125rem;
 		font-weight: 650;
-		letter-spacing: -0.055em;
+		letter-spacing: -0.05em;
 	}
-	.brand-dot {
+	.brand span {
 		color: rgb(var(--color-accent));
 	}
-	.desktop-nav {
+	.home-actions {
+		position: absolute;
+		z-index: 50;
+		top: max(0.75rem, env(safe-area-inset-top));
+		right: max(1rem, env(safe-area-inset-right));
+	}
+	.wheel-sidebar {
+		position: fixed;
+		top: 1.5rem;
+		left: 1rem;
+		z-index: 50;
+		width: 17rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.25rem;
 	}
-	.desktop-nav a {
-		padding: 0.75rem 1rem;
-		border-radius: 0.75rem;
-		color: rgb(var(--color-text-secondary));
-		font-size: 0.875rem;
-		font-weight: 550;
+	.sidebar-actions {
+		margin: 0.6rem 0 1.5rem;
 	}
-	.desktop-nav a:hover,
-	.desktop-nav a[aria-current] {
-		color: rgb(var(--color-text));
-		background: rgb(var(--color-surface-raised));
+	.dial-hint {
+		margin: 1.4rem 0 0;
+		text-align: center;
+		font-size: 0.6875rem;
+		line-height: 1.5;
+		color: rgb(var(--color-text-tertiary));
 	}
-	.site-header__actions {
-		display: flex;
-		gap: 0.25rem;
-	}
-	.mobile-tabs {
+	.compact-header,
+	.wheel-launcher {
 		display: none;
 	}
-	.navigation-overlay {
+	.wheel-overlay {
 		position: fixed;
 		inset: 0;
-		z-index: 80;
+		z-index: 100;
 		display: flex;
-		align-items: flex-start;
-		justify-content: flex-end;
-		padding: 5.5rem 1.5rem 1.5rem;
+		align-items: center;
+		justify-content: center;
+		padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+			max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
 	}
-	.navigation-backdrop {
+	.wheel-backdrop {
 		position: absolute;
 		inset: 0;
+		background: rgb(var(--color-bg) / 0.88);
 		border: 0;
-		background: rgb(0 0 0 / 0.45);
-		backdrop-filter: blur(8px);
 	}
-	.navigation-panel {
+	.wheel-sheet {
 		position: relative;
-		width: min(100%, 23rem);
-		padding: 1rem;
-		box-shadow: 0 24px 80px rgb(0 0 0 / 0.25);
+		width: min(100%, 24rem);
+		max-height: calc(100dvh - 1.5rem);
+		overflow-y: auto;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: 2rem;
+		padding: 1rem 1rem 1.75rem;
+		background: rgb(var(--color-surface));
+		box-shadow: 0 18px 60px rgb(0 0 0/0.2);
+		--nav-dial-size: min(17rem, calc(100vw - 5rem));
+		--nav-dial-r: calc(var(--nav-dial-size)/2);
 	}
-	.navigation-heading {
+	.sheet-heading {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		padding: 0 0.25rem 0.75rem 0.75rem;
+		margin-bottom: 1.25rem;
+		padding-left: 0.75rem;
 	}
 	h2 {
-		font-size: 1rem;
+		font-size: 0.875rem;
 		font-weight: 600;
+		letter-spacing: -0.02em;
 	}
-	.navigation-panel nav a,
-	.navigation-panel nav button {
-		display: flex;
-		width: 100%;
-		min-height: 52px;
-		align-items: center;
-		gap: 0.9rem;
-		padding: 0.75rem;
-		border: 0;
-		border-radius: 0.75rem;
-		background: transparent;
-		text-align: left;
-		color: rgb(var(--color-text-secondary));
-		cursor: pointer;
-	}
-	.navigation-panel nav a:hover,
-	.navigation-panel nav button:hover {
-		background: rgb(var(--color-surface));
-		color: rgb(var(--color-text));
-	}
-	@media (max-width: 767px) {
-		.site-header__inner {
-			min-height: 4rem;
-			gap: 0.5rem;
-			padding-inline: max(1rem, env(safe-area-inset-left));
-		}
-		.desktop-nav {
+	@media (max-width: 1099px) {
+		.wheel-sidebar {
 			display: none;
 		}
-		.mobile-tabs {
-			position: fixed;
-			z-index: 55;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			display: grid;
-			grid-template-columns: repeat(5, minmax(0, 1fr));
-			padding: 0.5rem max(0.5rem, env(safe-area-inset-right))
-				max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
-			border-top: 1px solid rgb(var(--color-border) / 0.7);
-			background: rgb(var(--color-surface) / 0.94);
-			-webkit-backdrop-filter: blur(20px);
-			backdrop-filter: blur(20px);
-		}
-		.mobile-tabs a {
+		.compact-header {
 			display: flex;
-			min-height: 48px;
 			align-items: center;
-			justify-content: center;
-			flex-direction: column;
-			gap: 0.3rem;
-			border-radius: 0.8rem;
-			color: rgb(var(--color-text-tertiary));
-			font-size: 0.65rem;
-			font-weight: 550;
+			justify-content: space-between;
+			gap: 0.5rem;
+			padding: max(0.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.25rem
+				max(1rem, env(safe-area-inset-left));
 		}
-		.mobile-tabs a[aria-current] {
-			color: rgb(var(--color-text));
-			background: rgb(var(--color-accent) / 0.12);
+		.wheel-launcher {
+			position: fixed;
+			z-index: 60;
+			left: 50%;
+			bottom: max(0.8rem, env(safe-area-inset-bottom));
+			transform: translateX(-50%);
+			display: flex;
+			align-items: center;
+			gap: 0.55rem;
+			min-height: 60px;
+			padding: 0.4rem 1rem 0.4rem 0.4rem;
+			border-radius: 999px;
+			border: 1px solid rgb(var(--color-accent) / 0.5);
+			background: rgb(var(--color-surface-raised));
+			color: rgb(var(--color-text-secondary));
+			box-shadow: 0 6px 24px rgb(0 0 0/0.2);
+			font-size: 0.75rem;
+			cursor: pointer;
 		}
-		.navigation-overlay {
-			align-items: flex-end;
-			padding: 0.75rem 0.75rem max(0.75rem, env(safe-area-inset-bottom));
-		}
-		.navigation-panel {
-			width: 100%;
-			max-height: 85dvh;
-			overflow-y: auto;
+		.wheel-launcher :global(.launcher-record) {
+			width: 44px;
+			height: 44px;
 		}
 	}
-	@media (min-width: 1024px) {
-		.site-header__inner {
-			padding-inline: 3rem;
+	@media (max-height: 520px) {
+		.wheel-overlay {
+			align-items: flex-start;
 		}
 	}
 </style>
