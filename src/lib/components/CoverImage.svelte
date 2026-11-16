@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { captureGifPoster } from '$lib/utils/gif-poster';

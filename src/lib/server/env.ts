@@ -1,5 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { building } from '$app/environment';
+import { building } from '$app/env';
 
 export type SecretKey = 'TMDB_API_KEY' | 'DISCOGS_TOKEN' | 'MCP_API_KEY';
 

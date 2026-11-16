@@ -1,5 +1,5 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
+	"extends": "$app/tsconfig",
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
 		"allowJs": true,
@@ -14,10 +14,11 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
-		"types": ["./worker-configuration.d.ts"]
+		"types": ["$app/types", "./worker-configuration.d.ts"]
 	},
+	"include": ["src", "*.ts"],
 	// Keep svelte-check away from build artifacts; the generated
-	// .svelte-kit/tsconfig.json only excludes node_modules.
+	// SvelteKit's generated config does not exclude these directories.
 	"exclude": [
 		"node_modules/**",
 		".svelte-kit/cloudflare/**",

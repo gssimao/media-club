@@ -1,4 +1,4 @@
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import { drizzle as drizzleSqlite } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';

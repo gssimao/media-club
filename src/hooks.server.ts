@@ -1,6 +1,6 @@
-import { building } from '$app/environment';
-import { type Handle, type HandleServerError, redirect } from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
+import { building } from '$app/env';
+import { redirect } from '@sveltejs/kit';
+import { sequence, type Handle, type HandleServerError } from '@sveltejs/kit/hooks';
 import { ensureAdminUser } from '$lib/server/auth/seed';
 import { SESSION_COOKIE, validateSession } from '$lib/server/auth/session';
 import { getDb } from '$lib/server/db';
@@ -50,7 +50,8 @@ const bootstrap: Handle = async ({ event, resolve }) => {
 
 export const handle = sequence(securityHeaders, database, bootstrap, auth, adminGuard);
 
-export const handleError: HandleServerError = ({ error, event }) => {
+export const handleError: HandleServerError = ({ error, event, kind }) => {
+	if (kind !== 'unknown') return;
 	if (!building) {
 		console.error(error, { url: event.url.pathname, userId: event.locals.user?.id });
 	}

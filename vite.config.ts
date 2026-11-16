@@ -4,7 +4,7 @@ import cloudflare from '@sveltejs/adapter-cloudflare';
 import node from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-const adapter = process.env.ADAPTER === 'node' ? node() : cloudflare();
+const adapter = process.env.ADAPTER === 'node' || process.env.VITEST ? node() : cloudflare();
 
 export default defineConfig({
 	server: {
@@ -14,6 +14,8 @@ export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
+			// Keep the existing import paths while adopting the patched SvelteKit runtime.
+			alias: { $lib: './src/lib' },
 			compilerOptions: {
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
@@ -31,11 +33,6 @@ export default defineConfig({
 					'object-src': ['none'],
 					'base-uri': ['self'],
 					'frame-ancestors': ['none']
-				}
-			},
-			typescript: {
-				config: (config) => {
-					config.include.push('../drizzle.config.ts');
 				}
 			}
 		})
@@ -55,6 +52,7 @@ export default defineConfig({
 		]
 	},
 	ssr: {
-		noExternal: ['phosphor-svelte']
+		// Bundle Kit's cookie version instead of resolving the MCP SDK's older copy at runtime.
+		noExternal: ['phosphor-svelte', 'cookie']
 	}
 });

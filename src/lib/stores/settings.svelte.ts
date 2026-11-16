@@ -1,5 +1,5 @@
 import { prefersReducedMotion } from 'svelte/motion';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 export type MotionPref = 'system' | 'full' | 'reduced';
 export type DensityPref = 'cozy' | 'compact';
