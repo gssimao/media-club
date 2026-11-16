@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import type { Album, MediaCategory } from '$lib/types/media';
 	import { dragScroll } from '$lib/utils/drag-scroll';
-	import { CaretLeft, CaretRight, Folders } from 'phosphor-svelte';
+	import { CaretLeft, CaretRight, Folders, Television } from 'phosphor-svelte';
 	import AlbumCard from './AlbumCard.svelte';
 	import AddCollectionTile from './AddCollectionTile.svelte';
 
@@ -49,15 +48,15 @@
 		if (!scrollEl) return;
 		scrollEl.scrollBy({
 			left: direction * scrollEl.clientWidth * 0.8,
-			behavior: settings.motion === 'reduced' || prefersReducedMotion.current ? 'instant' : 'smooth'
+			behavior: settings.reducedMotion ? 'instant' : 'smooth'
 		});
 	}
 </script>
 
-{#if preview.length > 0 || showAddTile}
+{#if preview.length > 0 || showAddTile || category === 'movie'}
 	<section class="mb-8" aria-label="Collections">
-		<div class="mb-2 flex items-center justify-between gap-3">
-			<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+		<div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+			<div class="contents">
 				<h2
 					class="text-sm font-semibold tracking-normal text-stone-700 normal-case dark:text-stone-300"
 				>
@@ -66,9 +65,14 @@
 				<a href="/albums/{category}" class="pill-nav control-pill--secondary text-xs"
 					><Folders size={16} />View collections</a
 				>
+				{#if category === 'movie'}
+					<a href="/movies/streaming" class="pill-nav control-pill--secondary text-xs"
+						><Television size={16} />View streaming list</a
+					>
+				{/if}
 			</div>
 			{#if overflowing}
-				<div class="flex gap-1">
+				<div class="ml-auto flex shrink-0 gap-1">
 					<button
 						class="shelf-arrow"
 						type="button"

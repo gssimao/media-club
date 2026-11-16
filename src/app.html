@@ -22,7 +22,11 @@
 					var settings = JSON.parse(localStorage.getItem('media-club-settings') || '{}');
 					document.documentElement.setAttribute(
 						'data-motion',
-						settings.motion === 'reduced' ? 'reduced' : 'full'
+						settings.motion === 'reduced' ||
+							(settings.motion !== 'full' &&
+								window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+							? 'reduced'
+							: 'full'
 					);
 				} catch (e) {
 					document.documentElement.setAttribute('data-theme', 'dark');

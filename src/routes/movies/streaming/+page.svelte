@@ -15,23 +15,28 @@
 </script>
 
 <svelte:head>
-	<title>Streaming lists · Admin · Media Club</title>
+	<title>Streaming lists · Movies · Media Club</title>
 </svelte:head>
 
-<PageShell title="Streaming lists" description="Your streaming watchlists.">
+<PageShell
+	title="Streaming lists"
+	description="Movies I stream through subscriptions, separate from the movies I own."
+>
 	{#snippet controls()}
-		<NavLink href="/admin" variant="accent">← Back to admin</NavLink>
-		<button
-			type="button"
-			class="control-pill control-pill--primary"
-			onclick={() => (showCreateForm = !showCreateForm)}
-		>
-			<Plus size={16} weight="bold" />
-			New streaming list
-		</button>
+		<NavLink href="/movies" variant="accent">Back to movies</NavLink>
+		{#if data.user}
+			<button
+				type="button"
+				class="control-pill control-pill--primary"
+				onclick={() => (showCreateForm = !showCreateForm)}
+			>
+				<Plus size={16} weight="bold" />
+				New streaming list
+			</button>
+		{/if}
 	{/snippet}
 
-	{#if showCreateForm}
+	{#if data.user && showCreateForm}
 		<form
 			method="POST"
 			action="?/createList"
@@ -83,8 +88,8 @@
 		<div class="surface-round p-8 text-center">
 			<Television size={40} weight="bold" class="mx-auto text-sky-500 dark:text-sky-400" />
 			<p class="mt-4 text-sm font-medium text-stone-600 dark:text-stone-400">
-				No streaming lists yet. Create one to build a random-watch queue separate from your
-				collection.
+				No streaming lists yet. These collections keep subscription movies separate from owned
+				movies.
 			</p>
 		</div>
 	{:else}
@@ -96,7 +101,9 @@
 					description={list.description}
 					coverUrl={data.coverUrls[list.id]}
 					itemCount={data.itemCounts[list.id] ?? 0}
-					onDelete={() => (deleteTarget = { id: list.id, title: list.title })}
+					onDelete={data.user
+						? () => (deleteTarget = { id: list.id, title: list.title })
+						: undefined}
 				/>
 			{/each}
 		</div>

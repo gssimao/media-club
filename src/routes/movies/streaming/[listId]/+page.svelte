@@ -17,7 +17,6 @@
 		type GenreFilterMode
 	} from '$lib/utils/movie-genres';
 	import { settings } from '$lib/stores/settings.svelte';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { MagnifyingGlass, Pencil } from 'phosphor-svelte';
 
@@ -52,8 +51,7 @@
 		highlightedId = item.id;
 		requestAnimationFrame(() => {
 			document.getElementById(`streaming-item-${item.id}`)?.scrollIntoView({
-				behavior:
-					settings.motion === 'reduced' || prefersReducedMotion.current ? 'instant' : 'smooth',
+				behavior: settings.reducedMotion ? 'instant' : 'smooth',
 				block: 'center'
 			});
 		});
@@ -66,8 +64,8 @@
 
 <PageShell title={data.list.title} description={data.list.description ?? undefined}>
 	{#snippet controls()}
-		<NavLink href="/admin/streaming" variant="accent">All streaming lists</NavLink>
-		<NavLink href="/admin">Back to admin</NavLink>
+		<NavLink href="/movies/streaming" variant="accent">All streaming lists</NavLink>
+		<NavLink href="/movies">Owned movies</NavLink>
 
 		<AlbumRandomPicker
 			{unwatchedItems}
@@ -89,25 +87,27 @@
 			/>
 		{/if}
 
-		<button
-			type="button"
-			class="pill-nav control-pill--primary"
-			onclick={() => (showSearch = !showSearch)}
-		>
-			<MagnifyingGlass size={16} weight="bold" />
-			{showSearch ? 'Hide search' : 'Add from search'}
-		</button>
-		<button
-			type="button"
-			class="pill-nav control-pill--secondary"
-			onclick={() => (showManualDialog = true)}
-		>
-			<Pencil size={16} weight="bold" />
-			Manual entry
-		</button>
+		{#if data.isAdmin}
+			<button
+				type="button"
+				class="pill-nav control-pill--primary"
+				onclick={() => (showSearch = !showSearch)}
+			>
+				<MagnifyingGlass size={16} weight="bold" />
+				{showSearch ? 'Hide search' : 'Add from search'}
+			</button>
+			<button
+				type="button"
+				class="pill-nav control-pill--secondary"
+				onclick={() => (showManualDialog = true)}
+			>
+				<Pencil size={16} weight="bold" />
+				Manual entry
+			</button>
+		{/if}
 	{/snippet}
 
-	{#if showSearch}
+	{#if data.isAdmin && showSearch}
 		<div class="surface-round mb-8 p-5">
 			<StreamingSearchPanel listId={data.list.id} />
 		</div>
@@ -122,8 +122,8 @@
 	{#if data.items.length === 0}
 		<div class="surface-round p-8 text-center">
 			<p class="text-sm font-medium text-stone-600 dark:text-stone-400">
-				This streaming list is empty. Search TMDB or use manual entry to add movies for random
-				picks.
+				This streaming list is empty.{#if data.isAdmin}
+					Search or use manual entry to add subscription movies.{/if}
 			</p>
 		</div>
 	{:else}
@@ -179,8 +179,9 @@
 	{/if}
 </PageShell>
 
-<AddStreamingDialog
-	listId={data.list.id}
-	isOpen={showManualDialog}
-	onClose={() => (showManualDialog = false)}
-/>
+{#if data.isAdmin}<AddStreamingDialog
+		listId={data.list.id}
+		isOpen={showManualDialog}
+		onClose={() => (showManualDialog = false)}
+	/>
+{/if}

@@ -2,7 +2,13 @@
 	import { settings } from '$lib/stores/settings.svelte';
 
 	function onMotionInput(event: Event & { currentTarget: HTMLInputElement }) {
-		settings.setMotion(event.currentTarget.value === '1' ? 'full' : 'reduced');
+		settings.setMotion(
+			event.currentTarget.value === '2'
+				? 'full'
+				: event.currentTarget.value === '1'
+					? 'system'
+					: 'reduced'
+		);
 	}
 
 	function onDensityInput(event: Event & { currentTarget: HTMLInputElement }) {
@@ -19,7 +25,13 @@
 	<div class="fader-block">
 		<div class="fader-head">
 			<span>Motion</span>
-			<span class="fader-value">{settings.motion === 'full' ? 'Full' : 'Reduced'}</span>
+			<span class="fader-value"
+				>{settings.motion === 'system'
+					? `System (${settings.reducedMotion ? 'reduced' : 'full'})`
+					: settings.motion === 'full'
+						? 'Full'
+						: 'Reduced'}</span
+			>
 		</div>
 		<div class="fader-row">
 			<span class="fader-end">Reduced</span>
@@ -27,15 +39,19 @@
 				class="fader"
 				type="range"
 				min="0"
-				max="1"
+				max="2"
 				step="1"
-				value={settings.motion === 'full' ? '1' : '0'}
+				value={settings.motion === 'full' ? '2' : settings.motion === 'system' ? '1' : '0'}
+				aria-valuetext={settings.motion}
 				oninput={onMotionInput}
 				aria-label="Motion level"
 			/>
 			<span class="fader-end">Full</span>
 		</div>
-		<p class="hint">Turns down spins, entrances, and hover animation across the app.</p>
+		<p class="hint">
+			System follows your device. Full enables spins and GIF covers on hover; Reduced keeps them
+			still.
+		</p>
 	</div>
 
 	<div class="fader-block">

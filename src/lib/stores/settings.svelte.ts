@@ -1,6 +1,7 @@
+import { prefersReducedMotion } from 'svelte/motion';
 import { browser } from '$app/environment';
 
-export type MotionPref = 'full' | 'reduced';
+export type MotionPref = 'system' | 'full' | 'reduced';
 export type DensityPref = 'cozy' | 'compact';
 export type DiscRpm = 33 | 45 | 78;
 
@@ -14,13 +15,13 @@ const SPIN_PERIOD_BY_RPM: Record<DiscRpm, number> = {
 };
 
 const DEFAULTS = {
-	motion: 'full' as MotionPref,
+	motion: 'system' as MotionPref,
 	density: 'cozy' as DensityPref,
 	discRpm: 33 as DiscRpm
 };
 
 function isMotionPref(value: unknown): value is MotionPref {
-	return value === 'full' || value === 'reduced';
+	return value === 'system' || value === 'full' || value === 'reduced';
 }
 
 function isDensityPref(value: unknown): value is DensityPref {
@@ -49,12 +50,21 @@ class SettingsStore {
 			} catch {
 				// Corrupted storage — keep defaults.
 			}
+			window
+				.matchMedia('(prefers-reduced-motion: reduce)')
+				.addEventListener('change', () => this.apply());
 			this.apply();
 		}
 	}
 
 	get motion(): MotionPref {
 		return this._motion;
+	}
+
+	get reducedMotion(): boolean {
+		return (
+			this._motion === 'reduced' || (this._motion === 'system' && prefersReducedMotion.current)
+		);
 	}
 
 	get density(): DensityPref {
@@ -101,7 +111,10 @@ class SettingsStore {
 	}
 
 	private apply() {
-		document.documentElement.setAttribute('data-motion', this._motion);
+		const reduced =
+			this._motion === 'reduced' ||
+			(this._motion === 'system' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+		document.documentElement.setAttribute('data-motion', reduced ? 'reduced' : 'full');
 	}
 }
 

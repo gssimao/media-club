@@ -1,4 +1,3 @@
-import { prefersReducedMotion } from 'svelte/motion';
 import { settings } from '$lib/stores/settings.svelte';
 import { pickRandomFromPool } from './random-movie-pool';
 import type { MediaItem } from '$lib/types/media';
@@ -21,10 +20,7 @@ export function createRandomPick() {
 		item = null;
 		phase = 'loading';
 		open = true;
-		duration =
-			settings.motion === 'reduced' || prefersReducedMotion.current
-				? 250
-				: 3000 + Math.floor(Math.random() * 1200);
+		duration = settings.reducedMotion ? 250 : 3000 + Math.floor(Math.random() * 1200);
 		timer = setTimeout(() => {
 			item = pickRandomFromPool(pool);
 			phase = 'reveal';

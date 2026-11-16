@@ -157,12 +157,6 @@
 		color: rgb(var(--color-text-tertiary));
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.console-grid :global(.led--pulse) {
-			animation: none;
-		}
-	}
-
 	:global([data-motion='reduced']) .console-grid :global(.led--pulse) {
 		animation: none;
 	}

@@ -136,7 +136,7 @@ export const showTrackerItems = sqliteTable(
 		coverUrl: text('cover_url'),
 		metadata: text('metadata'),
 		notes: text('notes'),
-		trackStatus: text('track_status', { enum: ['watching', 'upcoming'] }).notNull(),
+		trackStatus: text('track_status', { enum: ['watching', 'upcoming', 'completed'] }).notNull(),
 		createdAt: integer('created_at', { mode: 'timestamp' })
 			.notNull()
 			.$defaultFn(() => new Date()),

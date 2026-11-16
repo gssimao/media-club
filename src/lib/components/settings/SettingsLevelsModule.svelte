@@ -145,12 +145,6 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.meter-fill {
-			animation: none;
-		}
-	}
-
 	:global([data-motion='reduced']) .meter-fill {
 		animation: none;
 	}

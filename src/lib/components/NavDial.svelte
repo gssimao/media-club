@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { tick, untrack } from 'svelte';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import NavDialFace from './nav-dial/NavDialFace.svelte';
 	import {
@@ -41,7 +40,7 @@
 		)
 	);
 	const initialRotation = nearestSnapRotation(initialItemAngles, initialIndex, savedRotation ?? 0);
-	const reduced = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
+	const reduced = $derived(settings.reducedMotion);
 
 	const navItems = $derived(buildNavItems(user));
 	const activeIndex = $derived(

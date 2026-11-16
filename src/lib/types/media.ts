@@ -2,7 +2,7 @@ import type { AlbumAccentColor } from '$lib/theme/album-colors';
 
 export type MediaCategory = 'movie' | 'show' | 'music' | 'book';
 export type ListType = 'owned' | 'wishlist';
-export type ShowTrackStatus = 'watching' | 'upcoming';
+export type ShowTrackStatus = 'watching' | 'upcoming' | 'completed';
 
 export type { AlbumAccentColor };
 

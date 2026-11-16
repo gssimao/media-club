@@ -212,12 +212,6 @@
 		animation: disc-spin 5s linear infinite;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		article:hover .media-disc .disc-grooves {
-			animation: none;
-		}
-	}
-
 	:global([data-motion='reduced']) article:hover .media-disc .disc-grooves {
 		animation: none;
 	}

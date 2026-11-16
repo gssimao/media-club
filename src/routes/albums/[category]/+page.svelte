@@ -20,6 +20,8 @@
 <PageShell title="{data.label} Collections">
 	{#snippet controls()}
 		<NavLink href="/{categoryPath}" variant="accent">Back to {data.label}</NavLink>
+		{#if data.category === 'movie'}<NavLink href="/movies/streaming">View streaming list</NavLink
+			>{/if}
 	{/snippet}
 
 	{#if data.albums.length === 0 && !data.isAdmin}

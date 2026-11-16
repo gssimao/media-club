@@ -2,7 +2,6 @@
 	import CoverImage from '$lib/components/CoverImage.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
 	import type { RandomPickItem } from '$lib/utils/random-pick.svelte';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { modal } from '$lib/utils/modal';
 	import { getDisplayGenres } from '$lib/utils/movie-genres';
 	import { DiceSix, X } from 'phosphor-svelte';
@@ -30,7 +29,7 @@
 		onDismiss
 	}: Props = $props();
 
-	const reducedMotion = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
+	const reducedMotion = $derived(settings.reducedMotion);
 	const rollDurationCss = $derived(`${loadingDurationMs}ms`);
 	const genres = $derived(item ? getDisplayGenres(item) : []);
 </script>
@@ -324,13 +323,7 @@
 			transform: translateY(-12px) rotate(3deg);
 		}
 	}
-	@media (prefers-reduced-motion: reduce) {
-		.random-reveal--shaking .mystery-crate,
-		.random-reveal--shaking .mystery-lid,
-		.random-reveal--shaking .mystery-cards {
-			animation: none;
-		}
-	}
+
 	:global([data-motion='reduced']) .mystery-stage * {
 		animation: none;
 	}

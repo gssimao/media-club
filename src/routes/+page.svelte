@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Pause, Play } from 'phosphor-svelte';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import CollectionWheel from '$lib/components/CollectionWheel.svelte';
 	import HomeAmbience from '$lib/components/HomeAmbience.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
@@ -8,7 +7,7 @@
 	let { data } = $props();
 	let paused = $state(false);
 	let hidden = $state(false);
-	const motionAllowed = $derived(settings.motion !== 'reduced' && !prefersReducedMotion.current);
+	const motionAllowed = $derived(!settings.reducedMotion);
 	const tones = { movie: 'coral', show: 'lilac', music: 'mint', book: 'sky' } as const;
 	const total = $derived(data.summary.reduce((count, row) => count + row.owned, 0));
 	$effect(() => {

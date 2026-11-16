@@ -442,22 +442,22 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.anim-rise,
-	.anim-fade {
+	:root:not([data-motion='full']) .anim-rise,
+	:root:not([data-motion='full']) .anim-fade {
 		animation-duration: 0.01ms;
 		animation-delay: 0ms;
 	}
 
-	.record-spin {
+	:root:not([data-motion='full']) .record-spin {
 		animation: none;
 	}
 
-	.disc-pick-spin {
+	:root:not([data-motion='full']) .disc-pick-spin {
 		animation: none;
 	}
 
-	.skeleton,
-	.skeleton-disc {
+	:root:not([data-motion='full']) .skeleton,
+	:root:not([data-motion='full']) .skeleton-disc {
 		animation: none;
 	}
 }
@@ -519,9 +519,9 @@
 	}
 }
 @media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
+	:root:not([data-motion='full']) *,
+	:root:not([data-motion='full']) *::before,
+	:root:not([data-motion='full']) *::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;

@@ -8,7 +8,7 @@
 		description?: string | null;
 		coverUrl?: string | null;
 		itemCount: number;
-		onDelete: () => void;
+		onDelete?: () => void;
 	}
 
 	let { id, title, description = null, coverUrl = null, itemCount, onDelete }: Props = $props();
@@ -18,7 +18,7 @@
 
 <article class="surface-round relative mx-auto w-full max-w-[15rem] overflow-hidden p-3">
 	<a
-		href="/admin/streaming/{id}"
+		href="/movies/streaming/{id}"
 		class="block"
 		onmouseenter={() => (hovered = true)}
 		onmouseleave={() => (hovered = false)}
@@ -46,12 +46,14 @@
 			{itemCount === 1 ? '1 movie' : `${itemCount} movies`}
 		</p>
 	</a>
-	<button
-		type="button"
-		class="absolute top-2 right-2 inline-flex size-11 items-center justify-center rounded-full border border-red-400/80 bg-[rgb(var(--color-surface-raised))] text-red-700 shadow-sm hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
-		aria-label="Delete {title}"
-		onclick={onDelete}
-	>
-		<Trash size={16} weight="bold" />
-	</button>
+	{#if onDelete}
+		<button
+			type="button"
+			class="absolute top-2 right-2 inline-flex size-11 items-center justify-center rounded-full border border-red-400/80 bg-[rgb(var(--color-surface-raised))] text-red-700 shadow-sm hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+			aria-label="Delete {title}"
+			onclick={onDelete}
+		>
+			<Trash size={16} weight="bold" />
+		</button>
+	{/if}
 </article>

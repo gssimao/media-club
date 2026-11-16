@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { captureGifPoster } from '$lib/utils/gif-poster';
@@ -17,11 +16,10 @@
 	let { src, alt, class: className = '', hovered: hoveredProp, loading = 'lazy' }: Props = $props();
 
 	const isGif = $derived(isGifUrl(src));
-	const reducedMotion = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
+	const reducedMotion = $derived(settings.reducedMotion);
 
 	let internalHovered = $state(false);
 	let posterUrl = $state<string | null>(null);
-	let animKey = $state(0);
 	/** The `src` that failed to load; compared against the current one so a new URL gets a fresh try. */
 	let failedSrc = $state<string | null>(null);
 
@@ -30,16 +28,7 @@
 	const isHovered = $derived(hoveredProp !== undefined ? hoveredProp : internalHovered);
 	const showAnimated = $derived(isGif && isHovered && !reducedMotion);
 
-	const displaySrc = $derived.by(() => {
-		if (!isGif || showAnimated) {
-			if (showAnimated) {
-				const sep = src.includes('?') ? '&' : '?';
-				return `${src}${sep}_gif=${animKey}`;
-			}
-			return src;
-		}
-		return posterUrl ?? src;
-	});
+	const displaySrc = $derived(!isGif || showAnimated ? src : (posterUrl ?? src));
 
 	$effect(() => {
 		if (!browser || !isGif) {
@@ -56,12 +45,6 @@
 		return () => {
 			cancelled = true;
 		};
-	});
-
-	$effect(() => {
-		if (hoveredProp === true && isGif && !reducedMotion) {
-			animKey = Date.now();
-		}
 	});
 
 	/**
@@ -90,7 +73,6 @@
 	function handleMouseEnter() {
 		if (hoveredProp !== undefined) return;
 		internalHovered = true;
-		if (isGif && !reducedMotion) animKey = Date.now();
 	}
 
 	function handleMouseLeave() {

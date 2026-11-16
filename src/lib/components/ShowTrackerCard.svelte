@@ -26,11 +26,13 @@
 	let cardHovered = $state(false);
 
 	const label = $derived(item.year ? `${item.title} (${item.year})` : item.title);
-	const otherStatus = $derived<ShowTrackStatus>(
-		item.trackStatus === 'watching' ? 'upcoming' : 'watching'
-	);
-	const moveLabel = $derived(
-		item.trackStatus === 'watching' ? 'Move to coming up' : 'Move to watching now'
+	const statusLabels: Record<ShowTrackStatus, string> = {
+		watching: 'Watching now',
+		upcoming: 'Coming up',
+		completed: 'Completed'
+	};
+	const statusOptions = $derived(
+		(['watching', 'upcoming', 'completed'] as const).filter((status) => status !== item.trackStatus)
 	);
 
 	function closeMenu() {
@@ -79,9 +81,11 @@
 				class="py-1 text-center text-[8px] font-black tracking-wider text-white uppercase shadow-sm {item.trackStatus ===
 				'watching'
 					? 'bg-gradient-to-r from-violet-600 to-violet-500'
-					: 'bg-gradient-to-r from-amber-600 to-amber-500'}"
+					: item.trackStatus === 'completed'
+						? 'bg-emerald-700'
+						: 'bg-gradient-to-r from-amber-600 to-amber-500'}"
 			>
-				{item.trackStatus === 'watching' ? 'Watching now' : 'Coming up'}
+				{statusLabels[item.trackStatus]}
 			</div>
 		</div>
 
@@ -146,32 +150,36 @@
 
 		{#if isAdmin && showMenu}
 			<div id="tracker-actions-{item.id}" class="mt-3 w-full shrink-0 space-y-2">
-				<form
-					method="POST"
-					action="?/setTrackStatus"
-					use:enhance={() => {
-						return async ({ result, update }) => {
-							if (result.type === 'failure') {
-								toast.error(String(result.data?.message ?? 'Could not move show.'));
-							} else {
-								toast.success(
-									`Moved "${item.title}" to ${otherStatus === 'watching' ? 'watching now' : 'coming up'}.`
-								);
-							}
-							closeMenu();
-							await update();
-						};
-					}}
-				>
-					<input type="hidden" name="id" value={item.id} />
-					<input type="hidden" name="trackStatus" value={otherStatus} />
-					<button
-						type="submit"
-						class="btn-secondary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"
+				{#each statusOptions as status (status)}
+					<form
+						method="POST"
+						action="?/setTrackStatus"
+						use:enhance={() => {
+							return async ({ result, update }) => {
+								if (result.type === 'failure') {
+									toast.error(String(result.data?.message ?? 'Could not move show.'));
+								} else {
+									toast.success(`Moved "${item.title}" to ${statusLabels[status].toLowerCase()}.`);
+								}
+								closeMenu();
+								await update();
+							};
+						}}
 					>
-						{moveLabel}
-					</button>
-				</form>
+						<input type="hidden" name="id" value={item.id} />
+						<input type="hidden" name="trackStatus" value={status} />
+						<button
+							type="submit"
+							class="btn-secondary inline-flex w-full justify-center gap-1 px-2.5 py-1.5 text-[10px]"
+						>
+							{status === 'completed'
+								? 'Mark as completed'
+								: status === 'watching'
+									? 'Move to watching now'
+									: 'Move to coming up'}
+						</button>
+					</form>
+				{/each}
 
 				<button
 					type="button"

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
@@ -89,8 +88,7 @@
 		highlightedId = item.id;
 		requestAnimationFrame(() => {
 			document.getElementById(`item-${item.id}`)?.scrollIntoView({
-				behavior:
-					settings.motion === 'reduced' || prefersReducedMotion.current ? 'instant' : 'smooth',
+				behavior: settings.reducedMotion ? 'instant' : 'smooth',
 				block: 'center'
 			});
 		});

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import VinylRecord from './VinylRecord.svelte';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { buildNavItems } from './nav-dial/nav-dial';
 	import type { SessionUser } from '$lib/types/auth';
@@ -10,7 +9,7 @@
 		hidden = false
 	}: { user: SessionUser | null; paused?: boolean; hidden?: boolean } = $props();
 	const items = $derived(buildNavItems(user));
-	const reduced = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
+	const reduced = $derived(settings.reducedMotion);
 	let touching = $state(false);
 </script>
 

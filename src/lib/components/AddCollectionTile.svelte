@@ -145,16 +145,6 @@
 		transform: translateX(42%) translateY(-12%) scale(1.06) rotate(-8deg);
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.dvd-disc-slot {
-			transition: none;
-		}
-
-		button:hover .dvd-disc-slot {
-			transform: translateX(8%) translateY(4%);
-		}
-	}
-
 	:global([data-motion='reduced']) .dvd-disc-slot {
 		transition: none;
 	}

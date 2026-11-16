@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import FloatingCovers from './home-ambience/FloatingCovers.svelte';
 	import ScreenGlow from './home-ambience/ScreenGlow.svelte';
@@ -21,9 +20,7 @@
 		document.addEventListener('visibilitychange', update);
 		return () => document.removeEventListener('visibilitychange', update);
 	});
-	const animated = $derived(
-		visible && !paused && settings.motion !== 'reduced' && !prefersReducedMotion.current
-	);
+	const animated = $derived(visible && !paused && !settings.reducedMotion);
 </script>
 
 <!-- Decorative backdrop: coloured light on the page edges with covers drifting through it. -->

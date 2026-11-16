@@ -59,12 +59,6 @@
 </div>
 
 <style>
-	@media (prefers-reduced-motion: reduce) {
-		:global(.record-spin) {
-			animation: none;
-		}
-	}
-
 	:global([data-motion='reduced']) :global(.record-spin) {
 		animation: none;
 	}

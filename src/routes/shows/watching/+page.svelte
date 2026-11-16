@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ShowTrackerNav from '$lib/components/ShowTrackerNav.svelte';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
 	import ShowTrackerCard from '$lib/components/ShowTrackerCard.svelte';
@@ -19,7 +20,7 @@
 
 <PageShell
 	title="Show tracker"
-	description="Keep track of shows you're watching and ones coming back soon. These don't have to be in your collection."
+	description="Shows I'm streaming, watching or waiting for, separate from the shows I own."
 >
 	{#snippet controls()}
 		<NavLink href="/shows" variant="accent">Back to shows</NavLink>
@@ -36,6 +37,7 @@
 		{/if}
 	{/snippet}
 
+	<ShowTrackerNav count={data.completedItems.length} />
 	{#if data.isAdmin && showSearch}
 		<div class="surface-round mb-8 p-5">
 			<ShowTrackerSearchPanel />

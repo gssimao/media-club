@@ -25,7 +25,7 @@
 			<FileArrowUp size={16} weight="bold" />
 			Import JSON
 		</button>
-		<a href="/admin/streaming" class="control-pill control-pill--secondary">
+		<a href="/movies/streaming" class="control-pill control-pill--secondary">
 			<Television size={16} weight="bold" />
 			Streaming lists
 		</a>

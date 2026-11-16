@@ -22,6 +22,8 @@
 </script>
 
 <div
+	role="img"
+	aria-label="{album.title} collection artwork"
 	class="sleeve-hero group mx-auto w-full max-w-xs"
 	onmouseenter={() => (sleeveHovered = true)}
 	onmouseleave={() => (sleeveHovered = false)}
@@ -183,21 +185,6 @@
 
 	.sleeve-hero:hover .dvd-disc-slot {
 		transform: translateX(46%) translateY(-14%) scale(1.08) rotate(-10deg);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.album-disc,
-		.dvd-disc-slot {
-			transition: none;
-		}
-
-		.sleeve-hero:hover .album-disc {
-			transform: translateY(-50%);
-		}
-
-		.sleeve-hero:hover .dvd-disc-slot {
-			transform: translateX(10%) translateY(4%);
-		}
 	}
 
 	:global([data-motion='reduced']) .album-disc,

@@ -32,6 +32,8 @@
 		: 'w-[8.5rem] shrink-0 sm:w-[9.5rem]'}"
 	onmouseenter={() => (cardHovered = true)}
 	onmouseleave={() => (cardHovered = false)}
+	onfocus={() => (cardHovered = true)}
+	onblur={() => (cardHovered = false)}
 >
 	<div class="card-art">
 		{#if isMovie}
@@ -198,21 +200,6 @@
 		aspect-ratio: 1;
 		transform: translateX(8%) translateY(4%);
 		transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.album-disc,
-		.dvd-disc-slot {
-			transition: none;
-		}
-
-		a:hover .album-disc {
-			transform: translateY(-50%);
-		}
-
-		a:hover .dvd-disc-slot {
-			transform: translateX(8%) translateY(4%);
-		}
 	}
 
 	:global([data-motion='reduced']) .album-disc,

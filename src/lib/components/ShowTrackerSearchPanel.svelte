@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { enhance } from '$app/forms';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -15,7 +16,8 @@
 
 	let hideOwned = $state(true);
 	let hideOnList = $state(true);
-	let addToSection = $state<ShowTrackStatus>('watching');
+	let { initialSection = 'watching' }: { initialSection?: ShowTrackStatus } = $props();
+	let addToSection = $state<ShowTrackStatus>(untrack(() => initialSection));
 	let localStatus = $state<Record<string, Partial<CatalogStatus>>>({});
 
 	const visibleResults = $derived(
@@ -47,7 +49,11 @@
 	}
 
 	function sectionLabel(status: ShowTrackStatus): string {
-		return status === 'watching' ? 'Watching now' : 'Coming up';
+		return status === 'completed'
+			? 'Completed watch'
+			: status === 'watching'
+				? 'Watching now'
+				: 'Coming up';
 	}
 </script>
 
@@ -62,6 +68,7 @@
 				? 'control-pill--active'
 				: 'control-pill--neutral'}"
 			onclick={() => (addToSection = 'watching')}
+			aria-pressed={addToSection === 'watching'}
 		>
 			Watching now
 		</button>
@@ -71,9 +78,18 @@
 				? 'control-pill--active'
 				: 'control-pill--neutral'}"
 			onclick={() => (addToSection = 'upcoming')}
+			aria-pressed={addToSection === 'upcoming'}
 		>
 			Coming up
 		</button>
+		<button
+			type="button"
+			class="pill-nav px-3 py-1.5 text-xs {addToSection === 'completed'
+				? 'control-pill--active'
+				: 'control-pill--neutral'}"
+			aria-pressed={addToSection === 'completed'}
+			onclick={() => (addToSection = 'completed')}>Completed watch</button
+		>
 	</div>
 
 	<SearchBar
