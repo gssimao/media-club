@@ -4,7 +4,8 @@ import cloudflare from '@sveltejs/adapter-cloudflare';
 import node from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-const adapter = process.env.ADAPTER === 'node' || process.env.VITEST ? node() : cloudflare();
+const useNode = process.env.ADAPTER === 'node' || Boolean(process.env.VITEST);
+const adapter = useNode ? node() : cloudflare();
 
 export default defineConfig({
 	server: {
@@ -15,7 +16,12 @@ export default defineConfig({
 		tailwindcss(),
 		sveltekit({
 			// Keep the existing import paths while adopting the patched SvelteKit runtime.
-			alias: { $lib: './src/lib' },
+			alias: {
+				$lib: './src/lib',
+				'$platform-env': useNode
+					? './src/lib/server/platform-env.node.ts'
+					: './src/lib/server/platform-env.cloudflare.ts'
+			},
 			compilerOptions: {
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true

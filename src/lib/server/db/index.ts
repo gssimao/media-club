@@ -1,4 +1,5 @@
 import { dev } from '$app/env';
+import { getPlatformEnv } from '$platform-env';
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import { drizzle as drizzleSqlite } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
@@ -34,8 +35,9 @@ function createLocalDb(url: string) {
 }
 
 export function getDb(platform: App.Platform | undefined): AppDatabase {
-	if (!dev && platform?.env?.DB) {
-		return createD1Db(platform.env.DB);
+	const bindings = platform?.env ?? getPlatformEnv();
+	if (!dev && bindings?.DB) {
+		return createD1Db(bindings.DB);
 	}
 
 	const localUrl = process.env.DATABASE_URL ?? 'file:./data/media-club.db';

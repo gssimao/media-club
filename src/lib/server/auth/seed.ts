@@ -2,12 +2,14 @@ import { count, eq } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { adminUser } from '$lib/server/db/schema';
 import { hashPassword } from './password';
+import { getPlatformEnv } from '$platform-env';
 
 export async function ensureAdminUser(db: AppDatabase, platform?: App.Platform) {
 	const [{ value }] = await db.select({ value: count() }).from(adminUser);
 	if (value > 0) return;
 
-	const env = platform?.env as Record<string, string | undefined> | undefined;
+	const env = (platform?.env ?? getPlatformEnv()) as unknown as
+		Record<string, string | undefined> | undefined;
 	const username = env?.ADMIN_USERNAME ?? process.env.ADMIN_USERNAME ?? 'admin';
 	const password = env?.ADMIN_PASSWORD ?? process.env.ADMIN_PASSWORD;
 
