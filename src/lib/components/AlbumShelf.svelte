@@ -56,12 +56,12 @@
 {#if preview.length > 0 || showAddTile || category === 'movie' || category === 'show'}
 	<section class="mb-8" aria-label="Collections">
 		<div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-			<div class="contents">
-				<h2
-					class="text-sm font-semibold tracking-normal text-stone-700 normal-case dark:text-stone-300"
-				>
-					Collections
-				</h2>
+			<h2
+				class="text-sm font-semibold tracking-normal text-stone-700 normal-case dark:text-stone-300"
+			>
+				Collections
+			</h2>
+			<div class="flex max-w-full flex-wrap items-center gap-2">
 				<a href="/albums/{category}" class="pill-nav control-pill--secondary text-xs"
 					><Folders size={16} />View collections</a
 				>
