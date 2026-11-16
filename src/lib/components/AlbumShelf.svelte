@@ -61,7 +61,10 @@
 			>
 				Collections
 			</h2>
-			<div class="flex max-w-full flex-wrap items-center gap-2">
+			<div
+				class="flex max-w-full flex-wrap items-center gap-2"
+				class:collection-actions--shows={category === 'show'}
+			>
 				<a href="/albums/{category}" class="pill-nav control-pill--secondary text-xs"
 					><Folders size={16} />View collections</a
 				>
@@ -117,6 +120,12 @@
 {/if}
 
 <style>
+	@media (max-width: 360px) {
+		.collection-actions--shows .pill-nav {
+			padding-inline: 0.625rem;
+		}
+	}
+
 	.shelf-scroll {
 		--fade-start: 0px;
 		--fade-end: 0px;
