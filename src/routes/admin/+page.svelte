@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ImportJsonDialog from '$lib/components/ImportJsonDialog.svelte';
-	import { FileArrowUp, Plus, Television, UserGear } from 'phosphor-svelte';
+	import { FileArrowUp, Plus, UserGear } from 'phosphor-svelte';
 
 	let { data } = $props();
 	let showImportDialog = $state(false);
@@ -25,10 +25,6 @@
 			<FileArrowUp size={16} weight="bold" />
 			Import JSON
 		</button>
-		<a href="/movies/streaming" class="control-pill control-pill--secondary">
-			<Television size={16} weight="bold" />
-			Streaming lists
-		</a>
 		<a href="/admin/search" class="control-pill control-pill--primary">
 			<Plus size={16} weight="bold" />
 			Add from search

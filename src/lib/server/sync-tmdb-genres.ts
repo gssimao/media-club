@@ -1,6 +1,6 @@
 import { getMovieGenresBatch, getTvGenresBatch, isTmdbMovieId } from '$lib/server/apis/tmdb';
 import type { AppDatabase } from '$lib/server/db';
-import { listAllItemsByCategory, updateItemGenres } from '$lib/server/items';
+import { getItemById, listAllItemsByCategory, updateItemGenres } from '$lib/server/items';
 import type { MediaCategory } from '$lib/types/media';
 import {
 	dedupeGenres,
@@ -21,13 +21,25 @@ function genresEqual(left: string[], right: string[]): boolean {
 	return left.every((genre, index) => genre === right[index]);
 }
 
+function hasNoGenres(item: { metadata: Record<string, unknown> | null }): boolean {
+	return dedupeGenres(parseGenresFromMetadata(item.metadata) ?? []).length === 0;
+}
+
+export async function getEmptyGenreMovieSummary(db: AppDatabase) {
+	const movies = (await listAllItemsByCategory(db, 'movie')).filter(hasNoGenres);
+	const eligible = movies.filter((item) => isTmdbMovieId(item.externalId)).length;
+	return { total: movies.length, eligible, withoutTmdbId: movies.length - eligible };
+}
+
 async function syncTmdbGenresForCategory(
 	db: AppDatabase,
 	apiKey: string,
 	category: Extract<MediaCategory, 'movie' | 'show'>,
-	mode: TmdbGenreSyncMode
+	mode: TmdbGenreSyncMode,
+	emptyOnly = false
 ): Promise<TmdbGenreSyncResult> {
-	const categoryItems = await listAllItemsByCategory(db, category);
+	const allItems = await listAllItemsByCategory(db, category);
+	const categoryItems = emptyOnly ? allItems.filter(hasNoGenres) : allItems;
 	const tmdbItems = categoryItems.filter((item) => isTmdbMovieId(item.externalId));
 	const genresByExternalId =
 		category === 'movie'
@@ -60,7 +72,13 @@ async function syncTmdbGenresForCategory(
 			continue;
 		}
 
-		const existing = parseGenresFromMetadata(item.metadata) ?? [];
+		// The TMDB request can take time; keep genres added while it was running.
+		const currentItem = emptyOnly ? await getItemById(db, item.id) : item;
+		if (!currentItem || (emptyOnly && !hasNoGenres(currentItem))) {
+			skipped++;
+			continue;
+		}
+		const existing = parseGenresFromMetadata(currentItem.metadata) ?? [];
 		const nextGenres = mergeTmdbGenres(existing, tmdbGenres, mode);
 		const currentGenres = dedupeGenres(existing);
 
@@ -79,6 +97,13 @@ async function syncTmdbGenresForCategory(
 		skipped,
 		failed
 	};
+}
+
+export async function syncTmdbGenresForEmptyMovies(
+	db: AppDatabase,
+	apiKey: string
+): Promise<TmdbGenreSyncResult> {
+	return syncTmdbGenresForCategory(db, apiKey, 'movie', 'keep', true);
 }
 
 function combineSyncResults(

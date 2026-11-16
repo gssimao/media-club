@@ -10,17 +10,30 @@
 	interface Props {
 		isAdmin: boolean;
 		tmdbCatalogCount: number;
+		emptyGenreMovies: { total: number; eligible: number; withoutTmdbId: number };
 	}
 
-	let { isAdmin, tmdbCatalogCount }: Props = $props();
+	let { isAdmin, tmdbCatalogCount, emptyGenreMovies }: Props = $props();
 
 	let dialogOpen = $state(false);
 	let syncing = $state(false);
+	let preparing = $state(false);
+	let emptyOnly = $state(false);
 	let syncForm: HTMLFormElement | undefined = $state();
 	let pendingMode = $state<TmdbGenreSyncMode | null>(null);
 
-	function openDialog() {
-		dialogOpen = true;
+	async function openDialog(onlyEmpty = false) {
+		if (syncing || preparing) return;
+		emptyOnly = onlyEmpty;
+		preparing = true;
+		try {
+			if (onlyEmpty) await invalidateAll();
+			dialogOpen = true;
+		} catch {
+			toast.error('Could not count movies with empty genres. Please try again.');
+		} finally {
+			preparing = false;
+		}
 	}
 
 	function closeDialog() {
@@ -55,14 +68,28 @@
 					total). Items without a TMDB ID are skipped.
 				</p>
 			</div>
-			<button
-				type="button"
-				class="control-pill control-pill--secondary sync-btn"
-				disabled={tmdbCatalogCount === 0 || syncing}
-				onclick={openDialog}
-			>
-				Sync TMDB genres
-			</button>
+			<div class="catalog-actions">
+				<button
+					type="button"
+					class="control-pill control-pill--secondary sync-btn"
+					disabled={tmdbCatalogCount === 0 || syncing || preparing}
+					onclick={() => openDialog()}
+				>
+					Sync TMDB genres
+				</button>
+				<button
+					type="button"
+					class="control-pill control-pill--secondary sync-btn"
+					disabled={syncing || preparing || emptyGenreMovies.total === 0}
+					onclick={() => openDialog(true)}
+				>
+					{preparing ? 'Counting empty genres…' : 'Sync only empty genre movies'}
+				</button>
+				<p class="hint" aria-live="polite">
+					{emptyGenreMovies.total} movie{emptyGenreMovies.total === 1 ? '' : 's'} with no genres (owned
+					and wishlist).
+				</p>
+			</div>
 		</div>
 
 		<p class="hint">Admin only. Choose whether to merge or replace your existing genre tags.</p>
@@ -86,24 +113,42 @@
 			onclick={closeDialog}
 		></button>
 
-		<div class="sync-dialog__panel surface-round anim-rise sync-dialog__panel--danger">
+		<div
+			class="sync-dialog__panel surface-round anim-rise"
+			class:sync-dialog__panel--danger={!emptyOnly}
+		>
 			<div class="flex items-start gap-3">
 				<span
-					class="inline-flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-red-400/70 bg-red-500/10 text-red-600 dark:border-red-500/50 dark:text-red-400"
+					class="inline-flex size-10 shrink-0 items-center justify-center rounded-full border-2 {emptyOnly
+						? 'border-[rgb(var(--color-border))] text-[rgb(var(--color-text-secondary))]'
+						: 'border-red-400/70 bg-red-500/10 text-red-600 dark:border-red-500/50 dark:text-red-400'}"
 					aria-hidden="true"
 				>
-					<WarningCircle size={22} weight="bold" />
+					{#if emptyOnly}<FilmStrip size={22} weight="bold" />{:else}<WarningCircle
+							size={22}
+							weight="bold"
+						/>{/if}
 				</span>
 				<div class="min-w-0 flex-1">
 					<h2
 						id="sync-genres-dialog-title"
 						class="text-sm font-black tracking-wide text-stone-900 uppercase dark:text-amber-50"
 					>
-						Sync TMDB genres?
+						{emptyOnly ? 'Sync empty movie genres?' : 'Sync TMDB genres?'}
 					</h2>
 					<p class="mt-2 text-sm leading-snug font-medium text-[rgb(var(--color-text-secondary))]">
-						This will update genres on every movie and show in your catalog (owned and wishlist).
-						Items without a TMDB ID are skipped.
+						{#if emptyOnly}
+							{emptyGenreMovies.total} movie{emptyGenreMovies.total === 1 ? '' : 's'} in your owned and
+							wishlist catalog {emptyGenreMovies.total === 1 ? 'has' : 'have'} no genres. Sync genres
+							for the {emptyGenreMovies.eligible} with a TMDB ID.
+							{#if emptyGenreMovies.withoutTmdbId > 0}
+								{emptyGenreMovies.withoutTmdbId} without a TMDB ID will be skipped.
+							{/if}
+							Movies with existing genres and all shows stay unchanged.
+						{:else}
+							This will update genres on every movie and show in your catalog (owned and wishlist).
+							Items without a TMDB ID are skipped.
+						{/if}
 					</p>
 				</div>
 				<button
@@ -118,33 +163,48 @@
 			</div>
 
 			<div class="mt-4 space-y-2">
-				<p
-					class="text-[11px] font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase"
-				>
-					How should existing genres be handled?
-				</p>
-				<button
-					type="button"
-					class="choice-btn"
-					disabled={syncing}
-					onclick={() => startSync('keep')}
-				>
-					<span class="choice-btn__title">Keep existing genres</span>
-					<span class="choice-btn__detail">
-						Add TMDB genres to existing ones (your custom genres are kept)
-					</span>
-				</button>
-				<button
-					type="button"
-					class="choice-btn choice-btn--danger"
-					disabled={syncing}
-					onclick={() => startSync('overwrite')}
-				>
-					<span class="choice-btn__title">Replace with TMDB</span>
-					<span class="choice-btn__detail">
-						Replace all genres with TMDB data (custom genres will be removed)
-					</span>
-				</button>
+				{#if emptyOnly}
+					<button
+						type="button"
+						class="choice-btn"
+						disabled={syncing || emptyGenreMovies.eligible === 0}
+						onclick={() => startSync('keep')}
+					>
+						<span class="choice-btn__title"
+							>{syncing
+								? 'Syncing…'
+								: `Sync ${emptyGenreMovies.eligible} movie${emptyGenreMovies.eligible === 1 ? '' : 's'}`}</span
+						>
+					</button>
+				{:else}
+					<p
+						class="text-[11px] font-bold tracking-wide text-[rgb(var(--color-text-secondary))] uppercase"
+					>
+						How should existing genres be handled?
+					</p>
+					<button
+						type="button"
+						class="choice-btn"
+						disabled={syncing}
+						onclick={() => startSync('keep')}
+					>
+						<span class="choice-btn__title">Keep existing genres</span>
+						<span class="choice-btn__detail">
+							Add TMDB genres to existing ones (your custom genres are kept)
+						</span>
+					</button>
+					<button
+						type="button"
+						class="choice-btn choice-btn--danger"
+						disabled={syncing}
+						onclick={() => startSync('overwrite')}
+					>
+						<span class="choice-btn__title">Replace with TMDB</span>
+						<span class="choice-btn__detail">
+							Replace all genres with TMDB data (custom genres will be removed)
+						</span>
+					</button>
+				{/if}
 			</div>
 
 			<div class="mt-5 flex justify-end">
@@ -164,7 +224,7 @@
 <form
 	bind:this={syncForm}
 	method="POST"
-	action="?/syncTmdbGenres"
+	action={emptyOnly ? '?/syncEmptyMovieGenres' : '?/syncTmdbGenres'}
 	class="hidden"
 	use:enhance={() => {
 		syncing = true;
@@ -220,6 +280,15 @@
 		min-width: 0;
 	}
 
+	.catalog-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+		flex-shrink: 0;
+		max-width: 100%;
+	}
+
 	.catalog-heading {
 		display: inline-flex;
 		align-items: center;
@@ -242,7 +311,9 @@
 
 	.sync-btn {
 		align-self: flex-start;
-		white-space: nowrap;
+		max-width: 100%;
+		white-space: normal;
+		text-align: center;
 	}
 
 	.sync-dialog {
@@ -268,6 +339,8 @@
 		position: relative;
 		z-index: 1;
 		width: min(100%, 26rem);
+		max-height: calc(100dvh - 2.5rem);
+		overflow-y: auto;
 		padding: 1.25rem;
 		box-shadow: 0 24px 60px rgb(0 0 0 / 0.4);
 	}

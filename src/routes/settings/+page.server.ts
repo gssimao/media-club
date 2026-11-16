@@ -2,7 +2,11 @@ import { fail } from '@sveltejs/kit';
 import { requireAdmin } from '$lib/server/admin';
 import { getItemCounts } from '$lib/server/items';
 import { requireSecret } from '$lib/server/env';
-import { syncTmdbGenres } from '$lib/server/sync-tmdb-genres';
+import {
+	getEmptyGenreMovieSummary,
+	syncTmdbGenres,
+	syncTmdbGenresForEmptyMovies
+} from '$lib/server/sync-tmdb-genres';
 import { CATEGORY_LABELS, type MediaCategory } from '$lib/types/media';
 import type { TmdbGenreSyncMode } from '$lib/utils/movie-genres';
 import type { Actions, PageServerLoad } from './$types';
@@ -20,6 +24,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		summary,
 		isAdmin: Boolean(locals.user),
+		emptyGenreMovies: locals.user
+			? await getEmptyGenreMovieSummary(locals.db)
+			: { total: 0, eligible: 0, withoutTmdbId: 0 },
 		tmdbCatalogCount:
 			(counts['movie:owned'] ?? 0) +
 			(counts['movie:wishlist'] ?? 0) +
@@ -35,6 +42,22 @@ function parseSyncMode(value: FormDataEntryValue | null): TmdbGenreSyncMode | nu
 }
 
 export const actions: Actions = {
+	syncEmptyMovieGenres: async (event) => {
+		requireAdmin(event.locals);
+		let apiKey: string;
+		try {
+			apiKey = requireSecret(event, 'TMDB_API_KEY');
+		} catch {
+			return fail(503, { message: 'TMDB is not configured on this server.' });
+		}
+		try {
+			return await syncTmdbGenresForEmptyMovies(event.locals.db, apiKey);
+		} catch (error) {
+			return fail(500, {
+				message: error instanceof Error ? error.message : 'Could not sync empty movie genres.'
+			});
+		}
+	},
 	syncTmdbGenres: async (event) => {
 		requireAdmin(event.locals);
 		const form = await event.request.formData();

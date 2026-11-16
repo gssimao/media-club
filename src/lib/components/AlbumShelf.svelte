@@ -2,7 +2,7 @@
 	import { settings } from '$lib/stores/settings.svelte';
 	import type { Album, MediaCategory } from '$lib/types/media';
 	import { dragScroll } from '$lib/utils/drag-scroll';
-	import { CaretLeft, CaretRight, Folders, Television } from 'phosphor-svelte';
+	import { CaretLeft, CaretRight, Folders, MonitorPlay, Television } from 'phosphor-svelte';
 	import AlbumCard from './AlbumCard.svelte';
 	import AddCollectionTile from './AddCollectionTile.svelte';
 
@@ -53,7 +53,7 @@
 	}
 </script>
 
-{#if preview.length > 0 || showAddTile || category === 'movie'}
+{#if preview.length > 0 || showAddTile || category === 'movie' || category === 'show'}
 	<section class="mb-8" aria-label="Collections">
 		<div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
 			<div class="contents">
@@ -68,6 +68,10 @@
 				{#if category === 'movie'}
 					<a href="/movies/streaming" class="pill-nav control-pill--secondary text-xs"
 						><Television size={16} />View streaming list</a
+					>
+				{:else if category === 'show'}
+					<a href="/shows/watching" class="pill-nav control-pill--secondary text-xs"
+						><MonitorPlay size={16} />Show tracker</a
 					>
 				{/if}
 			</div>
