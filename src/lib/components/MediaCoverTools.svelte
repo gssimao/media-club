@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CoverTools from './CoverTools.svelte';
 	import { enhance } from '$app/forms';
 	import AssignAlbumControl from './AssignAlbumControl.svelte';
 	import GenreEditor from './GenreEditor.svelte';
@@ -61,7 +62,7 @@
 {#if hasContent}
 	<!-- Sits on the artwork. Hidden until the cover is hovered, tapped, or focused,
 	     so the shelf stays a shelf until someone wants to change something. -->
-	<div class="cover-tools {open ? 'is-open' : ''}" data-open={open ? 'true' : 'false'}>
+	<CoverTools {open}>
 		{#if isAdmin}
 			<div class="flex flex-wrap justify-center gap-1">
 				{#each presetTags as tag (tag)}
@@ -149,44 +150,5 @@
 				{displayNotes}
 			</p>
 		{/if}
-	</div>
+	</CoverTools>
 {/if}
-
-<style>
-	.cover-tools {
-		position: absolute;
-		inset: 0;
-		z-index: 20;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.4rem;
-		overflow-y: auto;
-		padding: 0.75rem;
-		border-radius: inherit;
-		background: rgb(12 10 9 / 0.78);
-		text-align: center;
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.18s ease;
-	}
-
-	.cover-tools.is-open {
-		opacity: 1;
-		pointer-events: auto;
-	}
-
-	/* The genre edit button is styled for the page background. Lighten it for the scrim. */
-	.cover-tools__genres :global(button) {
-		border-color: rgb(255 255 255 / 0.4);
-		background: transparent;
-		color: white;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.cover-tools {
-			transition: none;
-		}
-	}
-</style>

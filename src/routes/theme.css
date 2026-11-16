@@ -24,13 +24,13 @@
 :root {
 	color-scheme: light;
 
-	--color-bg: 246 245 242; /* #F6F5F2 */
-	--color-surface: 238 237 234; /* #EEEDEA */
+	--color-bg: 233 236 239; /* #E9ECEF */
+	--color-surface: 223 228 232; /* #DFE4E8 */
 	--color-surface-raised: 255 255 255; /* #FFFFFF */
-	--color-border: 217 216 212; /* #D9D8D4 */
+	--color-border: 198 205 212; /* #C6CDD4 */
 	--color-text: 32 33 36; /* #202124 */
-	--color-text-secondary: 85 88 96; /* #555860 */
-	--color-text-tertiary: 107 109 115; /* #6B6D73 */
+	--color-text-secondary: 72 78 88; /* #484E58 */
+	--color-text-tertiary: 93 101 112; /* #5D6570 */
 	--color-accent: 208 180 136; /* #D0B488 */
 	--color-accent-hover: 115 91 54; /* #735B36 */
 	--color-accent-light: 238 231 218; /* #EEE7DA */
@@ -44,6 +44,20 @@
 	--color-glow-red: 187 119 118; /* #BB7776 */
 	--color-glow-blue: 122 131 188; /* #7A83BC */
 	--color-glow-green: 110 162 142; /* #6EA28E */
+}
+
+:root {
+	--vinyl-base: 21 22 25;
+	--vinyl-edge: 69 71 76;
+	--vinyl-button: 37 39 44;
+	--vinyl-text: 243 238 229;
+	--vinyl-paper: 216 190 146;
+	--vinyl-ink: 48 42 34;
+	--vinyl-accent: 216 190 146;
+	--vinyl-coral: 230 161 141;
+	--vinyl-lilac: 185 160 217;
+	--vinyl-mint: 142 195 175;
+	--vinyl-sky: 144 185 221;
 }
 
 [data-theme='dark'] {

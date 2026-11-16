@@ -125,7 +125,7 @@
 		position: absolute;
 		top: var(--y);
 		width: calc(var(--scale) * 100%);
-		aspect-ratio: 1;
+		aspect-ratio: 2 / 3;
 		opacity: 0;
 		will-change: opacity, transform;
 		animation: cover-drift var(--life) ease-in-out forwards;
@@ -139,12 +139,12 @@
 		right: var(--offset);
 	}
 
-	/* Rounded square: the corner radius follows the tile size (design-theme.mdc). */
+	/* Small poster sleeves keep the original cover proportions. */
 	.tile-art {
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
-		border-radius: 22%;
+		border-radius: 8%;
 		box-shadow:
 			0 0.75rem 2rem rgb(0 0 0 / 0.35),
 			0 0 0 1px rgb(255 255 255 / 0.08);

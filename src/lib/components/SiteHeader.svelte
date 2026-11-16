@@ -162,7 +162,7 @@
 		border: 1px solid rgb(var(--color-border));
 		border-radius: 2rem;
 		padding: 1rem 1rem 1.75rem;
-		background: rgb(var(--color-surface));
+		background: rgb(var(--color-surface-raised));
 		box-shadow: 0 18px 60px rgb(0 0 0/0.2);
 		--nav-dial-size: min(17rem, calc(100vw - 5rem));
 		--nav-dial-r: calc(var(--nav-dial-size)/2);

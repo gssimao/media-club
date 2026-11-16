@@ -1,7 +1,8 @@
 <script lang="ts">
 	import CoverImage from '$lib/components/CoverImage.svelte';
 	import { settings } from '$lib/stores/settings.svelte';
-	import type { MediaItem } from '$lib/types/media';
+	import type { RandomPickItem } from '$lib/utils/random-pick.svelte';
+	import { prefersReducedMotion } from 'svelte/motion';
 	import { modal } from '$lib/utils/modal';
 	import { getDisplayGenres } from '$lib/utils/movie-genres';
 	import { DiceSix, X } from 'phosphor-svelte';
@@ -10,7 +11,7 @@
 	interface Props {
 		open: boolean;
 		phase: 'loading' | 'reveal';
-		item: MediaItem | null;
+		item: RandomPickItem | null;
 		loadingPhrase: string;
 		dismissLabel: string;
 		loadingDurationMs?: number;
@@ -29,7 +30,7 @@
 		onDismiss
 	}: Props = $props();
 
-	const reducedMotion = $derived(settings.motion === 'reduced');
+	const reducedMotion = $derived(settings.motion === 'reduced' || prefersReducedMotion.current);
 	const rollDurationCss = $derived(`${loadingDurationMs}ms`);
 	const genres = $derived(item ? getDisplayGenres(item) : []);
 </script>
@@ -65,17 +66,19 @@
 
 			{#if phase === 'loading'}
 				<div class="flex flex-col items-center gap-4 py-6 text-center">
-					<span class="random-reveal__dice" aria-hidden="true">
-						<DiceSix size={48} weight="bold" />
-					</span>
-					<h2
-						id="random-reveal-title"
-						class="text-lg font-black tracking-wide text-stone-900 uppercase dark:text-amber-50"
-					>
+					<div class="mystery-stage" aria-hidden="true">
+						<div class="mystery-halo"></div>
+						<div class="mystery-cards"><span>?</span><span>?</span><span>?</span></div>
+						<div class="mystery-crate">
+							<div class="mystery-lid"></div>
+							<DiceSix size={38} weight="duotone" /><span>LUCKY PICK</span>
+						</div>
+					</div>
+					<h2 id="random-reveal-title" class="text-lg font-semibold text-[rgb(var(--color-text))]">
 						{loadingPhrase}
 					</h2>
 					<p class="text-sm font-medium text-[rgb(var(--color-text-secondary))]">
-						One moment, your movie is coming up.
+						A little shuffle. A little luck.
 					</p>
 				</div>
 			{:else if item}
@@ -84,7 +87,7 @@
 						id="random-reveal-title"
 						class="text-xs font-black tracking-[0.2em] text-amber-700 uppercase dark:text-amber-400"
 					>
-						Tonight's pick
+						Your pick
 					</h2>
 
 					{#key item.id}
@@ -170,6 +173,8 @@
 		z-index: 1;
 		width: min(100%, 24rem);
 		padding: 1.5rem;
+		max-height: calc(100dvh - 2.5rem);
+		overflow-y: auto;
 		box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
 	}
 
@@ -178,8 +183,8 @@
 		top: 0.75rem;
 		right: 0.75rem;
 		display: inline-flex;
-		width: 2rem;
-		height: 2rem;
+		width: 2.75rem;
+		height: 2.75rem;
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
@@ -198,95 +203,135 @@
 		background: rgb(255 255 255 / 0.1);
 	}
 
-	@keyframes dice-shake-spin {
-		0% {
-			transform: rotate(0deg) scale(1);
+	.mystery-stage {
+		position: relative;
+		width: 220px;
+		height: 190px;
+		margin-block: 0.5rem;
+	}
+	.mystery-halo {
+		position: absolute;
+		inset: 15px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgb(var(--color-accent) / 0.22), transparent 70%);
+	}
+	.mystery-crate {
+		position: absolute;
+		bottom: 12px;
+		left: 42px;
+		width: 136px;
+		height: 105px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		border: 1px solid rgb(var(--vinyl-edge));
+		border-radius: 8px 8px 18px 18px;
+		color: rgb(var(--vinyl-paper));
+		background: linear-gradient(110deg, rgb(var(--vinyl-button)), rgb(var(--vinyl-base)));
+		box-shadow:
+			0 14px 20px rgb(0 0 0 / 0.18),
+			inset 7px 0 0 rgb(255 255 255 / 0.035);
+	}
+	.mystery-crate > span {
+		font-size: 8px;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+	}
+	.mystery-lid {
+		position: absolute;
+		top: -10px;
+		left: -5px;
+		right: -5px;
+		height: 18px;
+		border-radius: 5px;
+		background: rgb(var(--vinyl-paper));
+		border-bottom: 3px solid rgb(var(--vinyl-ink) / 0.3);
+		transform-origin: 10% 100%;
+	}
+	.mystery-cards {
+		position: absolute;
+		inset: 0;
+	}
+	.mystery-cards span {
+		position: absolute;
+		left: 82px;
+		top: 34px;
+		width: 56px;
+		height: 78px;
+		display: grid;
+		place-items: center;
+		border-radius: 7px;
+		border: 2px solid rgb(var(--color-surface-raised));
+		background: rgb(var(--color-coral));
+		color: rgb(var(--color-bg));
+		font-size: 25px;
+		font-weight: 600;
+		transform: rotate(-18deg) translateX(-35px);
+	}
+	.mystery-cards span:nth-child(2) {
+		background: rgb(var(--color-lilac));
+		transform: translateY(-12px);
+	}
+	.mystery-cards span:nth-child(3) {
+		background: rgb(var(--color-mint));
+		transform: rotate(18deg) translateX(35px);
+	}
+	.random-reveal--shaking .mystery-crate {
+		animation: crate-wiggle 900ms ease-in-out infinite;
+	}
+	.random-reveal--shaking .mystery-lid {
+		animation: lid-rattle 900ms ease-in-out infinite;
+	}
+	.random-reveal--shaking .mystery-cards {
+		animation: cards-hop 1200ms ease-in-out infinite;
+	}
+	@keyframes crate-wiggle {
+		0%,
+		100% {
+			transform: translateY(0) rotate(-3deg);
 		}
 		25% {
-			transform: rotate(90deg) scale(1.06);
+			transform: translateY(-4px) rotate(3deg);
 		}
 		50% {
-			transform: rotate(180deg) scale(0.98);
+			transform: rotate(-2deg);
 		}
 		75% {
-			transform: rotate(270deg) scale(1.04);
-		}
-		100% {
-			transform: rotate(360deg) scale(1);
+			transform: translateY(-2px) rotate(2deg);
 		}
 	}
-
-	@keyframes screen-shake-burst {
+	@keyframes lid-rattle {
 		0%,
-		7%,
-		38%,
-		45%,
-		68%,
-		75%,
+		55%,
 		100% {
-			transform: translate(0, 0) rotate(0deg);
+			transform: rotate(0);
 		}
-		1% {
-			transform: translate(-2px, 1px) rotate(-0.2deg);
+		25% {
+			transform: translateY(-3px) rotate(-4deg);
 		}
-		2.5% {
-			transform: translate(2px, -1px) rotate(0.15deg);
-		}
-		4% {
-			transform: translate(-1px, 1px) rotate(-0.1deg);
-		}
-		5.5% {
-			transform: translate(1px, -1px) rotate(0.1deg);
-		}
-		39% {
-			transform: translate(-2px, 1px) rotate(-0.2deg);
-		}
-		40.5% {
-			transform: translate(2px, -1px) rotate(0.15deg);
-		}
-		42% {
-			transform: translate(-1px, 1px) rotate(-0.1deg);
-		}
-		43.5% {
-			transform: translate(1px, -1px) rotate(0.1deg);
-		}
-		69% {
-			transform: translate(-2px, 1px) rotate(-0.2deg);
-		}
-		70.5% {
-			transform: translate(2px, -1px) rotate(0.15deg);
-		}
-		72% {
-			transform: translate(-1px, 1px) rotate(-0.1deg);
-		}
-		73.5% {
-			transform: translate(1px, -1px) rotate(0.1deg);
+		70% {
+			transform: translateY(-2px) rotate(-2deg);
 		}
 	}
-
-	.random-reveal--shaking .random-reveal__panel {
-		animation: screen-shake-burst var(--roll-duration, 4s) ease-in-out forwards;
+	@keyframes cards-hop {
+		0%,
+		100% {
+			transform: translateY(10px) rotate(-3deg);
+		}
+		50% {
+			transform: translateY(-12px) rotate(3deg);
+		}
 	}
-
-	.random-reveal__dice {
-		display: inline-flex;
-		color: rgb(180 83 9);
-		animation: dice-shake-spin 0.85s cubic-bezier(0.34, 1.1, 0.64, 1) infinite;
-	}
-
-	:global([data-theme='dark']) .random-reveal__dice {
-		color: rgb(251 191 36);
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.random-reveal--shaking .random-reveal__panel,
-		.random-reveal__dice {
+		.random-reveal--shaking .mystery-crate,
+		.random-reveal--shaking .mystery-lid,
+		.random-reveal--shaking .mystery-cards {
 			animation: none;
 		}
 	}
-
-	:global([data-motion='reduced']) .random-reveal--shaking .random-reveal__panel,
-	:global([data-motion='reduced']) .random-reveal__dice {
+	:global([data-motion='reduced']) .mystery-stage * {
 		animation: none;
 	}
 </style>

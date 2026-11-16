@@ -231,7 +231,7 @@
 <div class="nav-dial-panel">
 	<div
 		bind:this={dialRoot}
-		class="nav-dial"
+		class="nav-dial vinyl-navigation"
 		class:is-dragging={dragging}
 		class:is-animating={animating}
 		role="navigation"

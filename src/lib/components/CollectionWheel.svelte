@@ -1,4 +1,5 @@
 <script lang="ts">
+	import VinylRecord from './VinylRecord.svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { settings } from '$lib/stores/settings.svelte';
 	import { buildNavItems } from './nav-dial/nav-dial';
@@ -14,7 +15,7 @@
 </script>
 
 <nav
-	class="collection-wheel"
+	class="collection-wheel vinyl-navigation"
 	class:is-paused={paused || hidden || touching}
 	class:is-still={reduced}
 	style:--orbit-period="{Math.max(60_000, settings.spinPeriodMs * 5)}ms"
@@ -29,27 +30,7 @@
 		touching = false;
 	}}
 >
-	<div class="platter" aria-hidden="true">
-		<svg viewBox="0 0 520 520">
-			{#each [248, 237, 221, 201, 181, 161, 141, 121, 101] as radius (radius)}<circle
-					cx="260"
-					cy="260"
-					r={radius}
-					fill="none"
-					stroke="currentColor"
-					stroke-width="0.7"
-				/>{/each}
-			{#each Array.from({ length: 48 }, (_, i) => i * 7.5) as angle (angle)}<line
-					x1="260"
-					y1="17"
-					x2="260"
-					y2={angle % 45 === 0 ? 30 : 22}
-					stroke="currentColor"
-					stroke-width="1"
-					transform="rotate({angle} 260 260)"
-				/>{/each}
-		</svg>
-	</div>
+	<VinylRecord />
 	<div class="orbit">
 		{#each items as item, index (item.href)}
 			{@const Icon = item.icon}{@const angle = (index / items.length) * Math.PI * 2}
@@ -66,8 +47,11 @@
 						aria-label={item.label}
 						aria-current={item.href === '/' ? 'page' : undefined}
 					>
-						<span class="wheel-button"><Icon size={25} weight="regular" /></span><span
-							class="wheel-label">{item.label}</span
+						<span class="wheel-button"
+							><span class="wheel-label">{item.label}</span><Icon
+								size={25}
+								weight="regular"
+							/></span
 						>
 					</a>
 				</div>
@@ -92,31 +76,6 @@
 		isolation: isolate;
 		border-radius: 50%;
 	}
-	.platter {
-		position: absolute;
-		inset: 0;
-		border-radius: 50%;
-		pointer-events: none;
-		background: conic-gradient(
-			from 25deg,
-			rgb(var(--color-surface) / 0.96),
-			rgb(var(--color-sky) / 0.14) 17%,
-			rgb(var(--color-surface) / 0.98) 33%,
-			rgb(var(--color-coral) / 0.13) 56%,
-			rgb(var(--color-surface) / 0.96) 73%,
-			rgb(var(--color-mint) / 0.12) 91%,
-			rgb(var(--color-surface) / 0.96)
-		);
-		border: 1px solid rgb(var(--color-accent) / 0.38);
-		box-shadow:
-			inset 0 0 0 5px rgb(var(--color-bg) / 0.6),
-			0 18px 55px rgb(0 0 0/0.12);
-	}
-	.platter svg {
-		width: 100%;
-		height: 100%;
-		color: rgb(var(--color-accent) / 0.32);
-	}
 	.orbit {
 		position: absolute;
 		inset: 0;
@@ -134,10 +93,10 @@
 	}
 	.wheel-link {
 		position: absolute;
-		width: 72px;
-		min-height: 74px;
-		left: -36px;
-		top: -29px;
+		width: 76px;
+		height: 76px;
+		left: -38px;
+		top: -38px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -146,14 +105,16 @@
 	}
 	.wheel-button {
 		display: flex;
+		flex-direction: column;
+		gap: 6px;
 		align-items: center;
 		justify-content: center;
-		width: 58px;
-		height: 58px;
+		width: 76px;
+		height: 76px;
 		border-radius: 50%;
 		color: rgb(var(--destination-color));
 		border: 1px solid rgb(var(--destination-color) / 0.5);
-		background: rgb(var(--color-surface-raised));
+		background: rgb(var(--vinyl-button));
 		box-shadow:
 			0 4px 12px rgb(0 0 0/0.08),
 			inset 0 0 0 4px rgb(var(--destination-color) / 0.05);
@@ -164,12 +125,12 @@
 	}
 	.wheel-link:is(:hover, :focus-visible) .wheel-button {
 		transform: scale(1.08);
-		background: rgb(var(--color-surface));
+		background: rgb(var(--vinyl-base));
 		box-shadow: 0 0 22px rgb(var(--destination-color) / 0.24);
 	}
 	.wheel-label {
-		color: rgb(var(--color-text-secondary));
-		font-size: 0.75rem;
+		color: rgb(var(--vinyl-text));
+		font-size: 0.6875rem;
 		font-weight: 550;
 		line-height: 1;
 		white-space: nowrap;
@@ -177,24 +138,24 @@
 	.record-label {
 		position: absolute;
 		inset: 35%;
-		border: 1px solid rgb(var(--color-accent) / 0.45);
+		border: 1px solid rgb(var(--vinyl-accent) / 0.45);
 		border-radius: 50%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		gap: 0.6rem;
-		background: rgb(var(--color-accent-light));
+		background: rgb(var(--vinyl-paper));
 		box-shadow:
-			0 0 0 5px rgb(var(--color-bg) / 0.6),
-			0 0 0 6px rgb(var(--color-accent) / 0.15);
+			0 0 0 5px rgb(var(--vinyl-base) / 0.6),
+			0 0 0 6px rgb(var(--vinyl-accent) / 0.15);
 		pointer-events: none;
 	}
 	.spindle {
 		width: 8px;
 		height: 8px;
-		border: 1px solid rgb(var(--color-accent));
-		background: rgb(var(--color-bg));
+		border: 1px solid rgb(var(--vinyl-accent));
+		background: rgb(var(--vinyl-base));
 		border-radius: 50%;
 	}
 	.label-name {
@@ -203,12 +164,12 @@
 		line-height: 1.12;
 		font-weight: 650;
 		letter-spacing: -0.025em;
-		color: rgb(var(--color-accent-hover));
+		color: rgb(var(--vinyl-ink));
 	}
 	.label-side {
 		font-size: 0.5rem;
 		letter-spacing: 0.2em;
-		color: rgb(var(--color-text-tertiary));
+		color: rgb(var(--vinyl-ink));
 	}
 	.is-paused .orbit,
 	.is-paused .counter-turn,
@@ -228,15 +189,16 @@
 	}
 	@media (max-width: 639px) {
 		.wheel-link {
-			width: 60px;
-			min-height: 60px;
-			left: -30px;
-			top: -22px;
+			width: 54px;
+			height: 54px;
+			left: -27px;
+			top: -27px;
 			gap: 5px;
 		}
 		.wheel-button {
-			width: 44px;
-			height: 44px;
+			width: 54px;
+			height: 54px;
+			gap: 3px;
 		}
 		.wheel-button :global(svg) {
 			width: 21px;

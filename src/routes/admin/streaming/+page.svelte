@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { toast } from '$lib/stores/toast.svelte';
 	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -17,10 +18,7 @@
 	<title>Streaming lists · Admin · Media Club</title>
 </svelte:head>
 
-<PageShell
-	title="Streaming lists"
-	description="Separate movie queues for random picks, not part of your owned collection. Reachable only from Admin."
->
+<PageShell title="Streaming lists" description="Your streaming watchlists.">
 	{#snippet controls()}
 		<NavLink href="/admin" variant="accent">← Back to admin</NavLink>
 		<button
@@ -39,7 +37,11 @@
 			action="?/createList"
 			class="surface-round mb-6 space-y-4 p-5"
 			use:enhance={() => {
-				return async ({ update }) => {
+				return async ({ result, update }) => {
+					if (result.type === 'failure' || result.type === 'error') {
+						toast.error('Could not save that change. Please try again.');
+						return;
+					}
 					showCreateForm = false;
 					await update();
 				};
@@ -51,7 +53,7 @@
 					type="text"
 					name="title"
 					required
-					placeholder="Netflix tonight"
+					placeholder="Weekend watchlist"
 					class="input-round w-full"
 				/>
 			</label>

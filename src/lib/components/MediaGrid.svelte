@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Fuse from 'fuse.js';
+	import { mediaGridClass } from '$lib/utils/media-grid';
 	import type { Album, MediaItem, MediaCategory } from '$lib/types/media';
 	import { settings } from '$lib/stores/settings.svelte';
 	import EmptyState from './EmptyState.svelte';
@@ -72,11 +73,7 @@
 	});
 
 	// Shelf density from Settings — Compact packs more discs per row (they scale down fluidly).
-	const gridClass = $derived(
-		settings.density === 'compact'
-			? 'grid grid-cols-2 gap-x-4 gap-y-6 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
-			: 'grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-	);
+	const gridClass = $derived(mediaGridClass(settings.density));
 </script>
 
 <div class="media-grid">

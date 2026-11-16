@@ -536,3 +536,20 @@
 	transition-duration: 0.01ms !important;
 	scroll-behavior: auto !important;
 }
+
+/* Keep the record and its labels identical in both themes. */
+.vinyl-navigation [data-tone] {
+	--destination-color: var(--vinyl-accent);
+}
+.vinyl-navigation [data-tone='coral'] {
+	--destination-color: var(--vinyl-coral);
+}
+.vinyl-navigation [data-tone='lilac'] {
+	--destination-color: var(--vinyl-lilac);
+}
+.vinyl-navigation [data-tone='mint'] {
+	--destination-color: var(--vinyl-mint);
+}
+.vinyl-navigation [data-tone='sky'] {
+	--destination-color: var(--vinyl-sky);
+}

@@ -57,13 +57,13 @@ export interface ThemePalette {
 
 /** Light theme — soft white, ink, and champagne. */
 export const light: ThemePalette = {
-	bg: '#F6F5F2',
-	surface: '#EEEDEA',
+	bg: '#E9ECEF',
+	surface: '#DFE4E8',
 	surfaceRaised: '#FFFFFF',
-	border: '#D9D8D4',
+	border: '#C6CDD4',
 	text: '#202124',
-	textSecondary: '#555860',
-	textTertiary: '#6B6D73',
+	textSecondary: '#484E58',
+	textTertiary: '#5D6570',
 	accent: '#D0B488',
 	accentHover: '#735B36',
 	accentLight: '#EEE7DA',
@@ -116,4 +116,19 @@ export const brandRamp = {
 	800: '#58452C',
 	900: '#3B3022',
 	950: '#241E17'
+};
+
+/** Vinyl is a material, independent of the surrounding page theme. */
+export const vinyl = {
+	base: '#151619',
+	edge: '#45474C',
+	button: '#25272C',
+	text: '#F3EEE5',
+	paper: '#D8BE92',
+	ink: '#302A22',
+	accent: '#D8BE92',
+	coral: '#E6A18D',
+	lilac: '#B9A0D9',
+	mint: '#8EC3AF',
+	sky: '#90B9DD'
 };

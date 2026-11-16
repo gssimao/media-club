@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { prefersReducedMotion } from 'svelte/motion';
+	import { settings } from '$lib/stores/settings.svelte';
 	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import AlbumEditForm from '$lib/components/AlbumEditForm.svelte';
@@ -9,7 +11,7 @@
 	import NavLink from '$lib/components/NavLink.svelte';
 	import { type AlbumAccentColor } from '$lib/theme/album-colors';
 	import { CATEGORY_ACTION_WORDING, CATEGORY_PATHS } from '$lib/types/media';
-	import { PencilSimple, Trash } from 'phosphor-svelte';
+	import { PencilSimple, Trash, Plus } from 'phosphor-svelte';
 
 	let { data } = $props();
 
@@ -87,7 +89,8 @@
 		highlightedId = item.id;
 		requestAnimationFrame(() => {
 			document.getElementById(`item-${item.id}`)?.scrollIntoView({
-				behavior: 'smooth',
+				behavior:
+					settings.motion === 'reduced' || prefersReducedMotion.current ? 'instant' : 'smooth',
 				block: 'center'
 			});
 		});
@@ -111,6 +114,12 @@
 	{#snippet controls()}
 		<NavLink href="/albums/{data.category}" variant="accent">All {data.label} collections</NavLink>
 		<NavLink href="/{categoryPath}">Back to {data.label}</NavLink>
+
+		{#if data.isAdmin}
+			<NavLink href="/albums/{data.category}/{data.album.id}/add" variant="accent"
+				><Plus size={16} />Add {data.label.toLowerCase()} I own</NavLink
+			>
+		{/if}
 
 		<AlbumRandomPicker
 			{unwatchedItems}

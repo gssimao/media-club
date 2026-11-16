@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { CATEGORY_ACTION_WORDING, type MediaCategory } from '$lib/types/media';
+	import RandomPickRevealDialog from './RandomPickRevealDialog.svelte';
+	import { createRandomPick, type RandomPickItem } from '$lib/utils/random-pick.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 	import { DiceSix, X } from 'phosphor-svelte';
 	import { scale } from 'svelte/transition';
 
-	export interface PickableItem {
-		id: string;
-		title: string;
-	}
+	export type PickableItem = RandomPickItem;
 
 	interface Props {
 		unwatchedItems: PickableItem[];
@@ -28,38 +28,21 @@
 
 	const wording = $derived(CATEGORY_ACTION_WORDING[category]);
 
-	let lastRoll = $state<number | null>(null);
+	const pick = createRandomPick();
 	let pickedItem = $state<PickableItem | null>(null);
 	let showWatchedPrompt = $state(false);
-	let rolling = $state(false);
-
-	const ROLL_MS = 550;
-
-	const poolSize = $derived(unwatchedItems.length);
-	const canPick = $derived(poolSize > 0);
-
-	let rollTimer: ReturnType<typeof setTimeout> | undefined;
-
-	$effect(() => {
-		return () => clearTimeout(rollTimer);
-	});
-
+	const canPick = $derived(unwatchedItems.length > 0);
 	function pickRandom() {
-		if (!canPick || rolling) return;
-
-		rolling = true;
 		showWatchedPrompt = false;
-
-		rollTimer = setTimeout(() => {
-			const roll = Math.floor(Math.random() * poolSize) + 1;
-			const item = unwatchedItems[roll - 1];
-
-			lastRoll = roll;
-			pickedItem = item;
+		pick.start(unwatchedItems);
+	}
+	function closeReveal() {
+		pickedItem = pick.item;
+		pick.close();
+		if (pickedItem) {
 			showWatchedPrompt = isAdmin;
-			rolling = false;
-			onPick(item);
-		}, ROLL_MS);
+			onPick(pickedItem);
+		}
 	}
 
 	function dismissPrompt() {
@@ -68,44 +51,23 @@
 	}
 </script>
 
-<div class="flex w-full flex-col gap-2">
+<div class="flex max-w-full flex-col items-start gap-2">
 	<button
 		type="button"
 		onclick={pickRandom}
-		disabled={!canPick || rolling}
-		class="pill-nav control-pill--block control-pill--accent disabled:cursor-not-allowed disabled:opacity-50"
+		disabled={!canPick}
+		class="pill-nav control-pill--accent disabled:cursor-not-allowed disabled:opacity-50"
 	>
-		<span class="dice-icon" class:is-rolling={rolling}>
+		<span class="dice-icon">
 			<DiceSix size={16} weight="bold" />
 		</span>
-		{rolling ? 'Rolling…' : canPick ? 'Pick random' : `All ${wording.done}`}
+		{canPick ? 'Pick random' : `All ${wording.done}`}
 	</button>
 
-	{#if lastRoll !== null && poolSize > 0 && !rolling}
-		<p
-			class="surface-round w-full px-4 py-3 text-center text-sm font-bold text-stone-800 dark:text-stone-200"
-			aria-live="polite"
-		>
-			{#key lastRoll}
-				<span
-					in:scale={{ duration: 300, start: 0.5 }}
-					class="inline-block text-3xl font-black text-amber-700 tabular-nums dark:text-amber-400"
-				>
-					{lastRoll}
-				</span>
-			{/key}
-			<span
-				class="mt-1 block text-xs font-semibold tracking-wide text-[rgb(var(--color-text-tertiary))] uppercase"
-			>
-				of {poolSize}
-			</span>
-		</p>
-	{/if}
-
-	{#if showWatchedPrompt && pickedItem && !rolling}
+	{#if showWatchedPrompt && pickedItem}
 		<div
 			transition:scale={{ duration: 200, start: 0.92 }}
-			class="surface-round w-full space-y-3 border border-amber-400/30 p-4"
+			class="surface-round w-full max-w-sm space-y-3 border border-amber-400/30 p-4"
 			role="dialog"
 			aria-labelledby="watched-prompt-title"
 		>
@@ -120,7 +82,7 @@
 				<button
 					type="button"
 					onclick={dismissPrompt}
-					class="inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[rgb(var(--color-text-tertiary))] hover:bg-stone-900/5 hover:text-[rgb(var(--color-text))] dark:hover:bg-stone-800"
+					class="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-[rgb(var(--color-text-tertiary))] hover:bg-stone-900/5 hover:text-[rgb(var(--color-text))] dark:hover:bg-stone-800"
 					aria-label="Dismiss"
 				>
 					<X size={14} weight="bold" />
@@ -131,7 +93,11 @@
 					method="POST"
 					action={markWatchedAction}
 					use:enhance={() => {
-						return async ({ update }) => {
+						return async ({ result, update }) => {
+							if (result.type === 'failure' || result.type === 'error') {
+								toast.error('Could not mark this item. Please try again.');
+								return;
+							}
 							dismissPrompt();
 							await update();
 						};
@@ -155,37 +121,13 @@
 	{/if}
 </div>
 
-<style>
-	@keyframes dice-tumble {
-		0% {
-			transform: rotate(0deg) scale(1);
-		}
-		30% {
-			transform: rotate(160deg) scale(1.25);
-		}
-		60% {
-			transform: rotate(280deg) scale(0.95);
-		}
-		100% {
-			transform: rotate(360deg) scale(1);
-		}
-	}
-
-	.dice-icon {
-		display: inline-flex;
-	}
-
-	.dice-icon.is-rolling {
-		animation: dice-tumble 0.55s cubic-bezier(0.34, 1.3, 0.64, 1) infinite;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.dice-icon.is-rolling {
-			animation: none;
-		}
-	}
-
-	:global([data-motion='reduced']) .dice-icon.is-rolling {
-		animation: none;
-	}
-</style>
+<RandomPickRevealDialog
+	open={pick.open}
+	phase={pick.phase}
+	item={pick.item}
+	loadingDurationMs={pick.duration}
+	loadingPhrase="Shuffling the shelf…"
+	dismissLabel="That's the one!"
+	onRollAgain={pickRandom}
+	onDismiss={closeReveal}
+/>

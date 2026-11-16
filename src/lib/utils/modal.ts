@@ -59,7 +59,7 @@ function unlockScroll() {
 
 function focusableWithin(node: HTMLElement): HTMLElement[] {
 	return Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-		(el) => el.getClientRects().length > 0
+		(el) => el.tabIndex >= 0 && !el.closest('[inert]') && el.getClientRects().length > 0
 	);
 }
 
@@ -82,18 +82,18 @@ function onKeydown(event: KeyboardEvent) {
 		return;
 	}
 
-	const first = focusable[0];
-	const last = focusable[focusable.length - 1];
 	const active = document.activeElement;
-	const outside = !(active instanceof Node) || !top.node.contains(active) || active === top.node;
-
-	if (event.shiftKey && (outside || active === first)) {
-		event.preventDefault();
-		last.focus();
-	} else if (!event.shiftKey && (outside || active === last)) {
-		event.preventDefault();
-		first.focus();
-	}
+	const index = focusable.findIndex((element) => element === active);
+	// Safari can skip links when keyboard navigation is disabled at the OS level.
+	// Own the whole Tab sequence so it cannot escape the wheel or another modal.
+	const next =
+		index < 0
+			? event.shiftKey
+				? focusable.length - 1
+				: 0
+			: (index + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+	event.preventDefault();
+	focusable[next].focus();
 }
 
 /**

@@ -10,7 +10,7 @@
  * keep working), and prints WCAG contrast warnings for risky text/background pairs.
  */
 import { writeFileSync } from 'node:fs';
-import { brandRamp, dark, light, type ThemePalette } from '../src/lib/theme/palette.ts';
+import { brandRamp, dark, light, vinyl, type ThemePalette } from '../src/lib/theme/palette.ts';
 
 const OUTPUT_PATH = 'src/routes/theme.css';
 
@@ -135,6 +135,12 @@ ${Object.entries(brandRamp)
 }
 
 ${themeBlock(':root', 'light', light)}
+
+:root {
+${Object.entries(vinyl)
+	.map(([key, color]) => `\t--vinyl-${key}: ${hexToRgb(color).join(' ')};`)
+	.join('\n')}
+}
 
 ${themeBlock("[data-theme='dark']", 'dark', dark)}
 `;

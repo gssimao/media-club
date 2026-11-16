@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '$lib/server/db';
 import { albums, items } from '$lib/server/db/schema';
 import { setItemAlbumId, listItemsByAlbum } from '$lib/server/items';
@@ -127,6 +127,54 @@ export async function assignItemToAlbum(
 
 	await setItemAlbumId(db, itemId, albumId);
 	return true;
+}
+
+export const MAX_COLLECTION_SELECTION = 1000;
+
+/** One atomic statement: a stale or invalid selection must never be partly applied. */
+export async function assignItemsToAlbum(
+	db: AppDatabase,
+	albumId: string,
+	itemIds: string[],
+	allowMove = false
+): Promise<{ ok: true; count: number } | { ok: false; message: string }> {
+	const ids = [...new Set(itemIds)];
+	if (
+		!ids.length ||
+		ids.length > MAX_COLLECTION_SELECTION ||
+		ids.some((id) => !id || id.length > 100)
+	) {
+		return { ok: false, message: `Select between 1 and ${MAX_COLLECTION_SELECTION} items.` };
+	}
+	const album = await getAlbum(db, albumId);
+	if (!album) return { ok: false, message: 'Collection no longer exists.' };
+
+	// JSON keeps large selections below D1's bound-parameter limit.
+	const eligible = and(
+		inArray(items.id, sql`(select value from json_each(${JSON.stringify(ids)}))`),
+		eq(items.category, album.category),
+		eq(items.listType, 'owned'),
+		allowMove ? undefined : or(isNull(items.albumId), eq(items.albumId, albumId))
+	);
+	const eligibleCount = db.select({ total: count() }).from(items).where(eligible);
+	const updated = await db
+		.update(items)
+		.set({
+			albumId,
+			albumWatchedAt: sql`case when ${items.albumId} = ${albumId} then ${items.albumWatchedAt} else null end`,
+			updatedAt: new Date()
+		})
+		.where(and(eligible, sql`(${eligibleCount}) = ${ids.length}`))
+		.returning({ id: items.id });
+
+	if (updated.length !== ids.length) {
+		return {
+			ok: false,
+			message:
+				'Your selection changed or contains unavailable items. Refresh the page, or confirm moving movies from other collections.'
+		};
+	}
+	return { ok: true, count: updated.length };
 }
 
 /** Falls back to the cover of an item in the album when the album has none of its own. */

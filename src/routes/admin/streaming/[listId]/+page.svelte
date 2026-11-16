@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { mediaGridClass } from '$lib/utils/media-grid';
 	import PageShell from '$lib/components/PageShell.svelte';
 	import AddStreamingDialog from '$lib/components/AddStreamingDialog.svelte';
 	import AlbumRandomPicker from '$lib/components/AlbumRandomPicker.svelte';
@@ -15,16 +16,21 @@
 		getDisplayGenres,
 		type GenreFilterMode
 	} from '$lib/utils/movie-genres';
+	import { settings } from '$lib/stores/settings.svelte';
+	import { prefersReducedMotion } from 'svelte/motion';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { MagnifyingGlass, Pencil } from 'phosphor-svelte';
 
 	let { data } = $props();
 
+	let query = $state('');
 	let selectedGenres = $state<string[]>([]);
 	let genreFilterMode = $state<GenreFilterMode>(DEFAULT_GENRE_FILTER_MODE);
 
 	const genreOptions = $derived(collectUniqueGenres(data.items));
 
 	function filterByGenre(items: StreamingListItemView[]) {
+		items = items.filter((item) => item.title.toLowerCase().includes(query.trim().toLowerCase()));
 		if (selectedGenres.length === 0) return items;
 		return items.filter((item) =>
 			itemMatchesGenreFilter(getDisplayGenres(item), selectedGenres, genreFilterMode)
@@ -46,7 +52,8 @@
 		highlightedId = item.id;
 		requestAnimationFrame(() => {
 			document.getElementById(`streaming-item-${item.id}`)?.scrollIntoView({
-				behavior: 'smooth',
+				behavior:
+					settings.motion === 'reduced' || prefersReducedMotion.current ? 'instant' : 'smooth',
 				block: 'center'
 			});
 		});
@@ -63,7 +70,7 @@
 		<NavLink href="/admin">Back to admin</NavLink>
 
 		<AlbumRandomPicker
-			unwatchedItems={unwatchedItems.map((item) => ({ id: item.id, title: item.title }))}
+			{unwatchedItems}
 			category="movie"
 			isAdmin={data.isAdmin}
 			onPick={handlePick}
@@ -106,6 +113,12 @@
 		</div>
 	{/if}
 
+	<div class="mb-6"><SearchBar bind:value={query} onInput={(value) => (query = value)} /></div>
+	{#if data.items.length > 0 && !unwatchedItems.length && !watchedItems.length}<p
+			class="surface-round p-6 text-sm"
+		>
+			No movies match your search and filters.
+		</p>{/if}
 	{#if data.items.length === 0}
 		<div class="surface-round p-8 text-center">
 			<p class="text-sm font-medium text-stone-600 dark:text-stone-400">
@@ -120,9 +133,7 @@
 			>
 				To watch
 			</h2>
-			<div
-				class="mb-10 grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-			>
+			<div class="mb-10 {mediaGridClass(settings.density)}">
 				{#each unwatchedItems as item (item.id)}
 					<div
 						class="flex h-full min-w-0 flex-col {highlightedId === item.id
@@ -146,9 +157,7 @@
 			>
 				Already watched
 			</h2>
-			<div
-				class="grid grid-cols-2 gap-x-3 gap-y-8 opacity-75 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-			>
+			<div class="opacity-75 {mediaGridClass(settings.density)}">
 				{#each watchedItems as item (item.id)}
 					<div class="flex h-full min-w-0 flex-col">
 						<StreamingListItemCard

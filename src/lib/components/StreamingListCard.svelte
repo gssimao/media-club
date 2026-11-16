@@ -16,7 +16,7 @@
 	let hovered = $state(false);
 </script>
 
-<article class="surface-round relative mx-auto w-full max-w-[9.5rem] overflow-hidden p-3">
+<article class="surface-round relative mx-auto w-full max-w-[15rem] overflow-hidden p-3">
 	<a
 		href="/admin/streaming/{id}"
 		class="block"
@@ -24,7 +24,7 @@
 		onmouseleave={() => (hovered = false)}
 	>
 		<div
-			class="mb-2 aspect-[2/3] overflow-hidden rounded-[1.5rem] bg-[rgb(var(--color-bg))] dark:bg-stone-900"
+			class="mb-2 aspect-[2/3] overflow-hidden rounded-xl bg-[rgb(var(--color-bg))] dark:bg-stone-900"
 		>
 			{#if coverUrl}
 				<CoverImage src={coverUrl} alt="" class="h-full w-full object-cover" {hovered} />
@@ -34,7 +34,7 @@
 				</div>
 			{/if}
 		</div>
-		<h2 class="line-clamp-2 text-xs font-bold text-stone-900 dark:text-amber-50">
+		<h2 class="line-clamp-2 text-sm font-medium text-[rgb(var(--color-text))]">
 			{title}
 		</h2>
 		{#if description}
@@ -48,10 +48,10 @@
 	</a>
 	<button
 		type="button"
-		class="absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded-full border border-red-400/80 bg-[rgb(var(--color-surface-raised))] text-red-700 shadow-sm hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+		class="absolute top-2 right-2 inline-flex size-11 items-center justify-center rounded-full border border-red-400/80 bg-[rgb(var(--color-surface-raised))] text-red-700 shadow-sm hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
 		aria-label="Delete {title}"
 		onclick={onDelete}
 	>
-		<Trash size={12} weight="bold" />
+		<Trash size={16} weight="bold" />
 	</button>
 </article>

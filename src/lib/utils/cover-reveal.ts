@@ -12,6 +12,7 @@ interface CoverRevealHandlers {
  */
 export function bindCoverReveal(handlers: CoverRevealHandlers): Attachment<HTMLElement> {
 	return (node) => {
+		let attached = true;
 		const onEnter = (event: PointerEvent) => {
 			if (event.pointerType === 'mouse') handlers.setHover(true);
 		};
@@ -23,23 +24,26 @@ export function bindCoverReveal(handlers: CoverRevealHandlers): Attachment<HTMLE
 			if (event.target instanceof Element && event.target.closest('.cover-tools')) return;
 			handlers.togglePin();
 		};
-		const onFocusIn = () => handlers.setKeyboard(true);
-		const onFocusOut = (event: FocusEvent) => {
-			if (!node.contains(event.relatedTarget as Node | null)) handlers.setKeyboard(false);
-		};
+		// Moving a watched card between sections can blur it during Svelte's render.
+		// Defer the state write until that render has finished, and ignore detached cards.
+		const syncFocus = () =>
+			queueMicrotask(() => {
+				if (attached) handlers.setKeyboard(node.contains(document.activeElement));
+			});
 
 		node.addEventListener('pointerenter', onEnter);
 		node.addEventListener('pointerleave', onLeave);
 		node.addEventListener('click', onClick);
-		node.addEventListener('focusin', onFocusIn);
-		node.addEventListener('focusout', onFocusOut);
+		node.addEventListener('focusin', syncFocus);
+		node.addEventListener('focusout', syncFocus);
 
 		return () => {
+			attached = false;
 			node.removeEventListener('pointerenter', onEnter);
 			node.removeEventListener('pointerleave', onLeave);
 			node.removeEventListener('click', onClick);
-			node.removeEventListener('focusin', onFocusIn);
-			node.removeEventListener('focusout', onFocusOut);
+			node.removeEventListener('focusin', syncFocus);
+			node.removeEventListener('focusout', syncFocus);
 		};
 	};
 }

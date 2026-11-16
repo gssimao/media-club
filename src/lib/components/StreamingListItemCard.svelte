@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import ConfirmDialog from './ConfirmDialog.svelte';
-	import CoverImage from './CoverImage.svelte';
+	import PosterCover from './PosterCover.svelte';
+	import CoverTools from './CoverTools.svelte';
 	import GenreEditor from './GenreEditor.svelte';
 	import StreamingProviders from './StreamingProviders.svelte';
 	import CardOptionsMenu, { type CardMenuAction } from './CardOptionsMenu.svelte';
-	import { FilmStrip, Heart, Trash } from 'phosphor-svelte';
+	import { FilmStrip, Heart, Trash, Eye, EyeSlash } from 'phosphor-svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 	import type { StreamingListItemView } from '$lib/server/streaming-lists';
 	import type { MovieWatchProviders } from '$lib/types/tmdb';
@@ -38,7 +39,7 @@
 	type StreamingAction = 'wishlist' | 'owned' | 'delete';
 
 	const menuActions: CardMenuAction<StreamingAction>[] = [
-		{ id: 'owned', label: 'Add to collection', icon: FilmStrip, tone: 'accent' },
+		{ id: 'owned', label: 'Add to owned movies', icon: FilmStrip, tone: 'accent' },
 		{ id: 'wishlist', label: 'Add to wishlist', icon: Heart },
 		{ id: 'delete', label: 'Remove from list', icon: Trash, tone: 'danger' }
 	];
@@ -60,9 +61,7 @@
 >
 	<div class="mb-1 flex min-h-7 w-full shrink-0 items-center justify-between px-0.5">
 		{#if item.year}
-			<span
-				class="text-xs font-black tracking-widest text-amber-700 tabular-nums dark:text-amber-400"
-			>
+			<span class="text-xs font-medium text-[rgb(var(--color-text-tertiary))] tabular-nums">
 				{item.year}
 			</span>
 		{:else}
@@ -81,49 +80,56 @@
 		{/if}
 	</div>
 
-	<div
-		class="media-disc relative aspect-square w-full max-w-[13rem] shrink-0 overflow-hidden rounded-full border-2 border-dashed border-sky-500/70 bg-[rgb(var(--color-surface-raised))] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:max-w-[15rem] dark:border-sky-400/60"
-	>
-		{#if item.coverUrl}
-			<CoverImage
-				src={item.coverUrl}
-				alt=""
-				class="h-full w-full object-cover"
-				hovered={cardHovered}
-			/>
-		{:else}
-			<div
-				class="flex h-full w-full items-center justify-center bg-[rgb(var(--color-bg))] text-[rgb(var(--color-text-tertiary))]"
-			>
-				<FilmStrip size={32} weight="bold" />
-			</div>
-		{/if}
-		<!-- Top center: a corner badge gets cut off by the round cover. -->
-		<span
-			class="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-sky-500/90 px-2 py-0.5 text-[8px] font-black tracking-wide text-white uppercase shadow-sm"
-		>
-			Stream
-		</span>
-	</div>
-
-	<div class="flex min-h-0 w-full flex-1 flex-col">
+	<PosterCover title={label} coverUrl={item.coverUrl} hovered={cardHovered} format="Streaming">
+		{#snippet children(open)}
+			<CoverTools {open}>
+				<div class="cover-tools__genres">
+					<GenreEditor
+						item={{ id: item.id, metadata: item.metadata, title: item.title }}
+						action="?/updateGenres"
+						{isAdmin}
+						catalogItems={genreCatalogItems}
+					/>
+				</div>
+				{#if isAdmin}
+					<form
+						method="POST"
+						action="?/toggleWatched"
+						use:enhance={() =>
+							async ({ result, update }) => {
+								if (result.type === 'failure' || result.type === 'error')
+									toast.error('Could not update watched status.');
+								await update({ reset: false });
+							}}
+					>
+						<input type="hidden" name="id" value={item.id} /><input
+							type="hidden"
+							name="watched"
+							value={item.watchedAt ? 'false' : 'true'}
+						/>
+						<button
+							class="inline-flex min-h-11 items-center gap-1 rounded-full bg-white/15 px-3 text-xs text-white"
+							type="submit"
+							>{#if item.watchedAt}<EyeSlash size={14} />Mark unwatched{:else}<Eye size={14} />Mark
+								watched{/if}</button
+						>
+					</form>
+				{/if}
+			</CoverTools>
+		{/snippet}
+	</PosterCover>
+	<div class="mt-2.5 flex w-full flex-1 flex-col px-1 text-center">
 		<h3
-			class="mt-2 line-clamp-2 min-h-[2.5rem] w-full shrink-0 px-1 text-center text-xs leading-snug font-bold text-[rgb(var(--color-text))]"
+			class="line-clamp-2 min-h-[2.5rem] text-sm leading-snug font-medium text-[rgb(var(--color-text))]"
 		>
-			{label}
+			{item.title}
 		</h3>
-
+		<p
+			class="mt-0.5 line-clamp-1 min-h-[1.125rem] text-[11px] text-[rgb(var(--color-text-secondary))]"
+		>
+			{item.subtitle ?? ''}
+		</p>
 		<StreamingProviders providers={watchProviders} />
-
-		<div class="flex min-h-0 w-full flex-1 flex-col {isAdmin ? '' : 'mt-1.5'}">
-			<GenreEditor
-				item={{ id: item.id, metadata: item.metadata, title: item.title }}
-				action="?/updateGenres"
-				{isAdmin}
-				variant="sky"
-				catalogItems={genreCatalogItems}
-			/>
-		</div>
 	</div>
 </article>
 
@@ -134,8 +140,12 @@
 	class="hidden"
 	use:enhance={() => {
 		return async ({ result, update }) => {
-			if (result.type === 'failure') {
-				toast.error(String(result.data?.message ?? 'Could not add to wishlist.'));
+			if (result.type === 'failure' || result.type === 'error') {
+				toast.error(
+					String(
+						('data' in result ? result.data?.message : undefined) ?? 'Could not add to wishlist.'
+					)
+				);
 			} else {
 				toast.success(`Added "${item.title}" to the wishlist.`);
 			}
@@ -154,8 +164,12 @@
 	class="hidden"
 	use:enhance={() => {
 		return async ({ result, update }) => {
-			if (result.type === 'failure') {
-				toast.error(String(result.data?.message ?? 'Could not add to collection.'));
+			if (result.type === 'failure' || result.type === 'error') {
+				toast.error(
+					String(
+						('data' in result ? result.data?.message : undefined) ?? 'Could not add to collection.'
+					)
+				);
 			} else {
 				toast.success(`Added "${item.title}" to the collection.`);
 			}
@@ -174,8 +188,10 @@
 	class="hidden"
 	use:enhance={() => {
 		return async ({ result, update }) => {
-			if (result.type === 'failure') {
-				toast.error(String(result.data?.message ?? 'Could not remove item.'));
+			if (result.type === 'failure' || result.type === 'error') {
+				toast.error(
+					String(('data' in result ? result.data?.message : undefined) ?? 'Could not remove item.')
+				);
 			} else {
 				toast.success(`Removed "${item.title}" from this list.`);
 			}

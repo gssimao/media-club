@@ -167,7 +167,7 @@ export function createFloatingCover(
 	const side = pickSide(active, rand);
 	const takenY = active.filter((tile) => tile.side === side).map((tile) => tile.yPct);
 	const tilt = between(rand, -7, 7);
-	const lifeMs = between(rand, 10_000, 17_000);
+	const lifeMs = between(rand, 9_000, 14_000);
 
 	return {
 		key,
@@ -199,7 +199,7 @@ export function dropExpired(tiles: FloatingCover[], now: number): FloatingCover[
 
 /** Gap between spawn attempts. */
 export function nextSpawnDelayMs(rand: Rand = Math.random): number {
-	return between(rand, 1_600, 3_800);
+	return between(rand, 1_000, 2_400);
 }
 
 /** Retry gap when no cover is loaded yet (or every cover is already on screen). */

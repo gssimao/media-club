@@ -3,14 +3,10 @@
 	import RandomPickerGenrePanel from '$lib/components/RandomPickerGenrePanel.svelte';
 	import RandomPickRevealDialog from '$lib/components/RandomPickRevealDialog.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
-	import { settings } from '$lib/stores/settings.svelte';
+	import { createRandomPick } from '$lib/utils/random-pick.svelte';
 	import { modal } from '$lib/utils/modal';
 	import type { Album, MediaItem } from '$lib/types/media';
-	import {
-		buildRandomMoviePool,
-		pickRandomFromPool,
-		type RandomMoviePoolOptions
-	} from '$lib/utils/random-movie-pool';
+	import { buildRandomMoviePool, type RandomMoviePoolOptions } from '$lib/utils/random-movie-pool';
 	import { DEFAULT_GENRE_FILTER_MODE, type GenreFilterMode } from '$lib/utils/movie-genres';
 	import { Folder, Shuffle, Tag, X } from 'phosphor-svelte';
 
@@ -22,38 +18,11 @@
 
 	let { items, albums, genreOptions }: Props = $props();
 
-	const reducedMotion = $derived(settings.motion === 'reduced');
-
-	const ROLL_MIN_MS = 3000;
-	const ROLL_MAX_MS = 5000;
-	const REDUCED_LOADING_MS = 350;
-
-	let loadingDurationMs = $state(4000);
-
-	function rollLoadingMs(): number {
-		if (reducedMotion) return REDUCED_LOADING_MS;
-		return ROLL_MIN_MS + Math.floor(Math.random() * (ROLL_MAX_MS - ROLL_MIN_MS + 1));
-	}
-
-	const dismissLabels = ['Watch time!', 'Thank you!', 'Enjoy the show!'] as const;
-	const loadingPhrases = [
-		'Figuring it out…',
-		'Shuffling the shelf…',
-		'Consulting the oracle…'
-	] as const;
-
-	function randomChoice<T>(choices: readonly T[]): T {
-		return choices[Math.floor(Math.random() * choices.length)] ?? choices[0];
-	}
+	const pick = createRandomPick();
 
 	let showFilterDialog = $state(false);
 	let showGenrePanel = $state(false);
 	let showCollectionPanel = $state(false);
-	let showRevealDialog = $state(false);
-	let revealPhase = $state<'loading' | 'reveal'>('loading');
-	let pickedItem = $state<MediaItem | null>(null);
-	let loadingPhrase = $state<string>(loadingPhrases[0]);
-	let dismissLabel = $state<string>(dismissLabels[0]);
 
 	let selectedGenres = $state<string[]>([]);
 	let genreFilterMode = $state<GenreFilterMode>(DEFAULT_GENRE_FILTER_MODE);
@@ -83,12 +52,6 @@
 			excludedCollectionIds
 		})
 	);
-
-	let revealTimer: ReturnType<typeof setTimeout> | undefined;
-
-	$effect(() => {
-		return () => clearTimeout(revealTimer);
-	});
 
 	function openFilterDialog() {
 		showFilterDialog = true;
@@ -120,12 +83,6 @@
 		showCollectionPanel = false;
 	}
 
-	function closeRevealDialog() {
-		showRevealDialog = false;
-		revealPhase = 'loading';
-		pickedItem = null;
-	}
-
 	function beginPick(options: RandomMoviePoolOptions) {
 		const pool = buildRandomMoviePool(items, options);
 
@@ -142,19 +99,7 @@
 		};
 
 		closeFilterDialog();
-		showRevealDialog = true;
-		revealPhase = 'loading';
-		pickedItem = null;
-		loadingPhrase = randomChoice(loadingPhrases);
-		loadingDurationMs = rollLoadingMs();
-
-		clearTimeout(revealTimer);
-		revealTimer = setTimeout(() => {
-			const choice = pickRandomFromPool(pool);
-			pickedItem = choice;
-			dismissLabel = randomChoice(dismissLabels);
-			revealPhase = 'reveal';
-		}, loadingDurationMs);
+		pick.start(pool);
 	}
 
 	function handlePickFromFilters() {
@@ -357,14 +302,14 @@
 {/if}
 
 <RandomPickRevealDialog
-	open={showRevealDialog}
-	phase={revealPhase}
-	item={pickedItem}
-	{loadingPhrase}
-	{dismissLabel}
-	{loadingDurationMs}
+	open={pick.open}
+	phase={pick.phase}
+	item={pick.item}
+	loadingPhrase="Shuffling the shelf…"
+	dismissLabel="That's the one!"
+	loadingDurationMs={pick.duration}
 	onRollAgain={handleRollAgain}
-	onDismiss={closeRevealDialog}
+	onDismiss={pick.close}
 />
 
 <style>

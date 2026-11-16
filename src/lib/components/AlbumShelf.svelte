@@ -3,7 +3,7 @@
 	import { settings } from '$lib/stores/settings.svelte';
 	import type { Album, MediaCategory } from '$lib/types/media';
 	import { dragScroll } from '$lib/utils/drag-scroll';
-	import { CaretLeft, CaretRight } from 'phosphor-svelte';
+	import { CaretLeft, CaretRight, Folders } from 'phosphor-svelte';
 	import AlbumCard from './AlbumCard.svelte';
 	import AddCollectionTile from './AddCollectionTile.svelte';
 
@@ -54,43 +54,37 @@
 	}
 </script>
 
-{#if preview.length > 0}
+{#if preview.length > 0 || showAddTile}
 	<section class="mb-8" aria-label="Collections">
 		<div class="mb-2 flex items-center justify-between gap-3">
-			<h2
-				class="text-sm font-semibold tracking-normal text-stone-700 normal-case dark:text-stone-300"
-			>
-				Collections
-			</h2>
-			<div class="flex items-center gap-1.5">
-				{#if overflowing}
-					<!-- Mouse users get arrows; touch and trackpads scroll the shelf directly. -->
-					<button
-						type="button"
-						class="shelf-arrow"
-						aria-label="Scroll collections back"
-						disabled={!canScrollBack}
-						onclick={() => scrollByPage(-1)}
-					>
-						<CaretLeft size={14} weight="bold" />
-					</button>
-					<button
-						type="button"
-						class="shelf-arrow"
-						aria-label="Scroll collections forward"
-						disabled={!canScrollForward}
-						onclick={() => scrollByPage(1)}
-					>
-						<CaretRight size={14} weight="bold" />
-					</button>
-				{/if}
-				<a
-					href="/albums/{category}"
-					class="pill-nav bg-amber-400/15 text-amber-700 hover:bg-amber-400/25 dark:text-amber-400"
+			<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+				<h2
+					class="text-sm font-semibold tracking-normal text-stone-700 normal-case dark:text-stone-300"
 				>
-					See all
-				</a>
+					Collections
+				</h2>
+				<a href="/albums/{category}" class="pill-nav control-pill--secondary text-xs"
+					><Folders size={16} />View collections</a
+				>
 			</div>
+			{#if overflowing}
+				<div class="flex gap-1">
+					<button
+						class="shelf-arrow"
+						type="button"
+						aria-label="Previous collections"
+						disabled={!canScrollBack}
+						onclick={() => scrollByPage(-1)}><CaretLeft size={18} /></button
+					>
+					<button
+						class="shelf-arrow"
+						type="button"
+						aria-label="Next collections"
+						disabled={!canScrollForward}
+						onclick={() => scrollByPage(1)}><CaretRight size={18} /></button
+					>
+				</div>
+			{/if}
 		</div>
 		<div
 			bind:this={scrollEl}
@@ -100,16 +94,16 @@
 			class:shelf-scroll--fade-start={canScrollBack}
 			class:shelf-scroll--fade-end={canScrollForward}
 		>
+			{#if showAddTile}
+				<div class="shelf-tile">
+					<AddCollectionTile {category} onclick={() => onAddCollection?.()} />
+				</div>
+			{/if}
 			{#each preview as album, index (album.id)}
 				<div class="anim-rise shelf-tile" style="--rise-delay: {index * 50}ms">
 					<AlbumCard {album} displayCoverUrl={coverUrls[album.id] ?? null} />
 				</div>
 			{/each}
-			{#if showAddTile && onAddCollection}
-				<div class="anim-rise shelf-tile" style="--rise-delay: {preview.length * 50}ms">
-					<AddCollectionTile {category} onclick={onAddCollection} />
-				</div>
-			{/if}
 		</div>
 	</section>
 {/if}

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { grooveRadii, NODE_R_RATIO, tickAngles, type NavItem } from './nav-dial';
+	import VinylRecord from '../VinylRecord.svelte';
+	import { NODE_R_RATIO, type NavItem } from './nav-dial';
 	interface Props {
 		instanceId: string;
 		navItems: NavItem[];
@@ -44,27 +45,7 @@
 	}
 </script>
 
-<div class="disc-wrap" aria-hidden="true">
-	<svg viewBox="0 0 200 200">
-		{#each grooveRadii as ratio (ratio)}<circle
-				cx="100"
-				cy="100"
-				r={99 * ratio}
-				fill="none"
-				stroke="currentColor"
-				stroke-width=".7"
-			/>{/each}
-		{#each tickAngles as angle (angle)}<line
-				x1="100"
-				y1="5"
-				x2="100"
-				y2="10"
-				stroke="currentColor"
-				stroke-width="1"
-				transform="rotate({angle} 100 100)"
-			/>{/each}
-	</svg>
-</div>
+<VinylRecord />
 <div class="selector-arm" aria-hidden="true"></div>
 <div
 	class="dial-rotator"
@@ -90,7 +71,7 @@
 				onclick={(event) => onNodeClick(event, i)}
 				onkeydown={(event) => onNodeKeydown(event, i)}
 			>
-				<Icon size={21} weight="regular" /><span class="dial-node-label">{item.label}</span>
+				<span class="dial-node-label">{item.label}</span><Icon size={20} weight="regular" />
 			</a>
 		</div>
 	{/each}
@@ -103,37 +84,14 @@
 		class="dial-center-slot"
 		aria-current={!dragging && !animating && previewItem.match(pathname) ? 'page' : undefined}
 	>
-		<span class="dial-center-disc" class:is-preview={dragging || animating}
-			><PreviewIcon size={27} weight="regular" /></span
-		>
-		<span class="dial-center-label" id="dial-selection-{instanceId}">{previewItem.label}</span>
+		<span class="dial-center-disc" class:is-preview={dragging || animating}>
+			<span class="dial-center-label" id="dial-selection-{instanceId}">{previewItem.label}</span>
+			<PreviewIcon size={25} weight="regular" />
+		</span>
 	</a>
 </div>
 
 <style>
-	.disc-wrap {
-		position: absolute;
-		inset: 0;
-		border: 1px solid rgb(var(--color-accent) / 0.35);
-		border-radius: 50%;
-		pointer-events: none;
-		background: conic-gradient(
-			from 30deg,
-			rgb(var(--color-surface) / 0.96),
-			rgb(var(--color-sky) / 0.12),
-			rgb(var(--color-surface) / 0.96) 42%,
-			rgb(var(--color-coral) / 0.1) 65%,
-			rgb(var(--color-surface) / 0.96)
-		);
-		box-shadow:
-			inset 0 0 0 4px rgb(var(--color-bg) / 0.5),
-			0 6px 22px rgb(0 0 0/0.08);
-	}
-	.disc-wrap svg {
-		width: 100%;
-		height: 100%;
-		color: rgb(var(--color-accent) / 0.32);
-	}
 	.selector-arm {
 		position: absolute;
 		bottom: 0;
@@ -156,17 +114,19 @@
 		height: 0;
 	}
 	.dial-node {
+		flex-direction: column;
+		gap: 3px;
 		position: absolute;
-		left: -22px;
-		top: -22px;
-		width: 44px;
-		height: 44px;
+		left: -26px;
+		top: -26px;
+		width: 52px;
+		height: 52px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		border: 1px solid rgb(var(--destination-color) / 0.45);
 		border-radius: 50%;
-		background: rgb(var(--color-surface-raised));
+		background: rgb(var(--vinyl-button));
 		color: rgb(var(--destination-color));
 		transition:
 			transform var(--dial-snap-duration) var(--dial-snap-easing),
@@ -174,29 +134,21 @@
 			box-shadow 180ms ease;
 	}
 	.dial-node-label {
-		position: absolute;
-		top: calc(100% + 3px);
-		left: 50%;
-		transform: translateX(-50%);
-		color: rgb(var(--color-text-secondary));
-		font-size: 0.5625rem;
+		color: rgb(var(--vinyl-text));
+		font-size: 10px;
 		line-height: 1;
 		white-space: nowrap;
 		font-weight: 550;
 		pointer-events: none;
 	}
 	.dial-node.is-active {
-		background: rgb(var(--color-surface));
+		background: rgb(var(--vinyl-base));
 		border-style: dashed;
-	}
-	/* The hub names the current page; leave the selector at the rim unobstructed. */
-	.dial-node.is-active .dial-node-label {
-		visibility: hidden;
 	}
 	.dial-node:is(:hover, :focus-visible),
 	.dial-node.is-preview {
 		box-shadow: 0 0 18px rgb(var(--destination-color) / 0.24);
-		background: rgb(var(--color-bg));
+		background: rgb(var(--vinyl-base));
 		border-color: rgb(var(--destination-color));
 	}
 	.dial-center {
@@ -214,14 +166,17 @@
 		border-radius: 50%;
 	}
 	.dial-center-disc {
-		width: 56px;
-		height: 56px;
-		display: grid;
-		place-items: center;
+		width: 70px;
+		height: 70px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
 		border-radius: 50%;
-		background: rgb(var(--color-accent-light));
+		background: rgb(var(--vinyl-paper));
 		border: 1px solid rgb(var(--destination-color) / 0.7);
-		color: rgb(var(--destination-color));
+		color: rgb(var(--vinyl-ink));
 		box-shadow: 0 0 0 4px rgb(var(--destination-color) / 0.08);
 		transition: transform var(--dial-snap-duration) var(--dial-snap-easing);
 	}
@@ -230,7 +185,7 @@
 	}
 	.dial-center-label {
 		font-size: 0.625rem;
-		color: rgb(var(--color-text-secondary));
+		color: rgb(var(--vinyl-ink));
 		line-height: 1;
 	}
 	.dial-rotator.no-transition,

@@ -18,7 +18,7 @@
 		itemMatchesGenreFilter,
 		type GenreFilterMode
 	} from '$lib/utils/movie-genres';
-	import { FolderPlus, Heart, Plus } from 'phosphor-svelte';
+	import { Heart, Plus } from 'phosphor-svelte';
 
 	interface Props {
 		category: MediaCategory;
@@ -70,7 +70,7 @@
 
 	const filteredItems = $derived.by(() => applyFormatFilter(items));
 	const filteredSearchItems = $derived.by(() => applyFormatFilter(allItems));
-	const showShelfAddTile = $derived(isAdmin && albums.length > 0);
+	const showShelfAddTile = $derived(isAdmin);
 
 	function applyFormatFilter(source: MediaItem[]) {
 		let filtered = source;
@@ -112,7 +112,6 @@
 
 <PageShell {title} {description}>
 	{#snippet controls()}
-		<NavLink href="/albums/{category}" variant="accent">View collections</NavLink>
 		<NavLink href="/wishlist/{CATEGORY_PATHS[category]}" variant="accent">
 			<Heart size={16} weight="bold" />
 			View wishlist
@@ -143,14 +142,6 @@
 				<Plus size={16} weight="bold" />
 				Add media
 			</button>
-			<button
-				type="button"
-				onclick={() => (showFolderDialog = true)}
-				class="pill-nav control-pill--accent"
-			>
-				<FolderPlus size={16} weight="bold" />
-				Create collection
-			</button>
 		{/if}
 	{/snippet}
 
@@ -171,8 +162,6 @@
 		{albums}
 		{emptyTitle}
 		emptyDescription={emptyText}
-		showAddFolderButton={isAdmin && albums.length === 0}
-		onAddFolder={() => (showFolderDialog = true)}
 	/>
 </PageShell>
 

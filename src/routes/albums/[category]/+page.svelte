@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import PageShell from '$lib/components/PageShell.svelte';
+	import AddCollectionTile from '$lib/components/AddCollectionTile.svelte';
+	import AddFolderDialog from '$lib/components/AddFolderDialog.svelte';
 	import AlbumCard from '$lib/components/AlbumCard.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import NavLink from '$lib/components/NavLink.svelte';
-	import { toast } from '$lib/stores/toast.svelte';
 	import { CATEGORY_LABELS, CATEGORY_PATHS } from '$lib/types/media';
 
 	let { data } = $props();
+	let showAddDialog = $state(false);
 
 	const categoryPath = $derived(CATEGORY_PATHS[data.category]);
 </script>
@@ -21,41 +22,7 @@
 		<NavLink href="/{categoryPath}" variant="accent">Back to {data.label}</NavLink>
 	{/snippet}
 
-	{#if data.isAdmin}
-		<form
-			method="POST"
-			action="/admin/albums?/createAlbum"
-			class="surface-round mb-8 flex flex-wrap items-end gap-3 p-4"
-			use:enhance={({ formData }) => {
-				const title = String(formData.get('title') ?? '').trim();
-				return async ({ result, update }) => {
-					if (result.type === 'failure') {
-						toast.error(String(result.data?.message ?? 'Could not create collection.'));
-					} else if (result.type === 'error') {
-						toast.error('Could not create collection.');
-					} else {
-						toast.success(`Created collection "${title}".`);
-					}
-					await update();
-				};
-			}}
-		>
-			<input type="hidden" name="category" value={data.category} />
-			<label class="min-w-[12rem] flex-1 space-y-1 text-sm">
-				<span class="font-bold text-stone-700 dark:text-stone-300">New collection</span>
-				<input
-					type="text"
-					name="title"
-					required
-					placeholder="e.g. Wes Anderson"
-					class="input-round w-full"
-				/>
-			</label>
-			<button type="submit" class="btn-primary px-5 py-2.5 text-sm">Create collection</button>
-		</form>
-	{/if}
-
-	{#if data.albums.length === 0}
+	{#if data.albums.length === 0 && !data.isAdmin}
 		<EmptyState
 			title="No collections yet"
 			description={data.isAdmin
@@ -68,6 +35,10 @@
 		<div
 			class="grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-x-4 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] sm:gap-x-6"
 		>
+			{#if data.isAdmin}<AddCollectionTile
+					category={data.category}
+					onclick={() => (showAddDialog = true)}
+				/>{/if}
 			{#each data.albums as album, index (album.id)}
 				<div class="anim-rise" style="--rise-delay: {Math.min(index * 40, 400)}ms">
 					<AlbumCard {album} displayCoverUrl={data.coverUrls[album.id] ?? null} fluid />
@@ -76,3 +47,9 @@
 		</div>
 	{/if}
 </PageShell>
+
+{#if data.isAdmin}<AddFolderDialog
+		category={data.category}
+		isOpen={showAddDialog}
+		onClose={() => (showAddDialog = false)}
+	/>{/if}
